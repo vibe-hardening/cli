@@ -1,0 +1,64 @@
+{
+  "name": "vibe-hardening",
+  "version": "0.0.1",
+  "description": "One-command security scanner for AI-generated code. Vibe coded. Vibe hardened.",
+  "type": "module",
+  "bin": {
+    "vibe-hardening": "./bin/vibe-hardening.js",
+    "vh": "./bin/vibe-hardening.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "bin",
+    "src/rules/builtin"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "security",
+    "scanner",
+    "ai",
+    "vibe-coding",
+    "vulnerability",
+    "cli",
+    "secrets",
+    "supabase",
+    "rls",
+    "nextjs",
+    "v0",
+    "lovable",
+    "bolt",
+    "cursor"
+  ],
+  "author": "angletech2026",
+  "license": "MIT",
+  "homepage": "https://vibe-hardening.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vibe-hardening/cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vibe-hardening/cli/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "ts-morph": "^24.0.0",
+    "yaml": "^2.6.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
