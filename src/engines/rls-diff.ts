@@ -33,6 +33,7 @@ const SUPABASE_INTERNAL_SCHEMAS = new Set([
 
 interface TableRecord {
   name: string;
+  original: string;
   offset: number;
 }
 
@@ -44,6 +45,23 @@ function normalizeTable(raw: string): string {
 function schemaOf(normalizedName: string): string {
   const idx = normalizedName.indexOf('.');
   return idx >= 0 ? normalizedName.slice(0, idx) : 'public';
+}
+
+function needsQuoting(segment: string): boolean {
+  return !/^[a-z_][a-z0-9_]*$/i.test(segment);
+}
+
+function quoteIfNeeded(segment: string): string {
+  if (segment.startsWith('"') && segment.endsWith('"')) return segment;
+  return needsQuoting(segment) ? `"${segment.replace(/"/g, '""')}"` : segment;
+}
+
+function formatForSql(original: string): string {
+  const segments = original.split(/\.(?=(?:[^"]*"[^"]*")*[^"]*$)/);
+  if (segments.length === 1) {
+    return quoteIfNeeded(segments[0]!);
+  }
+  return segments.map(quoteIfNeeded).join('.');
 }
 
 export function scanRlsDisabled(
@@ -60,7 +78,7 @@ export function scanRlsDisabled(
     if (!raw) continue;
     const name = normalizeTable(raw);
     if (!created.has(name)) {
-      created.set(name, { name, offset: m.index });
+      created.set(name, { name, original: raw, offset: m.index });
     }
   }
 
@@ -78,6 +96,7 @@ export function scanRlsDisabled(
     if (SUPABASE_INTERNAL_SCHEMAS.has(schemaOf(name))) continue;
 
     const { line, column } = offsetToLineCol(src, rec.offset);
+    const sqlName = formatForSql(rec.original);
     findings.push({
       ruleId,
       severity: 'critical',
@@ -85,9 +104,9 @@ export function scanRlsDisabled(
       file: ctx.path,
       line,
       column,
-      snippet: `create table ${name}`,
-      message: `Table ${name} created without RLS enabled`,
-      remediation: `alter table ${name} enable row level security;`,
+      snippet: `create table ${rec.original}`,
+      message: `Table ${rec.original} created without RLS enabled`,
+      remediation: `alter table ${sqlName} enable row level security;`,
       metadata: { table: name, schema: schemaOf(name) },
     });
   }

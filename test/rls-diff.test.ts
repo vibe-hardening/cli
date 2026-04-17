@@ -110,6 +110,30 @@ describe('rls-diff: normalization & edge cases', () => {
     expect(findings[0]?.metadata?.schema).toBe('app');
   });
 
+  it('remediation SQL preserves quoting for identifiers with spaces', () => {
+    const sql = `create table "public"."My Table" (id uuid);`;
+    const findings = scanRlsDisabled(ctx(sql));
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.remediation).toBe(
+      'alter table "public"."My Table" enable row level security;',
+    );
+  });
+
+  it('remediation SQL preserves case for mixed-case unquoted names', () => {
+    const sql = `create table public.Orders (id uuid);`;
+    const findings = scanRlsDisabled(ctx(sql));
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.remediation).toBe(
+      'alter table public.Orders enable row level security;',
+    );
+  });
+
+  it('snippet shows original identifier (not lowercased)', () => {
+    const sql = `create table public.UserProfiles (id uuid);`;
+    const findings = scanRlsDisabled(ctx(sql));
+    expect(findings[0]?.snippet).toBe('create table public.UserProfiles');
+  });
+
   it('deduplicates repeated create table statements', () => {
     const sql = `
       create table public.users (id uuid);
