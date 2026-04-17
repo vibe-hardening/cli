@@ -1,0 +1,49 @@
+import type { Metadata } from 'next';
+import { JetBrains_Mono, Archivo_Black } from 'next/font/google';
+import './globals.css';
+
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-mono-loaded',
+  display: 'swap',
+});
+
+const display = Archivo_Black({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-display-loaded',
+  display: 'swap',
+});
+
+export const metadata: Metadata = {
+  title: 'vibe-hardening / one-command security scanner for AI-generated code',
+  description:
+    'Vibe coded. Vibe hardened. Security scanner built for v0, Lovable, Bolt, Cursor and Claude Code output. 0 config, 5 seconds.',
+  metadataBase: new URL('https://vibe-hardening.io'),
+  openGraph: {
+    title: 'vibe-hardening',
+    description: 'One-command security scanner for AI-generated code.',
+    url: 'https://vibe-hardening.io',
+    siteName: 'vibe-hardening',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'vibe-hardening',
+    description: 'One-command security scanner for AI-generated code.',
+  },
+  robots: { index: true, follow: true },
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" className={`${mono.variable} ${display.variable}`}>
+      <body className="scanlines noise">{children}</body>
+    </html>
+  );
+}
