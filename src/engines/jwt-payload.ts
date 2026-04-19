@@ -1,8 +1,10 @@
 import type { Finding, FileContext, Severity } from '../core/types.js';
 import { offsetToLineCol } from '../core/types.js';
 
+// Word boundaries via lookaround prevent matching JWTs embedded in longer
+// base64url strings (e.g. Clerk session tokens that contain eyJ... sub-strings).
 const RE_JWT =
-  /eyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g;
+  /(?<![A-Za-z0-9_-])eyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}(?![A-Za-z0-9_-])/g;
 
 interface JwtPayload {
   role?: string;
@@ -43,11 +45,14 @@ function redactJwt(jwt: string): string {
   return `${jwt.slice(0, 16)}…${jwt.slice(-6)}`;
 }
 
+// Supabase project ref is a 20-char lowercase alphanumeric identifier.
+const SUPABASE_REF = /^[a-z0-9]{20}$/;
+
 function isSupabaseJwt(p: JwtPayload): boolean {
   if (typeof p.iss === 'string' && p.iss.toLowerCase().includes('supabase')) {
     return true;
   }
-  return typeof p.ref === 'string' && p.ref.length > 0;
+  return typeof p.ref === 'string' && SUPABASE_REF.test(p.ref);
 }
 
 export function scanJwtServiceRole(

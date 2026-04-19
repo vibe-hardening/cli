@@ -142,8 +142,10 @@ export const SECRET_RULES: SecretRule[] = [
     patterns: [
       {
         name: 'jwt-literal',
+        // Bounded quantifier on the payload argument prevents catastrophic
+        // backtracking on inputs like `jwt.sign(aaaa,aaaa,...,"x")` (H-1 fix).
         regex:
-          /jwt\.(?:sign|verify)\s*\(\s*[^,]+,\s*["'`]([A-Za-z0-9!@#$%^&*_\-]{8,})["'`]/g,
+          /jwt\.(?:sign|verify)\s*\(\s*[^,\n]{1,512},\s*["'`]([A-Za-z0-9!@#$%^&*_\-]{8,})["'`]/g,
         captureGroup: 1,
       },
     ],

@@ -105,11 +105,32 @@ describe('jwt-payload: service_role detection', () => {
   it('records line and column of match', () => {
     const token = jwt(
       { alg: 'HS256' },
-      { iss: 'supabase', ref: 'a', role: 'service_role' },
+      { iss: 'supabase', ref: 'a'.repeat(20), role: 'service_role' },
     );
     const text = `line1\nline2\nconst x = "${token}";`;
     const findings = scanJwtServiceRole(ctx(text));
     expect(findings[0]?.line).toBe(3);
     expect(findings[0]?.column).toBeGreaterThan(0);
+  });
+
+  it('does not match JWT embedded inside a longer base64url blob (C-1 fix)', () => {
+    const token = jwt(
+      { alg: 'HS256' },
+      { iss: 'supabase', ref: 'a'.repeat(20), role: 'service_role' },
+    );
+    const prefixed = `XYZabc${token}QQQ`;
+    const findings = scanJwtServiceRole(ctx(prefixed));
+    expect(findings).toHaveLength(0);
+  });
+
+  it('requires strict Supabase ref format (20 chars alphanumeric) (H-4 fix)', () => {
+    const tokenShortRef = jwt(
+      { alg: 'HS256' },
+      { ref: 'abc', role: 'service_role' },
+    );
+    const findings = scanJwtServiceRole(ctx(`k="${tokenShortRef}"`));
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.severity).toBe('high');
+    expect(findings[0]?.metadata?.supabase).toBe(false);
   });
 });

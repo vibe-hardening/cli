@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { scanSecrets } from '../src/engines/secret-regex.js';
-import { SECRET_RULES } from '../src/rules/secrets.ts';
+import { SECRET_RULES } from '../src/rules/secrets.js';
 
 function ctx(path: string, content: string) {
   return { path, content };

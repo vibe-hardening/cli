@@ -9,6 +9,10 @@ import {
   type Node,
   type Identifier,
   type PropertyAccessExpression,
+  type ElementAccessExpression,
+  type AsExpression,
+  type ParenthesizedExpression,
+  type NonNullExpression,
 } from 'ts-morph';
 import type { Finding, FileContext } from '../core/types.js';
 
@@ -155,14 +159,16 @@ function buildLocalHelperIndex(sf: SourceFile): Map<string, HandlerNode> {
 
 /**
  * Walk down an expression to find the leftmost Identifier.
- * Handles chains like `createServerClient(url).auth.getUser` by
- * unwrapping CallExpression and PropertyAccessExpression.
+ * Handles chains like `createServerClient(url).auth.getUser()`,
+ * `(supabase as SupabaseClient).auth.getUser()`, and `(x!).auth.getUser()`
+ * by unwrapping CallExpression, PropertyAccess, ElementAccess, AsExpression,
+ * ParenthesizedExpression, and NonNullExpression.
  * Returns null if the root isn't a simple Identifier (e.g. `this`, `super`).
  */
 function getRootIdentifier(expr: Node): string | null {
   let cur: Node = expr;
   let guard = 0;
-  while (guard++ < 32) {
+  while (guard++ < 64) {
     const k = cur.getKind();
     if (k === SyntaxKind.Identifier) return (cur as Identifier).getText();
     if (k === SyntaxKind.CallExpression) {
@@ -173,26 +179,66 @@ function getRootIdentifier(expr: Node): string | null {
       cur = (cur as PropertyAccessExpression).getExpression();
       continue;
     }
+    if (k === SyntaxKind.ElementAccessExpression) {
+      cur = (cur as ElementAccessExpression).getExpression();
+      continue;
+    }
+    if (k === SyntaxKind.AsExpression) {
+      cur = (cur as AsExpression).getExpression();
+      continue;
+    }
+    if (k === SyntaxKind.ParenthesizedExpression) {
+      cur = (cur as ParenthesizedExpression).getExpression();
+      continue;
+    }
+    if (k === SyntaxKind.NonNullExpression) {
+      cur = (cur as NonNullExpression).getExpression();
+      continue;
+    }
     return null;
   }
   return null;
 }
 
 /**
- * Collect the dot-separated property chain segments of a
- * PropertyAccessExpression (excluding the root identifier).
- * e.g. `supabase.auth.getUser` → ['auth', 'getUser']
+ * Collect the chain segments of a PropertyAccess / ElementAccess chain
+ * (excluding the root identifier).
+ *   supabase.auth.getUser       → ['auth', 'getUser']
+ *   supabase['auth']['getUser'] → ['auth', 'getUser']
  */
-function getPropertyChainSegments(expr: PropertyAccessExpression): string[] {
+function getPropertyChainSegments(
+  expr: PropertyAccessExpression | ElementAccessExpression,
+): string[] {
   const segments: string[] = [];
   let cur: Node = expr;
   let guard = 0;
-  while (guard++ < 32) {
+  while (guard++ < 64) {
     const k = cur.getKind();
     if (k === SyntaxKind.PropertyAccessExpression) {
       const pa = cur as PropertyAccessExpression;
       segments.unshift(pa.getName());
       cur = pa.getExpression();
+      continue;
+    }
+    if (k === SyntaxKind.ElementAccessExpression) {
+      const ea = cur as ElementAccessExpression;
+      const arg = ea.getArgumentExpression();
+      if (arg && arg.getKind() === SyntaxKind.StringLiteral) {
+        segments.unshift(arg.getText().slice(1, -1));
+      }
+      cur = ea.getExpression();
+      continue;
+    }
+    if (k === SyntaxKind.AsExpression) {
+      cur = (cur as AsExpression).getExpression();
+      continue;
+    }
+    if (k === SyntaxKind.ParenthesizedExpression) {
+      cur = (cur as ParenthesizedExpression).getExpression();
+      continue;
+    }
+    if (k === SyntaxKind.NonNullExpression) {
+      cur = (cur as NonNullExpression).getExpression();
       continue;
     }
     break;
@@ -208,12 +254,15 @@ function isAuthCall(call: CallExpression, authIds: Set<string>): boolean {
     return authIds.has((expr as Identifier).getText());
   }
 
-  if (k === SyntaxKind.PropertyAccessExpression) {
-    const pa = expr as PropertyAccessExpression;
-    const root = getRootIdentifier(pa);
+  if (
+    k === SyntaxKind.PropertyAccessExpression ||
+    k === SyntaxKind.ElementAccessExpression
+  ) {
+    const chain = expr as PropertyAccessExpression | ElementAccessExpression;
+    const root = getRootIdentifier(chain);
     if (root && authIds.has(root)) return true;
 
-    const segments = getPropertyChainSegments(pa);
+    const segments = getPropertyChainSegments(chain);
     const methodName = segments[segments.length - 1];
     if (
       methodName &&

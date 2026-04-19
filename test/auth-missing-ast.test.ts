@@ -135,6 +135,41 @@ describe('auth-missing-ast: false positive guards', () => {
   });
 });
 
+describe('auth-missing-ast: advanced chain handling (H-2, H-3 fixes)', () => {
+  it('passes on (supabase as SupabaseClient).auth.getUser()', () => {
+    const src = `
+      export async function GET() {
+        const { data } = await (supabase as SupabaseClient).auth.getUser();
+        if (!data.user) return new Response(null, { status: 401 });
+        return Response.json({});
+      }
+    `;
+    expect(scanAuthMissing('app/api/x/route.ts', src)).toHaveLength(0);
+  });
+
+  it('passes on parenthesized expr (supabase!).auth.getUser()', () => {
+    const src = `
+      export async function GET() {
+        const { data } = await (supabase!).auth.getUser();
+        if (!data.user) return new Response(null, { status: 401 });
+        return Response.json({});
+      }
+    `;
+    expect(scanAuthMissing('app/api/x/route.ts', src)).toHaveLength(0);
+  });
+
+  it("passes on bracket notation supabase['auth']['getUser']()", () => {
+    const src = `
+      export async function GET() {
+        const { data } = await supabase['auth']['getUser']();
+        if (!data.user) return new Response(null, { status: 401 });
+        return Response.json({});
+      }
+    `;
+    expect(scanAuthMissing('app/api/x/route.ts', src)).toHaveLength(0);
+  });
+});
+
 describe('auth-missing-ast: metadata & positioning', () => {
   it('records line and column of the handler start', () => {
     const src = `\n\nexport async function GET() {\n  return Response.json({});\n}`;
