@@ -127,11 +127,12 @@ function isDocFile(path: string): boolean {
 }
 
 /**
- * Files that define security rules or orchestrate scanning will
- * contain literal strings that match those rules (the rule file for
- * the 'use client + service_role' composite contains both strings;
- * scan.ts' own docstring mentions both while explaining the logic).
- * These self-references are not vulnerabilities.
+ * Files that define security rules, orchestrate scanning, or
+ * document / describe vulnerabilities will contain literal strings
+ * that match their own rules — e.g. marketing copy illustrating
+ * what the scanner catches, or the rule source file for the
+ * 'use client + service_role' composite. These self-references are
+ * not vulnerabilities.
  */
 function isSecurityRuleDefinition(path: string): boolean {
   return (
@@ -139,7 +140,8 @@ function isSecurityRuleDefinition(path: string): boolean {
     /(^|\/)src\/engines\//.test(path) ||
     /(^|\/)src\/detectors\//.test(path) ||
     /(^|\/)src\/core\/scan\.(ts|js)$/.test(path) ||
-    /(^|\/)src\/reporters\//.test(path)
+    /(^|\/)src\/reporters\//.test(path) ||
+    /(^|\/)marketing\//.test(path)
   );
 }
 
