@@ -34,7 +34,9 @@ npx vibe-hardening scan
 
 ## 能抓到什麼
 
-30+ 條規則、8 大類別。針對 **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 這些工具生出來的 repo 調校。
+**支援語言**：JavaScript / TypeScript / **Python**（Django / Flask / FastAPI）。
+
+40+ 條規則、8 大類別。針對 **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 這些工具生出來的 repo 調校。
 
 | 類別 | 例子 |
 |------|------|
@@ -46,6 +48,7 @@ npx vibe-hardening scan
 | **環境變數誤用** | `NEXT_PUBLIC_*SECRET` / `*SERVICE_ROLE` 會被打包進 client bundle |
 | **供應鏈（需網路）** | OSV.dev 依賴 CVE 查詢、LLM 幻覺套件偵測（對比 npm registry） |
 | **平台指紋** | 偵測你用哪家 AI 生的 code、調整規則權重 |
+| **Python（Django/Flask/FastAPI）** | `DEBUG = True`、寫死的 `SECRET_KEY`、`ALLOWED_HOSTS = ['*']`、`@csrf_exempt`、`yaml.load`、`pickle.loads(user_input)`、SQL f-string 注入、`subprocess(shell=True)`、`eval(request.*)`、FastAPI 沒 `Depends(get_current_user)`、`jwt.decode(algorithms=['none'])` |
 
 ## 用法
 
