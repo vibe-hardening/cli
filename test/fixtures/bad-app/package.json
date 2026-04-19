@@ -1,0 +1,10 @@
+{
+  "name": "bad-app",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "openai": "^4.0.0"
+  }
+}
