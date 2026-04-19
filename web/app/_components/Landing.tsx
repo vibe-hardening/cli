@@ -286,9 +286,8 @@ export function Landing({ locale }: { locale: Locale }) {
             </span>
             {t.waitlist.subtitleB}
           </p>
-          {/* TODO: replace FORMSPREE_ENDPOINT when Formspree form is created */}
           <form
-            action="https://formspree.io/f/FORMSPREE_ENDPOINT"
+            action="https://formspree.io/f/mojywydj"
             method="POST"
             className="mt-9 flex flex-col sm:flex-row gap-3"
           >
