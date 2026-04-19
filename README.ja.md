@@ -4,7 +4,7 @@
 >
 > AI生成コードのためのワンコマンドセキュリティスキャナー。
 
-**言語**: [English](./README.md) · [繁體中文](./README.zh-Hant.md) · [한국어](./README.ko.md) · **日本語**
+**言語**: [English](./README.md) · [繁體中文](./README.zh-Hant.md) · [简体中文](./README.zh-Hans.md) · [한국어](./README.ko.md) · **日本語**
 
 ```bash
 npx vibe-hardening scan
