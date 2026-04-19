@@ -25,6 +25,7 @@ export interface ScanCommandOptions {
   offline: boolean;
   includeTests: boolean;
   includeDocs: boolean;
+  respectGitignore: boolean;
   version: string;
 }
 
@@ -53,7 +54,7 @@ export async function runScanCommand(
     );
   }
 
-  const files = await walk({ cwd });
+  const files = await walk({ cwd, respectGitignore: opts.respectGitignore });
   const report = await runScan({
     files,
     minSeverity: opts.severity,

@@ -56,6 +56,10 @@ export function buildProgram(): Command {
       'run injection/network/auth pattern rules on markdown too (off by default: docs describe vulnerabilities, not exhibit them)',
       false,
     )
+    .option(
+      '--no-gitignore',
+      'ignore .gitignore entries when deciding which files to scan (by default .gitignore is respected)',
+    )
     .action(
       async (
         cwd: string,
@@ -66,16 +70,19 @@ export function buildProgram(): Command {
           offline: boolean;
           includeTests: boolean;
           includeDocs: boolean;
+          gitignore: boolean;
         },
       ) => {
         const code = await runScanCommand({
           cwd: resolve(cwd),
-          format: cmdOpts.format as 'console' | 'json',
+          format: cmdOpts.format as 'console' | 'json' | 'html',
           output: cmdOpts.output,
           severity: cmdOpts.severity as Severity,
           offline: !!cmdOpts.offline,
           includeTests: !!cmdOpts.includeTests,
           includeDocs: !!cmdOpts.includeDocs,
+          // commander exposes --no-gitignore as gitignore:false
+          respectGitignore: cmdOpts.gitignore !== false,
           version,
         });
         process.exit(code);

@@ -1,9 +1,10 @@
 import fg from 'fast-glob';
 import { readFile, stat } from 'node:fs/promises';
-import { basename, dirname, relative, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import type { FileContext } from './types.js';
 
 export const DEFAULT_IGNORES: string[] = [
+  // Node
   '**/node_modules/**',
   '**/.git/**',
   '**/.next/**',
@@ -21,6 +22,26 @@ export const DEFAULT_IGNORES: string[] = [
   // pnpm/yarn parsing is a Phase 2 item, still skipped here.
   '**/pnpm-lock.yaml',
   '**/yarn.lock',
+  // Python
+  '**/venv/**',
+  '**/.venv/**',
+  '**/env/**',
+  '**/.env-*/**',
+  '**/__pycache__/**',
+  '**/*.pyc',
+  '**/*.pyo',
+  '**/.tox/**',
+  '**/.nox/**',
+  '**/.pytest_cache/**',
+  '**/.mypy_cache/**',
+  '**/.ruff_cache/**',
+  '**/.pyre_cache/**',
+  '**/htmlcov/**',
+  '**/*.egg-info/**',
+  '**/site-packages/**',
+  '**/Pipfile.lock',
+  '**/poetry.lock',
+  '**/uv.lock',
   // Binary / cache subdirs inside AI IDE folders — platform detector
   // only needs presence of the top-level folder, not content.
   '**/.cursor/storage/**',
@@ -65,10 +86,60 @@ export const DEFAULT_INCLUDE: string[] = [
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
+/**
+ * Convert a .gitignore line to a fast-glob compatible pattern.
+ * Returns null for blank / comment / negation / unsupported lines.
+ *
+ * Rules (subset of full gitignore spec, covers 95%+ of real files):
+ *   '# comment'        → skip
+ *   '!pattern'         → skip (we don't support un-ignore yet)
+ *   '/foo'             → 'foo/**' + 'foo' (root-relative)
+ *   'foo/'             → '**\/foo/**' (directory-only)
+ *   'foo'              → '**\/foo' + '**\/foo/**' (match anywhere)
+ *   '*.log'            → '**\/*.log'
+ */
+function gitignoreLineToPatterns(raw: string): string[] {
+  const line = raw.trim();
+  if (!line || line.startsWith('#')) return [];
+  if (line.startsWith('!')) return []; // negation unsupported for now
+
+  const isRooted = line.startsWith('/');
+  const isDirOnly = line.endsWith('/');
+  const stripped = line.replace(/^\//, '').replace(/\/$/, '');
+  if (!stripped) return [];
+
+  if (isRooted) {
+    return isDirOnly
+      ? [`${stripped}/**`]
+      : [stripped, `${stripped}/**`];
+  }
+  if (isDirOnly) return [`**/${stripped}/**`];
+  // Anchor-free pattern: match file OR directory at any depth.
+  return [`**/${stripped}`, `**/${stripped}/**`];
+}
+
+async function readGitignorePatterns(root: string): Promise<string[]> {
+  try {
+    const content = await readFile(join(root, '.gitignore'), 'utf8');
+    const out: string[] = [];
+    for (const line of content.split(/\r?\n/)) {
+      out.push(...gitignoreLineToPatterns(line));
+    }
+    return out;
+  } catch {
+    return []; // no .gitignore is fine
+  }
+}
+
 export interface WalkOptions {
   cwd: string;
   include?: string[];
   ignore?: string[];
+  /**
+   * If true (default), also merge patterns from .gitignore at the
+   * scan root. Disable with --no-gitignore in the CLI.
+   */
+  respectGitignore?: boolean;
 }
 
 export async function walk(opts: WalkOptions): Promise<FileContext[]> {
@@ -88,12 +159,19 @@ export async function walk(opts: WalkOptions): Promise<FileContext[]> {
     // target does not exist — let fast-glob return empty
   }
 
+  const baseIgnore = opts.ignore ?? DEFAULT_IGNORES;
+  const respectGitignore = opts.respectGitignore ?? true;
+  const gitignorePatterns = respectGitignore
+    ? await readGitignorePatterns(cwd)
+    : [];
+  const ignore = [...baseIgnore, ...gitignorePatterns];
+
   const entries = await fg(patterns, {
     cwd,
     absolute: true,
     dot: true,
     onlyFiles: true,
-    ignore: opts.ignore ?? DEFAULT_IGNORES,
+    ignore,
     suppressErrors: true,
     followSymbolicLinks: false,
   });
@@ -126,3 +204,6 @@ export function filterByExtension(
     return set.has(f.path.slice(dot + 1).toLowerCase());
   });
 }
+
+// Exposed for tests.
+export const __internal = { gitignoreLineToPatterns, readGitignorePatterns };

@@ -55,6 +55,12 @@ export interface ScanOptions {
   offline?: boolean;
   fetchImpl?: typeof fetch;
   /**
+   * If set, included in the report's platform metadata for display.
+   * Scanning behaviour is unchanged — the walker already respects
+   * .gitignore by default.
+   */
+  respectedGitignore?: boolean;
+  /**
    * Include test files (`**​/test/**`, `*.test.*`, `*.spec.*`,
    * `__tests__/**`, `*.fixture.*`). Default false — test files usually
    * contain deliberate bad patterns used as fixtures.
