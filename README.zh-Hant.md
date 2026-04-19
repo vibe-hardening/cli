@@ -4,7 +4,7 @@
 >
 > 給 AI 生成程式碼用的一鍵資安掃描 CLI。
 
-**語言**：[English](./README.md) · **繁體中文**
+**語言**：[English](./README.md) · **繁體中文** · [한국어](./README.ko.md) · [日本語](./README.ja.md)
 
 ```bash
 npx vibe-hardening scan

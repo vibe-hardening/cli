@@ -1,0 +1,83 @@
+# vibe-hardening
+
+> **Vibe coded. Vibe hardened.**
+>
+> AI가 생성한 코드를 위한 원커맨드 보안 스캐너.
+
+**언어**: [English](./README.md) · [繁體中文](./README.zh-Hant.md) · **한국어** · [日本語](./README.ja.md)
+
+```bash
+npx vibe-hardening scan
+```
+
+웹사이트: [vibe-hardening.io](https://vibe-hardening.io)
+
+## 무엇을 탐지하나요
+
+30개 이상의 규칙, 8개 카테고리. **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 로 생성된 저장소에 최적화되어 있습니다.
+
+| 카테고리 | 예시 |
+|---------|------|
+| **시크릿 유출** | OpenAI `sk-proj-`、Anthropic `sk-ant-`、Stripe `sk_live_`、GitHub PAT、AWS 키、Supabase `service_role` JWT、DB 연결 문자열、Slack 토큰、JWT 서명 키 |
+| **인젝션 공격** | SQL 템플릿 리터럴、NoSQL `req.body`、`child_process.exec` 문자열 조합、path traversal、새니타이저 없는 `dangerouslySetInnerHTML` |
+| **네트워크** | CORS `*` + credentials、CORS origin 반사、SSRF `fetch(req.body.url)`、오픈 리다이렉트 |
+| **인증** | Next.js API route 인증 누락 (AST 분석)、JWT `alg: none`、`\|\| true` 우회、`// TODO: add auth`、약한 쿠키 |
+| **데이터베이스** | RLS가 활성화되지 않은 Supabase 테이블、`(true)` 정책、`'use client'` 파일 내 service_role 참조 |
+| **환경 변수 오용** | 클라이언트 번들로 유출되는 `NEXT_PUBLIC_*SECRET` / `*SERVICE_ROLE` 변수 |
+| **공급망 (네트워크 필요)** | OSV.dev 의존성 CVE 조회、LLM 환각 패키지 탐지 (npm registry 대조) |
+| **플랫폼 지문** | 어떤 AI 도구가 코드를 생성했는지 식별하고 규칙 가중치 조정 |
+
+## 사용법
+
+```bash
+# 현재 디렉토리 스캔
+npx vibe-hardening scan
+
+# 특정 폴더 스캔
+npx vibe-hardening scan ./my-project
+
+# CI용 (critical/high 발견 시 exit 1)
+npx vibe-hardening scan --format json --output report.json
+
+# high 이상만 보기
+npx vibe-hardening scan --severity high
+
+# 네트워크 체크 건너뛰기 (OSV, npm registry)
+npx vibe-hardening scan --offline
+```
+
+## 플랫폼 지문 탐지
+
+스캔 시작 시 repo가 어떤 AI로 생성되었는지 식별합니다:
+
+```
+vibe-hardening scan complete  ·  147 files  ·  412ms
+platform  v0  (74% confidence)
+```
+
+지원: `v0` / `lovable` / `bolt` / `cursor` / `claude-code` / `replit-agent` / `windsurf` / `devin`
+
+## 현재 상태
+
+프리뷰 릴리스 — Phase 1 MVP는 **2026-05-13** Product Hunt 출시가 목표입니다.
+
+현재 커버리지 (`v0.0.3-preview.1`):
+- 6개 엔진: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 환각
+- 30개 이상 규칙、120개 테스트、일반적인 repo를 5초 이내에 스캔
+- 출력 형식: 컬러 터미널、CI용 JSON
+- 8개 AI 플랫폼 지문 탐지
+
+로드맵:
+- 라이브 키 검증 (`--verify`로 provider API에 질의하여 유출된 키가 여전히 활성인지 확인)
+- HTML 보고서
+- 0-100 보안 점수 + README 배지
+- Markdown reporter
+- Pro 대시보드、GitHub App、Slack 알림 (출시 후)
+
+## 취약점 신고
+
+이메일 `angletech2026@gmail.com`으로 보내주세요. **공개 이슈로 올리지 마세요.** 자세한 내용은 [SECURITY.md](./SECURITY.md) 참조.
+
+## License
+
+MIT © 2026 vibe-hardening contributors.

@@ -4,7 +4,7 @@
 >
 > One-command security scanner for AI-generated code.
 
-**Language**: **English** · [繁體中文](./README.zh-Hant.md)
+**Language**: **English** · [繁體中文](./README.zh-Hant.md) · [한국어](./README.ko.md) · [日本語](./README.ja.md)
 
 ```bash
 npx vibe-hardening scan
