@@ -1,5 +1,10 @@
 import type { Metadata } from 'next';
-import { JetBrains_Mono, Archivo_Black, Noto_Sans_TC } from 'next/font/google';
+import {
+  JetBrains_Mono,
+  Archivo_Black,
+  Noto_Sans_TC,
+  EB_Garamond,
+} from 'next/font/google';
 import './globals.css';
 
 const mono = JetBrains_Mono({
@@ -20,6 +25,14 @@ const displayZh = Noto_Sans_TC({
   subsets: ['latin'],
   weight: '900',
   variable: '--font-display-zh-loaded',
+  display: 'swap',
+});
+
+const serif = EB_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  style: ['italic', 'normal'],
+  variable: '--font-serif-loaded',
   display: 'swap',
 });
 
@@ -51,7 +64,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${mono.variable} ${display.variable} ${displayZh.variable}`}
+      className={`${mono.variable} ${display.variable} ${displayZh.variable} ${serif.variable}`}
     >
       <body className="scanlines noise">{children}</body>
     </html>
