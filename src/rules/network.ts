@@ -10,15 +10,18 @@ export const NETWORK_RULES: SecretRule[] = [
     remediation:
       'Use an allow-list array of trusted origins when credentials are enabled.',
     patterns: [
+      // Multi-line friendly: `[\s\S]{0,400}?` tolerates newlines & formatted
+      // options objects (the common case in real Express/Hono apps).
+      // Bounded to avoid catastrophic backtracking.
       {
         name: 'cors-object',
         regex:
-          /cors\s*\(\s*\{[^}]*origin\s*:\s*['"`]\*['"`][^}]*credentials\s*:\s*true[^}]*\}/g,
+          /cors\s*\(\s*\{[\s\S]{0,400}?origin\s*:\s*['"`]\*['"`][\s\S]{0,400}?credentials\s*:\s*true/g,
       },
       {
         name: 'cors-object-reversed',
         regex:
-          /cors\s*\(\s*\{[^}]*credentials\s*:\s*true[^}]*origin\s*:\s*['"`]\*['"`][^}]*\}/g,
+          /cors\s*\(\s*\{[\s\S]{0,400}?credentials\s*:\s*true[\s\S]{0,400}?origin\s*:\s*['"`]\*['"`]/g,
       },
     ],
   },

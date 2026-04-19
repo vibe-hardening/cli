@@ -17,9 +17,18 @@ export const DEFAULT_IGNORES: string[] = [
   '**/*.min.js',
   '**/*.min.css',
   '**/*.map',
+  // Lockfiles used to be ignored for size; OSV scanner now needs them.
+  // pnpm/yarn parsing is a Phase 2 item, still skipped here.
   '**/pnpm-lock.yaml',
-  '**/package-lock.json',
   '**/yarn.lock',
+  // Binary / cache subdirs inside AI IDE folders — platform detector
+  // only needs presence of the top-level folder, not content.
+  '**/.cursor/storage/**',
+  '**/.cursor/extensions/**',
+  '**/.claude/cache/**',
+  '**/.claude/todos/**',
+  '**/.bolt/cache/**',
+  '**/.windsurf/cache/**',
   '**/.vibe-hardening/**',
 ];
 

@@ -64,6 +64,17 @@ describe('network rules', () => {
     expect(f.some((x) => x.ruleId === 'vh-cors-wildcard-credentials')).toBe(true);
   });
 
+  it('fires on CORS wildcard + credentials when formatted multi-line (review fix)', () => {
+    const src = `
+      app.use(cors({
+        origin: '*',
+        credentials: true,
+      }));
+    `;
+    const f = scan(NETWORK_RULES, 'server.ts', src);
+    expect(f.some((x) => x.ruleId === 'vh-cors-wildcard-credentials')).toBe(true);
+  });
+
   it('fires on CORS origin reflect', () => {
     const src =
       "res.setHeader('Access-Control-Allow-Origin', req.headers.origin)";
@@ -127,5 +138,18 @@ describe('auth pattern rules', () => {
       "'use client';\nimport { createClient } from '@supabase/supabase-js';\nconst supa = createClient(url, process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE);";
     const f = scan(AUTH_PATTERN_RULES, 'Comp.tsx', src);
     expect(f.some((x) => x.ruleId === 'vh-supabase-service-role-in-client')).toBe(true);
+  });
+
+  it("does NOT fire when 'use client' absent but service_role appears (server file)", () => {
+    const src =
+      "import { createClient } from '@supabase/supabase-js';\nconst supa = createClient(url, process.env.SUPABASE_SERVICE_ROLE);";
+    const f = scan(AUTH_PATTERN_RULES, 'server.ts', src);
+    expect(f.some((x) => x.ruleId === 'vh-supabase-service-role-in-client')).toBe(false);
+  });
+
+  it("does NOT fire when 'use client' present but no service_role reference", () => {
+    const src = "'use client';\nexport const Foo = () => <div />;";
+    const f = scan(AUTH_PATTERN_RULES, 'Comp.tsx', src);
+    expect(f.some((x) => x.ruleId === 'vh-supabase-service-role-in-client')).toBe(false);
   });
 });

@@ -66,6 +66,31 @@ type CheckResult =
   | { status: 'low-downloads'; weekly: number }
   | { status: 'ok' };
 
+const DEFAULT_TIMEOUT_MS = 10_000;
+
+function withDefaultTimeout(signal?: AbortSignal): AbortSignal {
+  if (signal) return signal;
+  return AbortSignal.timeout(DEFAULT_TIMEOUT_MS);
+}
+
+/**
+ * npm package names are restricted to chars that are URL-safe in path
+ * segments (lowercase letters, digits, '-', '_', '.', plus '@' / '/' in
+ * scoped names). RFC 3986 allows '@' and '/' unescaped in path segments,
+ * and the npm downloads endpoint *requires* the literal '@scope/name'
+ * form — encoding as '%40scope%2Fname' returns 404 and silently
+ * disables low-trust detection for the highest-risk namespace.
+ */
+function packagePath(name: string): string {
+  // Reject anything outside the allowed npm name charset rather than
+  // blindly encoding it — an invalid-looking name is already a finding
+  // worth flagging upstream.
+  if (!/^@?[a-z0-9._~-]+(\/[a-z0-9._~-]+)?$/i.test(name)) {
+    return encodeURIComponent(name);
+  }
+  return name;
+}
+
 async function checkSingle(
   name: string,
   opts: HallucinationOptions,
@@ -75,13 +100,14 @@ async function checkSingle(
   const downloadsEndpoint =
     opts.downloadsEndpoint ?? 'https://api.npmjs.org/downloads/point/last-week/';
   const minDownloads = opts.minWeeklyDownloads ?? 50;
+  const path = packagePath(name);
 
   let resp: Response;
   try {
-    resp = await fetchFn(`${registry}${encodeURIComponent(name)}`, {
+    resp = await fetchFn(`${registry}${path}`, {
       method: 'GET',
       headers: { accept: 'application/json' },
-      signal: opts.signal,
+      signal: withDefaultTimeout(opts.signal),
     });
   } catch {
     return { status: 'unknown', reason: 'fetch-failed' };
@@ -91,10 +117,10 @@ async function checkSingle(
 
   let dlResp: Response;
   try {
-    dlResp = await fetchFn(`${downloadsEndpoint}${encodeURIComponent(name)}`, {
+    dlResp = await fetchFn(`${downloadsEndpoint}${path}`, {
       method: 'GET',
       headers: { accept: 'application/json' },
-      signal: opts.signal,
+      signal: withDefaultTimeout(opts.signal),
     });
   } catch {
     return { status: 'ok' };

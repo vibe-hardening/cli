@@ -131,6 +131,25 @@ describe('hallucination: scan', () => {
     expect(f).toEqual([]);
   });
 
+  it('preserves @scope/name path for scoped packages (review fix)', async () => {
+    const pkg = JSON.stringify({
+      dependencies: { '@acme/ghost': '1.0.0' },
+    });
+    const urls: string[] = [];
+    const stub = vi.fn(async (url: string | URL | Request) => {
+      urls.push(String(url));
+      return { ok: false, status: 404, json: async () => ({}) };
+    }) as unknown as typeof fetch;
+
+    await scanHallucinated(
+      { path: 'package.json', content: pkg },
+      { fetchImpl: stub },
+    );
+    const registryUrl = urls.find((u) => u.includes('registry.npmjs.org'));
+    expect(registryUrl).toContain('@acme/ghost');
+    expect(registryUrl).not.toContain('%2Fghost');
+  });
+
   it('records package name + spec in snippet', async () => {
     const pkg = JSON.stringify({
       dependencies: { ghostly: '^9.9.9' },

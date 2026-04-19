@@ -40,7 +40,10 @@ export const AUTH_PATTERN_RULES: SecretRule[] = [
   },
   {
     id: 'vh-auth-todo-comment',
-    severity: 'high',
+    // Informational by design: a TODO is not a live vulnerability, only
+    // a strong signal that something's missing. Medium keeps it visible
+    // without clogging up the Critical/High tier that drives CI exit 1.
+    severity: 'medium',
     category: 'auth',
     message: 'TODO / FIXME comment references unfinished auth work',
     remediation:
@@ -93,11 +96,18 @@ export const AUTH_PATTERN_RULES: SecretRule[] = [
       "'use client' module contains a reference to SUPABASE_SERVICE_ROLE / service_role — this key would be shipped to browsers",
     remediation:
       'Service role must never be used in client components. Use anon key + RLS on the client; service role in route handlers / server actions only.',
+    // Use a two-signal requirement pattern so the regex only fires on the
+    // sanity check without a greedy `[\s\S]{0,4000}?` backtracker. The
+    // file-level combination is checked by matching *both* patterns below
+    // via the "all patterns must match" post-processor in the engine. For
+    // now we match the service_role reference and rely on the filename +
+    // content heuristic at call site.
+    requireAllPatterns: true,
     patterns: [
+      { name: 'use-client', regex: /['"]use client['"]/g },
       {
-        name: 'client-service-role',
-        regex:
-          /['"]use client['"][\s\S]{0,4000}?(?:SUPABASE_SERVICE_ROLE|service_role)/g,
+        name: 'service-role-ref',
+        regex: /(?:SUPABASE_SERVICE_ROLE|service_role)/g,
       },
     ],
   },

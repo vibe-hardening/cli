@@ -110,12 +110,22 @@ function firstUrl(v: OsvVulnerability): string | undefined {
   return v.references?.find((r) => r.type === 'ADVISORY' || r.type === 'WEB')?.url;
 }
 
+const DEFAULT_TIMEOUT_MS = 10_000;
+
+function withDefaultTimeout(signal?: AbortSignal): AbortSignal {
+  if (signal) return signal;
+  return AbortSignal.timeout(DEFAULT_TIMEOUT_MS);
+}
+
 async function queryOsv(
   packages: LockPackage[],
   opts: OsvScanOptions,
 ): Promise<Map<string, OsvVulnerability[]>> {
   const endpoint = opts.endpoint ?? 'https://api.osv.dev/v1/querybatch';
   const fetchFn = opts.fetchImpl ?? fetch;
+  // OSV caps batches at 1000 but 500 keeps payloads under ~80KB and
+  // each batch small enough that a single timeout doesn't punish
+  // users with lots of deps.
   const batchSize = opts.maxBatchSize ?? 500;
   const result = new Map<string, OsvVulnerability[]>();
 
@@ -132,9 +142,10 @@ async function queryOsv(
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ queries }),
-        signal: opts.signal,
+        signal: withDefaultTimeout(opts.signal),
       });
     } catch {
+      // timeout / DNS / offline — skip this batch, continue with next
       continue;
     }
     if (!resp.ok) continue;

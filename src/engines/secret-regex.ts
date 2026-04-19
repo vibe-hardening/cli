@@ -18,6 +18,14 @@ export interface SecretRule {
   remediation: string;
   patterns: SecretPattern[];
   excludeFilenamePatterns?: RegExp[];
+  /**
+   * When true, a finding is emitted only when *every* `patterns[i]` has at
+   * least one match in the file. The finding uses the first match of the
+   * first pattern for line/column reporting. Enables composite rules like
+   * "file contains 'use client' AND references service_role" without
+   * needing a greedy cross-match regex (ReDoS-prone).
+   */
+  requireAllPatterns?: boolean;
 }
 
 function redact(value: string): string {
@@ -87,6 +95,18 @@ export function scanSecrets(ctx: FileContext, rules: SecretRule[]): Finding[] {
   const out: Finding[] = [];
   for (const rule of rules) {
     if (isExcludedByFilename(ctx.path, rule.excludeFilenamePatterns)) continue;
+
+    if (rule.requireAllPatterns) {
+      const perPattern = rule.patterns.map((p) =>
+        evalPattern(ctx.content, ctx, rule, p),
+      );
+      if (perPattern.every((arr) => arr.length > 0)) {
+        const first = perPattern[0]?.[0];
+        if (first) out.push(first);
+      }
+      continue;
+    }
+
     for (const pattern of rule.patterns) {
       out.push(...evalPattern(ctx.content, ctx, rule, pattern));
     }

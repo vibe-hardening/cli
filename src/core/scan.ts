@@ -69,8 +69,28 @@ function isApiRouteHandler(path: string): boolean {
   );
 }
 
+const IDE_INTERNAL_DIRS = [
+  '.cursor/',
+  '.claude/',
+  '.bolt/',
+  '.windsurf/',
+  '.devin/',
+  '.lovable/',
+];
+
+function isIdeInternal(path: string): boolean {
+  return IDE_INTERNAL_DIRS.some(
+    (dir) => path.startsWith(dir) || path.includes(`/${dir}`),
+  );
+}
+
 function runEnginesOnFile(file: FileContext): Finding[] {
   const out: Finding[] = [];
+  // IDE internal files (.cursor/, .claude/, etc.) are only kept in the
+  // walker output for platform fingerprinting. They are noisy / binary-
+  // adjacent and frequently produce false positives if fed to regex
+  // secret scanners.
+  if (isIdeInternal(file.path)) return out;
 
   if (hasExt(file.path, ['sql'])) {
     out.push(...scanRlsDisabled(file));
@@ -111,10 +131,10 @@ function findPackageJson(files: FileContext[]): FileContext | undefined {
 }
 
 function findRootLockfile(files: FileContext[]): FileContext | undefined {
-  return (
-    files.find((f) => f.path === 'package-lock.json') ??
-    files.find((f) => f.path.endsWith('/package-lock.json'))
-  );
+  // Only the repo-root lockfile is scanned. We skip nested monorepo
+  // package-lock.json files to avoid duplicate CVE reports — a Phase 2
+  // upgrade can surface per-workspace findings separately.
+  return files.find((f) => f.path === 'package-lock.json');
 }
 
 export async function runScan(opts: ScanOptions): Promise<ScanReport> {
