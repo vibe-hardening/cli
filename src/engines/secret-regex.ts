@@ -101,8 +101,11 @@ export function scanSecrets(ctx: FileContext, rules: SecretRule[]): Finding[] {
         evalPattern(ctx.content, ctx, rule, p),
       );
       if (perPattern.every((arr) => arr.length > 0)) {
-        const first = perPattern[0]?.[0];
-        if (first) out.push(first);
+        // Report the *last* pattern's first match — the preceding
+        // patterns tend to be structural anchors (e.g. "use client"
+        // at line 1) while the last one is the actionable signal.
+        const last = perPattern[perPattern.length - 1]?.[0];
+        if (last) out.push(last);
       }
       continue;
     }
