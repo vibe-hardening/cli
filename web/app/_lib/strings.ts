@@ -74,8 +74,8 @@ export const strings: Record<Locale, Strings> = {
     },
     topStrip: { online: '運行中' },
     hero: {
-      line1: 'AI 生成。',
-      line2: '資安鎖好。',
+      line1: 'VIBE CODED.',
+      line2: 'VIBE HARDENED.',
       execLabel: '>>> 執行',
       execVersion: '0.0.1-PREVIEW',
       cmd: 'npx vibe-hardening scan',

@@ -99,7 +99,7 @@ export function Landing({ locale }: { locale: Locale }) {
 
         <div className="max-w-[1400px] mx-auto px-6 py-20 md:py-28">
           <h1
-            className={`${displayClass} text-[clamp(3.5rem,${isZh ? '11vw' : '14vw'},${isZh ? '12rem' : '15rem'})] leading-[0.82] tracking-[-0.05em]`}
+            className="font-[family-name:var(--font-display)] text-[clamp(3.5rem,14vw,15rem)] leading-[0.82] tracking-[-0.05em]"
           >
             {t.hero.line1}
             <br />
