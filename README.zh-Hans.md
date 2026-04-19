@@ -12,6 +12,26 @@ npx vibe-hardening scan
 
 网站：[vibe-hardening.io](https://vibe-hardening.io)
 
+## 快速上手（5 秒）
+
+```bash
+# 1. 打开 terminal
+# 2. cd 到任意一个你用 AI 写过的 JS / TS 项目
+cd ~/projects/my-app
+
+# 3. 运行扫描
+npx vibe-hardening scan
+```
+
+首次运行 npx 会询问 `Ok to proceed?`，按 `Enter` 即可。
+
+**要求**：Node.js 18.17+（用过 `npm` / `next` / `vite` 就已经装好了）。
+
+**常见卡点**：
+- 在 `Desktop/` 直接运行 → 会扫整个桌面。请先 `cd` 到具体项目。
+- 在 `vibe-hardening` repo 内部运行 → 扫的是工具本身，不是你的 app。
+- 未装 Node：去 [nodejs.org](https://nodejs.org) 下载。出现 `'npx' 不是内部命令` 就是这个原因。
+
 ## 能检测什么
 
 30+ 条规则、8 大类别。针对 **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 生成的仓库做了专门调优。
@@ -61,16 +81,16 @@ platform  v0  (74% confidence)
 
 预览版 —— Phase 1 MVP 目标 **2026-05-13** 上 Product Hunt。
 
-当前覆盖（`v0.0.3-preview.1`）：
+当前覆盖（`v0.0.4-preview.0`）：
 - 6 个引擎：RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 幻觉
-- 30+ 条规则、120 个测试、一般仓库 5 秒内扫描完毕
-- 输出格式：彩色终端、CI 用 JSON
+- 30+ 条规则、142 个测试、一般仓库 5 秒内扫描完毕
+- 输出格式：彩色终端、CI 用 JSON、独立 HTML 报告
+- 0-100 安全分数 + A-F 等级 + SVG README badge
+- 行内抑制：`// vibe-hardening-disable-next-line vh-rule-id`
 - 8 家 AI 平台指纹检测
 
 路线图：
 - 实时密钥验证（`--verify` 调用 provider API 确认泄露密钥是否仍然有效）
-- HTML 报告
-- 0-100 安全分数 + README badge
 - Markdown reporter
 - Pro 控制台、GitHub App、Slack 通知（上线后）
 

@@ -12,6 +12,26 @@ npx vibe-hardening scan
 
 웹사이트: [vibe-hardening.io](https://vibe-hardening.io)
 
+## 빠른 시작 (5초)
+
+```bash
+# 1. 터미널을 엽니다
+# 2. AI 도구로 작성한 JS / TS 프로젝트 디렉토리로 cd
+cd ~/projects/my-app
+
+# 3. 스캐너 실행
+npx vibe-hardening scan
+```
+
+처음 실행 시 npx가 `Ok to proceed?`라고 묻습니다. `Enter`를 누르세요.
+
+**요구사항**: Node.js 18.17+ (`npm` / `next` / `vite`를 사용해봤다면 이미 설치되어 있음).
+
+**자주 발생하는 실수**:
+- `cd` 없이 `~/Desktop`에서 실행 → 데스크톱 전체가 스캔됩니다. 먼저 프로젝트로 이동하세요.
+- `vibe-hardening` 저장소 내부에서 실행 → 당신의 앱이 아니라 도구 자체를 스캔합니다.
+- Node가 없음: `npx`가 인식되지 않으면 [nodejs.org](https://nodejs.org)에서 설치.
+
 ## 무엇을 탐지하나요
 
 30개 이상의 규칙, 8개 카테고리. **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 로 생성된 저장소에 최적화되어 있습니다.
@@ -61,16 +81,16 @@ platform  v0  (74% confidence)
 
 프리뷰 릴리스 — Phase 1 MVP는 **2026-05-13** Product Hunt 출시가 목표입니다.
 
-현재 커버리지 (`v0.0.3-preview.1`):
+현재 커버리지 (`v0.0.4-preview.0`):
 - 6개 엔진: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 환각
-- 30개 이상 규칙、120개 테스트、일반적인 repo를 5초 이내에 스캔
-- 출력 형식: 컬러 터미널、CI용 JSON
+- 30개 이상 규칙、142개 테스트、일반적인 repo를 5초 이내에 스캔
+- 출력 형식: 컬러 터미널、CI용 JSON、독립형 HTML 보고서
+- 0-100 보안 점수 + A-F 등급 + SVG README 배지
+- 인라인 억제: `// vibe-hardening-disable-next-line vh-rule-id`
 - 8개 AI 플랫폼 지문 탐지
 
 로드맵:
 - 라이브 키 검증 (`--verify`로 provider API에 질의하여 유출된 키가 여전히 활성인지 확인)
-- HTML 보고서
-- 0-100 보안 점수 + README 배지
 - Markdown reporter
 - Pro 대시보드、GitHub App、Slack 알림 (출시 후)
 
