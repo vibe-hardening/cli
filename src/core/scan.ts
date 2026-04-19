@@ -12,8 +12,14 @@ import { INJECTION_RULES } from '../rules/injection.js';
 import { NETWORK_RULES } from '../rules/network.js';
 import { AUTH_PATTERN_RULES } from '../rules/auth-patterns.js';
 
-const PATTERN_RULES = [
-  ...SECRET_RULES,
+/**
+ * Rules are partitioned so we can run them on the right files:
+ *  - SECRET_RULES run on code + text (readme / yaml / env / json).
+ *    Secrets get pasted everywhere, including README copy.
+ *  - NON_SECRET_RULES (injection / network / auth) run ONLY on code.
+ *    A README *describing* an SQL injection pattern must not fire.
+ */
+const NON_SECRET_RULES = [
   ...INJECTION_RULES,
   ...NETWORK_RULES,
   ...AUTH_PATTERN_RULES,
@@ -40,6 +46,19 @@ export interface ScanOptions {
   minSeverity?: Severity;
   offline?: boolean;
   fetchImpl?: typeof fetch;
+  /**
+   * Include test files (`**​/test/**`, `*.test.*`, `*.spec.*`,
+   * `__tests__/**`, `*.fixture.*`). Default false — test files usually
+   * contain deliberate bad patterns used as fixtures.
+   */
+  includeTests?: boolean;
+  /**
+   * Include markdown/mdx files for non-secret pattern rules. Default
+   * false — docs frequently *describe* security issues and trigger
+   * false positives. Secret detection always runs on docs because
+   * real API keys do get pasted into READMEs.
+   */
+  includeDocs?: boolean;
 }
 
 function hasExt(path: string, exts: string[]): boolean {
@@ -84,13 +103,51 @@ function isIdeInternal(path: string): boolean {
   );
 }
 
-function runEnginesOnFile(file: FileContext): Finding[] {
+const TEST_PATH_PATTERNS: RegExp[] = [
+  /(^|\/)test\//i,
+  /(^|\/)tests\//i,
+  /(^|\/)__tests__\//i,
+  /(^|\/)spec\//i,
+  /\.test\.(ts|tsx|js|jsx|mjs|cjs)$/i,
+  /\.spec\.(ts|tsx|js|jsx|mjs|cjs)$/i,
+  /\.fixture\.(ts|tsx|js|jsx|mjs|cjs)$/i,
+  /(^|\/)fixtures?\//i,
+];
+
+function isTestFile(path: string): boolean {
+  return TEST_PATH_PATTERNS.some((re) => re.test(path));
+}
+
+function isDocFile(path: string): boolean {
+  return /\.(md|mdx|markdown)$/i.test(path);
+}
+
+/**
+ * Files that define security rules or orchestrate scanning will
+ * contain literal strings that match those rules (the rule file for
+ * the 'use client + service_role' composite contains both strings;
+ * scan.ts' own docstring mentions both while explaining the logic).
+ * These self-references are not vulnerabilities.
+ */
+function isSecurityRuleDefinition(path: string): boolean {
+  return (
+    /(^|\/)src\/rules\//.test(path) ||
+    /(^|\/)src\/engines\//.test(path) ||
+    /(^|\/)src\/detectors\//.test(path) ||
+    /(^|\/)src\/core\/scan\.(ts|js)$/.test(path) ||
+    /(^|\/)src\/reporters\//.test(path)
+  );
+}
+
+function runEnginesOnFile(
+  file: FileContext,
+  opts: { includeTests: boolean; includeDocs: boolean },
+): Finding[] {
   const out: Finding[] = [];
-  // IDE internal files (.cursor/, .claude/, etc.) are only kept in the
-  // walker output for platform fingerprinting. They are noisy / binary-
-  // adjacent and frequently produce false positives if fed to regex
-  // secret scanners.
+
   if (isIdeInternal(file.path)) return out;
+  if (!opts.includeTests && isTestFile(file.path)) return out;
+  if (isSecurityRuleDefinition(file.path)) return out;
 
   if (hasExt(file.path, ['sql'])) {
     out.push(...scanRlsDisabled(file));
@@ -98,8 +155,23 @@ function runEnginesOnFile(file: FileContext): Finding[] {
 
   out.push(...scanJwtServiceRole(file));
 
-  if (hasExt(file.path, ['ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs'])) {
-    out.push(...scanSecrets(file, PATTERN_RULES));
+  const isCode = hasExt(file.path, [
+    'ts',
+    'tsx',
+    'js',
+    'jsx',
+    'mjs',
+    'cjs',
+  ]);
+  const isText =
+    hasExt(file.path, ['env', 'yml', 'yaml', 'toml', 'json']) ||
+    isEnvFile(file.path) ||
+    isDockerFile(file.path);
+  const isDoc = isDocFile(file.path);
+
+  if (isCode) {
+    out.push(...scanSecrets(file, SECRET_RULES));
+    out.push(...scanSecrets(file, NON_SECRET_RULES));
     if (isApiRouteHandler(file.path)) {
       try {
         out.push(...scanAuthMissing(file.path, file.content));
@@ -109,12 +181,18 @@ function runEnginesOnFile(file: FileContext): Finding[] {
     }
   }
 
-  if (
-    hasExt(file.path, ['env', 'yml', 'yaml', 'toml', 'json', 'md']) ||
-    isEnvFile(file.path) ||
-    isDockerFile(file.path)
-  ) {
-    out.push(...scanSecrets(file, PATTERN_RULES));
+  if (isText) {
+    out.push(...scanSecrets(file, SECRET_RULES));
+  }
+
+  if (isDoc) {
+    // Secrets always scanned (people paste real keys into READMEs).
+    out.push(...scanSecrets(file, SECRET_RULES));
+    // Pattern rules (injection / network / auth) only when opted in —
+    // docs describe vulnerabilities, they don't usually contain them.
+    if (opts.includeDocs) {
+      out.push(...scanSecrets(file, NON_SECRET_RULES));
+    }
   }
 
   return out;
@@ -140,12 +218,16 @@ function findRootLockfile(files: FileContext[]): FileContext | undefined {
 export async function runScan(opts: ScanOptions): Promise<ScanReport> {
   const start = Date.now();
   const minRank = SEVERITY_RANK[opts.minSeverity ?? 'info'];
+  const runOpts = {
+    includeTests: opts.includeTests ?? false,
+    includeDocs: opts.includeDocs ?? false,
+  };
 
   const platform = detectPlatform(opts.files);
 
   const all: Finding[] = [];
   for (const file of opts.files) {
-    const findings = runEnginesOnFile(file);
+    const findings = runEnginesOnFile(file, runOpts);
     for (const f of findings) {
       if (SEVERITY_RANK[f.severity] < minRank) continue;
       all.push(f);

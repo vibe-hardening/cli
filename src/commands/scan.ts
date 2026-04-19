@@ -22,6 +22,8 @@ export interface ScanCommandOptions {
   output?: string;
   severity: Severity;
   offline: boolean;
+  includeTests: boolean;
+  includeDocs: boolean;
   version: string;
 }
 
@@ -53,6 +55,8 @@ export async function runScanCommand(
     files,
     minSeverity: opts.severity,
     offline: opts.offline,
+    includeTests: opts.includeTests,
+    includeDocs: opts.includeDocs,
   });
 
   if (opts.format === 'json') {

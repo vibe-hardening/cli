@@ -42,6 +42,16 @@ export function buildProgram(): Command {
       'skip network-dependent checks (OSV.dev CVE scan, npm registry lookup)',
       false,
     )
+    .option(
+      '--include-tests',
+      'also scan test/**, *.test.*, *.spec.*, __tests__/** (off by default: test fixtures usually contain intentional bad patterns)',
+      false,
+    )
+    .option(
+      '--include-docs',
+      'run injection/network/auth pattern rules on markdown too (off by default: docs describe vulnerabilities, not exhibit them)',
+      false,
+    )
     .action(
       async (
         cwd: string,
@@ -50,6 +60,8 @@ export function buildProgram(): Command {
           output?: string;
           severity: string;
           offline: boolean;
+          includeTests: boolean;
+          includeDocs: boolean;
         },
       ) => {
         const code = await runScanCommand({
@@ -58,6 +70,8 @@ export function buildProgram(): Command {
           output: cmdOpts.output,
           severity: cmdOpts.severity as Severity,
           offline: !!cmdOpts.offline,
+          includeTests: !!cmdOpts.includeTests,
+          includeDocs: !!cmdOpts.includeDocs,
           version,
         });
         process.exit(code);
