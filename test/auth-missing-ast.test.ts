@@ -135,6 +135,43 @@ describe('auth-missing-ast: false positive guards', () => {
   });
 });
 
+describe('auth-missing-ast: shared-secret bearer token (Vercel Cron / webhooks)', () => {
+  it('passes on CRON_SECRET header check (Vercel standard)', () => {
+    const src = `
+      export async function GET(request: Request) {
+        const authHeader = request.headers.get("authorization");
+        if (authHeader !== \`Bearer \${process.env.CRON_SECRET}\`) {
+          return new Response('Unauthorized', { status: 401 });
+        }
+        return Response.json({ ok: true });
+      }
+    `;
+    expect(scanAuthMissing('app/api/cron/settle/route.ts', src)).toHaveLength(0);
+  });
+
+  it('passes on WEBHOOK_SECRET check', () => {
+    const src = `
+      export async function POST(req: Request) {
+        const sig = req.headers.get('x-webhook-signature');
+        if (sig !== process.env.WEBHOOK_SECRET) {
+          return new Response(null, { status: 401 });
+        }
+        return Response.json({});
+      }
+    `;
+    expect(scanAuthMissing('app/api/hook/route.ts', src)).toHaveLength(0);
+  });
+
+  it('still fires when no auth AND no secret env reference', () => {
+    const src = `
+      export async function GET() {
+        return Response.json({ data: 'leaky' });
+      }
+    `;
+    expect(scanAuthMissing('app/api/x/route.ts', src)).toHaveLength(1);
+  });
+});
+
 describe('auth-missing-ast: advanced chain handling (H-2, H-3 fixes)', () => {
   it('passes on (supabase as SupabaseClient).auth.getUser()', () => {
     const src = `

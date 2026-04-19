@@ -7,6 +7,9 @@ import { scanOsv } from '../engines/osv-scanner.js';
 import { scanHallucinated } from '../engines/hallucination.js';
 import { detectPlatform } from '../detectors/platform.js';
 import type { PlatformFingerprint } from '../detectors/platform.js';
+import { computeScore } from '../scoring/score.js';
+import type { ScoreBreakdown } from '../scoring/score.js';
+import { applySuppressions } from './suppression.js';
 import { SECRET_RULES } from '../rules/secrets.js';
 import { INJECTION_RULES } from '../rules/injection.js';
 import { NETWORK_RULES } from '../rules/network.js';
@@ -39,6 +42,7 @@ export interface ScanReport {
   filesScanned: number;
   durationMs: number;
   platform: PlatformFingerprint;
+  score: ScoreBreakdown;
 }
 
 export interface ScanOptions {
@@ -260,7 +264,9 @@ export async function runScan(opts: ScanOptions): Promise<ScanReport> {
     }
   }
 
-  all.sort((a, b) => {
+  const suppressed = applySuppressions(opts.files, all);
+
+  suppressed.sort((a, b) => {
     const r = SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity];
     if (r !== 0) return r;
     if (a.file !== b.file) return a.file < b.file ? -1 : 1;
@@ -268,13 +274,14 @@ export async function runScan(opts: ScanOptions): Promise<ScanReport> {
   });
 
   const summary = emptySummary();
-  for (const f of all) summary[f.severity]++;
+  for (const f of suppressed) summary[f.severity]++;
 
   return {
-    findings: all,
+    findings: suppressed,
     summary,
     filesScanned: opts.files.length,
     durationMs: Date.now() - start,
     platform,
+    score: computeScore(suppressed),
   };
 }

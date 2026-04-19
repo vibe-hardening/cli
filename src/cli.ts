@@ -2,8 +2,12 @@ import { Command } from 'commander';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
+import { writeFile } from 'node:fs/promises';
 import { runScanCommand } from './commands/scan.js';
 import type { Severity } from './core/types.js';
+import { walk } from './core/walker.js';
+import { runScan } from './core/scan.js';
+import { renderBadge } from './scoring/badge.js';
 
 function readPackageVersion(): string {
   try {
@@ -30,7 +34,7 @@ export function buildProgram(): Command {
     .command('scan', { isDefault: true })
     .description('Scan a directory for AI-coded security issues')
     .argument('[cwd]', 'directory to scan', '.')
-    .option('-f, --format <format>', 'output format: console | json', 'console')
+    .option('-f, --format <format>', 'output format: console | json | html', 'console')
     .option('-o, --output <file>', 'write output to file instead of stdout')
     .option(
       '-s, --severity <level>',
@@ -75,6 +79,29 @@ export function buildProgram(): Command {
           version,
         });
         process.exit(code);
+      },
+    );
+
+  program
+    .command('badge')
+    .description('Generate an SVG badge showing the repo security score')
+    .argument('[cwd]', 'directory to scan', '.')
+    .option('-o, --output <file>', 'write SVG to file (default: stdout)')
+    .option('--offline', 'skip network-dependent checks', false)
+    .action(
+      async (
+        cwd: string,
+        cmdOpts: { output?: string; offline: boolean },
+      ) => {
+        const files = await walk({ cwd: resolve(cwd) });
+        const report = await runScan({ files, offline: !!cmdOpts.offline });
+        const svg = renderBadge(report.score.score, report.score.grade);
+        if (cmdOpts.output) {
+          await writeFile(cmdOpts.output, svg, 'utf8');
+        } else {
+          process.stdout.write(svg + '\n');
+        }
+        process.exit(0);
       },
     );
 

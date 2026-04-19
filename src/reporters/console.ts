@@ -1,6 +1,21 @@
 import pc from 'picocolors';
 import type { Finding, Severity } from '../core/types.js';
 import type { ScanReport } from '../core/scan.js';
+import type { Grade } from '../scoring/score.js';
+
+function gradeLine(score: number, grade: Grade): string {
+  const colour =
+    grade === 'A'
+      ? pc.green
+      : grade === 'B'
+        ? pc.green
+        : grade === 'C'
+          ? pc.yellow
+          : grade === 'D'
+            ? pc.red
+            : pc.red;
+  return `${pc.dim('score')}     ${colour(pc.bold(`${score} / 100`))}  ${colour(pc.bold(`[${grade}]`))}`;
+}
 
 function severityBadge(sev: Severity): string {
   switch (sev) {
@@ -28,6 +43,56 @@ function groupByFile(findings: Finding[]): Map<string, Finding[]> {
   return map;
 }
 
+/**
+ * CVE findings from OSV can produce several per package (hono@4.12 had
+ * 8). Show them as one grouped block with a count instead of 8 near-
+ * identical rows.
+ */
+function foldCveFindings(findings: Finding[]): Finding[] {
+  const out: Finding[] = [];
+  const cveGroups = new Map<string, Finding[]>();
+  for (const f of findings) {
+    if (f.category === 'dependency' && f.ruleId.startsWith('vh-dep-cve-')) {
+      const pkg = `${f.metadata?.package}@${f.metadata?.version}`;
+      const arr = cveGroups.get(pkg);
+      if (arr) arr.push(f);
+      else cveGroups.set(pkg, [f]);
+    } else {
+      out.push(f);
+    }
+  }
+  for (const [pkg, group] of cveGroups) {
+    if (group.length === 1) {
+      out.push(group[0]!);
+      continue;
+    }
+    const worst = group.reduce((acc, f) =>
+      severityRank(f.severity) > severityRank(acc.severity) ? f : acc,
+    );
+    const cveIds = group.map((f) => String(f.metadata?.cveId)).sort();
+    const summaries = group
+      .map((f) => `  · ${f.metadata?.cveId}: ${f.metadata?.summary ?? ''}`)
+      .join('\n');
+    out.push({
+      ...worst,
+      ruleId: `vh-dep-cve-${pkg}`,
+      message: `${pkg} has ${group.length} known vulnerabilities — worst: ${worst.severity}`,
+      remediation: `Upgrade ${pkg}. Affected advisories:\n${summaries}`,
+      metadata: {
+        ...worst.metadata,
+        grouped: true,
+        count: group.length,
+        cveIds,
+      },
+    });
+  }
+  return out;
+}
+
+function severityRank(s: Severity): number {
+  return { critical: 4, high: 3, medium: 2, low: 1, info: 0 }[s];
+}
+
 export function renderConsole(report: ScanReport): string {
   const lines: string[] = [];
   const banner = pc.bold(pc.cyan('vibe-hardening'));
@@ -42,6 +107,7 @@ export function renderConsole(report: ScanReport): string {
       `${pc.dim('platform')}  ${pc.bold(report.platform.platform)}  ${pc.dim(`(${pct}% confidence)`)}`,
     );
   }
+  lines.push(gradeLine(report.score.score, report.score.grade));
   lines.push('');
 
   if (report.findings.length === 0) {
@@ -50,7 +116,8 @@ export function renderConsole(report: ScanReport): string {
     return lines.join('\n');
   }
 
-  const byFile = groupByFile(report.findings);
+  const folded = foldCveFindings(report.findings);
+  const byFile = groupByFile(folded);
   for (const [file, fileFindings] of byFile) {
     lines.push(pc.underline(pc.cyan(file)));
     for (const f of fileFindings) {

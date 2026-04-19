@@ -6,8 +6,9 @@ import { runScan } from '../core/scan.js';
 import type { Severity } from '../core/types.js';
 import { renderConsole } from '../reporters/console.js';
 import { renderJson } from '../reporters/json.js';
+import { renderHtml } from '../reporters/html.js';
 
-const VALID_FORMATS = new Set(['console', 'json']);
+const VALID_FORMATS = new Set(['console', 'json', 'html']);
 const VALID_SEVERITIES: Severity[] = [
   'critical',
   'high',
@@ -18,7 +19,7 @@ const VALID_SEVERITIES: Severity[] = [
 
 export interface ScanCommandOptions {
   cwd: string;
-  format: 'console' | 'json';
+  format: 'console' | 'json' | 'html';
   output?: string;
   severity: Severity;
   offline: boolean;
@@ -66,6 +67,11 @@ export async function runScanCommand(
     } else {
       process.stdout.write(`${json}\n`);
     }
+  } else if (opts.format === 'html') {
+    const html = renderHtml(report, opts.version);
+    const target = opts.output ?? 'vibe-hardening-report.html';
+    await writeFile(target, html, 'utf8');
+    process.stdout.write(`${pc.green('✓')} HTML report written to ${pc.cyan(target)}\n`);
   } else {
     const out = renderConsole(report);
     if (opts.output) {

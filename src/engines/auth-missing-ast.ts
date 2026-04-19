@@ -42,6 +42,23 @@ const DEFAULT_AUTH_IDENTIFIERS = new Set([
   'getUser',
 ]);
 
+/**
+ * Tokens that, when present in an API route handler body, signal the
+ * handler protects itself via a shared-secret bearer token. This is
+ * the standard Vercel Cron / webhook pattern. Previously the scanner
+ * only looked for auth-provider calls, which produced false positives
+ * on correctly-protected cron and webhook endpoints.
+ */
+const SECRET_ENV_PATTERNS = [
+  /\bCRON_SECRET\b/,
+  /\bWEBHOOK_SECRET\b/,
+  /\bAPI_SECRET\b/,
+  /\bACTION_SECRET\b/,
+  /\bINTERNAL_SECRET\b/,
+  /\bREVALIDATE_TOKEN\b/,
+  /Bearer\s*\$\{[^}]*\bprocess\.env\.[A-Z0-9_]+/,
+];
+
 const CHAINED_AUTH_METHODS = new Set([
   'getUser',
   'getSession',
@@ -85,6 +102,7 @@ export function scanAuthMissing(
   const findings: Finding[] = [];
   for (const { name, node } of handlers) {
     if (containsAuthCall(node, authIds, helpers, maxDepth, new Set())) continue;
+    if (hasSharedSecretCheck(node)) continue;
 
     const start = node.getStart();
     const { line, column } = sf.getLineAndColumnAtPos(start);
@@ -98,11 +116,22 @@ export function scanAuthMissing(
       snippet: `export async function ${name}(...)`,
       message: `API handler ${name} has no detectable auth check`,
       remediation:
-        'Call auth() / getServerSession() / requireAuth() at the top of the handler and return 401 when unauthenticated.',
+        'Call auth() / getServerSession() / requireAuth() at the top of the handler and return 401 when unauthenticated. For Vercel Cron / webhooks, compare the Authorization header against process.env.CRON_SECRET.',
       metadata: { method: name },
     });
   }
   return findings;
+}
+
+/**
+ * True if the handler body contains a reference to a shared-secret env
+ * var (CRON_SECRET, WEBHOOK_SECRET, etc.) — indicating the endpoint is
+ * protected by a bearer token check, the standard pattern for Vercel
+ * Cron jobs and inbound webhooks.
+ */
+function hasSharedSecretCheck(handler: HandlerNode): boolean {
+  const text = handler.getText();
+  return SECRET_ENV_PATTERNS.some((re) => re.test(text));
 }
 
 function collectHttpHandlers(sf: SourceFile): HttpHandler[] {

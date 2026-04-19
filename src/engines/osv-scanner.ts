@@ -6,7 +6,7 @@ interface OsvQuery {
   version: string;
 }
 
-interface OsvVulnerability {
+export interface OsvVulnerability {
   id: string;
   summary?: string;
   details?: string;
@@ -110,6 +110,26 @@ function firstUrl(v: OsvVulnerability): string | undefined {
   return v.references?.find((r) => r.type === 'ADVISORY' || r.type === 'WEB')?.url;
 }
 
+/**
+ * OSV entries sometimes populate summary, sometimes details, sometimes
+ * neither. Details can be a few paragraphs of markdown — we truncate
+ * to the first sentence / 180 chars for the message line.
+ */
+function bestSummary(v: OsvVulnerability): string {
+  if (v.summary && v.summary.trim().length > 0) {
+    return v.summary.trim();
+  }
+  if (v.details && v.details.trim().length > 0) {
+    const first = v.details
+      .trim()
+      .replace(/\s+/g, ' ')
+      .split(/(?<=[.!?])\s+/)[0];
+    if (first && first.length <= 180) return first;
+    return v.details.trim().slice(0, 180) + '…';
+  }
+  return 'vulnerability details unavailable';
+}
+
 const DEFAULT_TIMEOUT_MS = 10_000;
 
 function withDefaultTimeout(signal?: AbortSignal): AbortSignal {
@@ -190,6 +210,7 @@ export async function scanOsv(
     for (const v of vulns) {
       const severity = osvSeverityFor(v);
       const url = firstUrl(v);
+      const summary = bestSummary(v);
       findings.push({
         ruleId: `vh-dep-cve-${v.id}`,
         severity,
@@ -198,16 +219,15 @@ export async function scanOsv(
         line,
         column,
         snippet: key,
-        message: `${pkg.name}@${pkg.version} has known vulnerability ${v.id}: ${
-          v.summary ?? '(no summary)'
-        }`,
+        message: `${pkg.name}@${pkg.version}: ${v.id} — ${summary}`,
         remediation: url
-          ? `Review ${url} and upgrade to a patched version.`
+          ? `Details: ${url}. Upgrade ${pkg.name} to a patched version.`
           : `Upgrade ${pkg.name} to a version without ${v.id}.`,
         metadata: {
           cveId: v.id,
           package: pkg.name,
           version: pkg.version,
+          summary,
           advisoryUrl: url,
         },
       });
