@@ -34,7 +34,9 @@ npx vibe-hardening scan
 
 ## 무엇을 탐지하나요
 
-30개 이상의 규칙, 8개 카테고리. **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 로 생성된 저장소에 최적화되어 있습니다.
+**지원 언어**: JavaScript / TypeScript / **Python** (Django / Flask / FastAPI).
+
+40개 이상의 규칙, 8개 카테고리. **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 로 생성된 저장소에 최적화되어 있습니다.
 
 | 카테고리 | 예시 |
 |---------|------|
@@ -46,6 +48,7 @@ npx vibe-hardening scan
 | **환경 변수 오용** | 클라이언트 번들로 유출되는 `NEXT_PUBLIC_*SECRET` / `*SERVICE_ROLE` 변수 |
 | **공급망 (네트워크 필요)** | OSV.dev 의존성 CVE 조회、LLM 환각 패키지 탐지 (npm registry 대조) |
 | **플랫폼 지문** | 어떤 AI 도구가 코드를 생성했는지 식별하고 규칙 가중치 조정 |
+| **Python (Django/Flask/FastAPI)** | `DEBUG = True`、하드코딩된 `SECRET_KEY`、`ALLOWED_HOSTS = ['*']`、`@csrf_exempt`、`yaml.load`、`pickle.loads(user_input)`、SQL f-string 인젝션、`subprocess(shell=True)`、`eval(request.*)`、FastAPI `Depends(get_current_user)` 누락、`jwt.decode(algorithms=['none'])` |
 
 ## 사용법
 
@@ -81,9 +84,10 @@ platform  v0  (74% confidence)
 
 프리뷰 릴리스 — Phase 1 MVP는 **2026-05-13** Product Hunt 출시가 목표입니다.
 
-현재 커버리지 (`v0.0.4-preview.0`):
+현재 커버리지 (`v0.0.5-preview.0`):
+- 지원 언어: JavaScript / TypeScript / Python (Django, Flask, FastAPI)
 - 6개 엔진: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 환각
-- 30개 이상 규칙、142개 테스트、일반적인 repo를 5초 이내에 스캔
+- 40개 이상 규칙、162개 테스트、일반적인 repo를 5초 이내에 스캔
 - 출력 형식: 컬러 터미널、CI용 JSON、독립형 HTML 보고서
 - 0-100 보안 점수 + A-F 등급 + SVG README 배지
 - 인라인 억제: `// vibe-hardening-disable-next-line vh-rule-id`

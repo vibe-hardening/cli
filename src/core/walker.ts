@@ -34,10 +34,14 @@ export const DEFAULT_IGNORES: string[] = [
 
 export const DEFAULT_INCLUDE: string[] = [
   '**/*.{ts,tsx,js,jsx,mjs,cjs}',
+  '**/*.py',
   '**/*.{sql,prisma}',
   '**/*.{json,env,env.local,env.production,env.development}',
   '**/.env*',
   '**/*.{yml,yaml,toml}',
+  '**/requirements*.txt',
+  '**/pyproject.toml',
+  '**/Pipfile',
   '**/Dockerfile*',
   '**/*.md',
   // AI IDE fingerprint files (content + existence both useful)

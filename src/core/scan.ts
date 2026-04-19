@@ -14,6 +14,8 @@ import { SECRET_RULES } from '../rules/secrets.js';
 import { INJECTION_RULES } from '../rules/injection.js';
 import { NETWORK_RULES } from '../rules/network.js';
 import { AUTH_PATTERN_RULES } from '../rules/auth-patterns.js';
+import { PYTHON_INJECTION_RULES } from '../rules/python-injection.js';
+import { PYTHON_AUTH_RULES } from '../rules/python-auth.js';
 
 /**
  * Rules are partitioned so we can run them on the right files:
@@ -27,6 +29,8 @@ const NON_SECRET_RULES = [
   ...NETWORK_RULES,
   ...AUTH_PATTERN_RULES,
 ];
+
+const PYTHON_RULES = [...PYTHON_INJECTION_RULES, ...PYTHON_AUTH_RULES];
 
 const SEVERITY_RANK: Record<Severity, number> = {
   critical: 4,
@@ -169,6 +173,7 @@ function runEnginesOnFile(
     'mjs',
     'cjs',
   ]);
+  const isPython = hasExt(file.path, ['py', 'pyi']);
   const isText =
     hasExt(file.path, ['env', 'yml', 'yaml', 'toml', 'json']) ||
     isEnvFile(file.path) ||
@@ -185,6 +190,13 @@ function runEnginesOnFile(
         // AST parse errors on JSX-heavy non-router files — skip
       }
     }
+  }
+
+  if (isPython) {
+    // Secret patterns (OpenAI / Stripe / etc.) are also paste-able
+    // into .py files — re-run those plus the Python-specific set.
+    out.push(...scanSecrets(file, SECRET_RULES));
+    out.push(...scanSecrets(file, PYTHON_RULES));
   }
 
   if (isText) {

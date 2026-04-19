@@ -81,9 +81,10 @@ platform  v0  (74% confidence)
 
 預覽版 —— Phase 1 MVP 目標 **2026-05-13** 上 Product Hunt。
 
-目前覆蓋（`v0.0.4-preview.0`）：
+目前覆蓋（`v0.0.5-preview.0`）：
+- 支援語言：JavaScript / TypeScript / Python（Django、Flask、FastAPI）
 - 6 個引擎：RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 幻覺
-- 30+ 條規則、142 個測試、一般 repo 5 秒內掃完
+- 40+ 條規則、162 個測試、一般 repo 5 秒內掃完
 - 輸出格式：彩色終端機、CI 用 JSON、獨立 HTML 報告
 - 0-100 資安分數 + A-F 等級 + SVG README badge
 - 行內抑制：`// vibe-hardening-disable-next-line vh-rule-id`

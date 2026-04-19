@@ -34,7 +34,9 @@ npx vibe-hardening scan
 
 ## 何を検出するか
 
-30以上のルール、8カテゴリー。**v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** が生成したリポジトリ向けに調整されています。
+**対応言語**: JavaScript / TypeScript / **Python** (Django / Flask / FastAPI).
+
+40以上のルール、8カテゴリー。**v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** が生成したリポジトリ向けに調整されています。
 
 | カテゴリー | 例 |
 |-----------|-----|
@@ -46,6 +48,7 @@ npx vibe-hardening scan
 | **環境変数の誤用** | クライアントバンドルに漏れる `NEXT_PUBLIC_*SECRET` / `*SERVICE_ROLE` 変数 |
 | **サプライチェーン（要ネットワーク）** | OSV.dev依存関係CVE検索、LLM幻覚パッケージ検出 (npm registry対照) |
 | **プラットフォーム指紋** | どのAIツールがコードを生成したかを特定し、ルールの重み付けを調整 |
+| **Python (Django/Flask/FastAPI)** | `DEBUG = True`、ハードコードされた `SECRET_KEY`、`ALLOWED_HOSTS = ['*']`、`@csrf_exempt`、`yaml.load`、`pickle.loads(user_input)`、SQL f-string インジェクション、`subprocess(shell=True)`、`eval(request.*)`、FastAPI の `Depends(get_current_user)` 不足、`jwt.decode(algorithms=['none'])` |
 
 ## 使い方
 
@@ -81,9 +84,10 @@ platform  v0  (74% confidence)
 
 プレビューリリース — Phase 1 MVPは **2026-05-13** にProduct Huntでのローンチを目標としています。
 
-現在のカバレッジ (`v0.0.4-preview.0`):
+現在のカバレッジ (`v0.0.5-preview.0`):
+- 対応言語: JavaScript / TypeScript / Python (Django、Flask、FastAPI)
 - 6つのエンジン: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM幻覚
-- 30以上のルール、142のテスト、一般的なリポジトリを5秒以内にスキャン
+- 40以上のルール、162のテスト、一般的なリポジトリを5秒以内にスキャン
 - 出力形式: カラーターミナル、CI用JSON、スタンドアロンHTMLレポート
 - 0-100セキュリティスコア + A-F グレード + SVG README バッジ
 - インライン抑制: `// vibe-hardening-disable-next-line vh-rule-id`

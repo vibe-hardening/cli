@@ -1,6 +1,6 @@
 {
   "name": "vibe-hardening",
-  "version": "0.0.4-preview.1",
+  "version": "0.0.5-preview.0",
   "description": "One-command security scanner for AI-generated code. Vibe coded. Vibe hardened.",
   "type": "module",
   "bin": {
@@ -36,7 +36,11 @@
     "v0",
     "lovable",
     "bolt",
-    "cursor"
+    "cursor",
+    "python",
+    "django",
+    "flask",
+    "fastapi"
   ],
   "author": "angletech2026",
   "license": "MIT",

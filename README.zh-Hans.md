@@ -34,7 +34,9 @@ npx vibe-hardening scan
 
 ## 能检测什么
 
-30+ 条规则、8 大类别。针对 **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 生成的仓库做了专门调优。
+**支持语言**：JavaScript / TypeScript / **Python**（Django / Flask / FastAPI）。
+
+40+ 条规则、8 大类别。针对 **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 生成的仓库做了专门调优。
 
 | 类别 | 示例 |
 |------|------|
@@ -46,6 +48,7 @@ npx vibe-hardening scan
 | **环境变量误用** | `NEXT_PUBLIC_*SECRET` / `*SERVICE_ROLE` 会被打包进客户端 bundle |
 | **供应链（需联网）** | OSV.dev 依赖 CVE 查询、LLM 幻觉包检测（对比 npm registry） |
 | **平台指纹** | 识别代码由哪家 AI 生成、据此调整规则权重 |
+| **Python（Django/Flask/FastAPI）** | `DEBUG = True`、硬编码 `SECRET_KEY`、`ALLOWED_HOSTS = ['*']`、`@csrf_exempt`、`yaml.load`、`pickle.loads(user_input)`、SQL f-string 注入、`subprocess(shell=True)`、`eval(request.*)`、FastAPI 缺 `Depends(get_current_user)`、`jwt.decode(algorithms=['none'])` |
 
 ## 使用方法
 
@@ -81,9 +84,10 @@ platform  v0  (74% confidence)
 
 预览版 —— Phase 1 MVP 目标 **2026-05-13** 上 Product Hunt。
 
-当前覆盖（`v0.0.4-preview.0`）：
+当前覆盖（`v0.0.5-preview.0`）：
+- 支持语言：JavaScript / TypeScript / Python（Django、Flask、FastAPI）
 - 6 个引擎：RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 幻觉
-- 30+ 条规则、142 个测试、一般仓库 5 秒内扫描完毕
+- 40+ 条规则、162 个测试、一般仓库 5 秒内扫描完毕
 - 输出格式：彩色终端、CI 用 JSON、独立 HTML 报告
 - 0-100 安全分数 + A-F 等级 + SVG README badge
 - 行内抑制：`// vibe-hardening-disable-next-line vh-rule-id`
