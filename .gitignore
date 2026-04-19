@@ -13,3 +13,5 @@ coverage/
 .idea/
 *.tsbuildinfo
 .vibe-hardening/
+vibe-hardening-report.html
+*-report.html
