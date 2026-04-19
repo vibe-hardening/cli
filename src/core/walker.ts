@@ -1,6 +1,6 @@
 import fg from 'fast-glob';
 import { readFile, stat } from 'node:fs/promises';
-import { relative, resolve } from 'node:path';
+import { basename, dirname, relative, resolve } from 'node:path';
 import type { FileContext } from './types.js';
 
 export const DEFAULT_IGNORES: string[] = [
@@ -72,8 +72,23 @@ export interface WalkOptions {
 }
 
 export async function walk(opts: WalkOptions): Promise<FileContext[]> {
-  const cwd = resolve(opts.cwd);
-  const entries = await fg(opts.include ?? DEFAULT_INCLUDE, {
+  const target = resolve(opts.cwd);
+
+  // If the user passed a single file path, scan just that file.
+  // Otherwise treat it as a directory to glob through.
+  let cwd = target;
+  let patterns = opts.include ?? DEFAULT_INCLUDE;
+  try {
+    const s = await stat(target);
+    if (s.isFile()) {
+      cwd = dirname(target);
+      patterns = [basename(target)];
+    }
+  } catch {
+    // target does not exist — let fast-glob return empty
+  }
+
+  const entries = await fg(patterns, {
     cwd,
     absolute: true,
     dot: true,

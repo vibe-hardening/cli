@@ -94,6 +94,14 @@ describe('e2e: scan the bad-app fixture', () => {
     expect(findings.every((f) => f.severity === 'critical')).toBe(true);
   });
 
+  it('supports scanning a single file path (not only directories)', async () => {
+    const singleFile = resolve(FIXTURE, 'app/api/chat/route.ts');
+    const files = await walk({ cwd: singleFile });
+    expect(files).toHaveLength(1);
+    const { findings } = await runScan({ files, offline: true });
+    expect(findings.some((f) => f.ruleId === 'vh-secret-openai')).toBe(true);
+  });
+
   it('sorts findings by severity desc then file then line', async () => {
     const files = await walk({ cwd: FIXTURE });
     const { findings } = await runScan({ files, offline: true });
