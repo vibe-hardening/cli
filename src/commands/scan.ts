@@ -1,5 +1,5 @@
-import { writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
 import pc from 'picocolors';
 import { walk } from '../core/walker.js';
 import { runScan } from '../core/scan.js';
@@ -62,22 +62,32 @@ export async function runScanCommand(
     includeDocs: opts.includeDocs,
   });
 
+  // Create parent dir on demand so `--output foo/bar.html` works even
+  // when `foo/` doesn't exist yet.
+  async function writeTo(path: string, content: string): Promise<void> {
+    const resolved = resolve(path);
+    await mkdir(dirname(resolved), { recursive: true });
+    await writeFile(resolved, content, 'utf8');
+  }
+
   if (opts.format === 'json') {
     const json = renderJson(report, opts.version);
     if (opts.output) {
-      await writeFile(opts.output, json, 'utf8');
+      await writeTo(opts.output, json);
     } else {
       process.stdout.write(`${json}\n`);
     }
   } else if (opts.format === 'html') {
     const html = renderHtml(report, opts.version);
     const target = opts.output ?? 'vibe-hardening-report.html';
-    await writeFile(target, html, 'utf8');
-    process.stdout.write(`${pc.green('✓')} HTML report written to ${pc.cyan(target)}\n`);
+    await writeTo(target, html);
+    process.stdout.write(
+      `${pc.green('✓')} HTML report written to ${pc.cyan(target)}\n`,
+    );
   } else {
     const out = renderConsole(report);
     if (opts.output) {
-      await writeFile(opts.output, out, 'utf8');
+      await writeTo(opts.output, out);
     } else {
       process.stdout.write(out);
     }

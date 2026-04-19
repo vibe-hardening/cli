@@ -10,8 +10,9 @@ export const PYTHON_AUTH_RULES: SecretRule[] = [
       'Read DEBUG from an environment variable and default False. An exception in production with DEBUG=True exposes the settings module, including secrets.',
     patterns: [
       {
+        // Trailing `# comment` is common in Python settings.
         name: 'debug-literal',
-        regex: /^\s*DEBUG\s*=\s*True\s*$/m,
+        regex: /^\s*DEBUG\s*=\s*True\s*(?:#[^\n]*)?$/m,
       },
     ],
   },

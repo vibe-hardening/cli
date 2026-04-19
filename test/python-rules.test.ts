@@ -24,6 +24,18 @@ describe('python injection rules', () => {
     expect(f.some((x) => x.ruleId === 'vh-py-inj-sql-fstring')).toBe(true);
   });
 
+  it('fires on SQLAlchemy engine.execute f-string', () => {
+    const src = `engine.execute(f"SELECT * FROM users WHERE id = {uid}")`;
+    const f = scan(PYTHON_INJECTION_RULES, 'app.py', src);
+    expect(f.some((x) => x.ruleId === 'vh-py-inj-sql-fstring')).toBe(true);
+  });
+
+  it('fires on SQLAlchemy engine.execute(text(f"..."))', () => {
+    const src = `engine.execute(text(f"SELECT {col} FROM users"))`;
+    const f = scan(PYTHON_INJECTION_RULES, 'app.py', src);
+    expect(f.some((x) => x.ruleId === 'vh-py-inj-sql-fstring')).toBe(true);
+  });
+
   it('passes on parameterised query', () => {
     const src = `cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))`;
     const f = scan(PYTHON_INJECTION_RULES, 'app.py', src);
@@ -32,6 +44,18 @@ describe('python injection rules', () => {
 
   it('fires on subprocess shell=True', () => {
     const src = `subprocess.run(cmd, shell=True)`;
+    const f = scan(PYTHON_INJECTION_RULES, 'worker.py', src);
+    expect(f.some((x) => x.ruleId === 'vh-py-inj-cmd-shell')).toBe(true);
+  });
+
+  it('fires on bare run() from `from subprocess import run`', () => {
+    const src = `from subprocess import run\nrun("ls " + user_input, shell=True)`;
+    const f = scan(PYTHON_INJECTION_RULES, 'worker.py', src);
+    expect(f.some((x) => x.ruleId === 'vh-py-inj-cmd-shell')).toBe(true);
+  });
+
+  it('fires on bare Popen() from `from subprocess import Popen`', () => {
+    const src = `Popen(cmd, shell=True)`;
     const f = scan(PYTHON_INJECTION_RULES, 'worker.py', src);
     expect(f.some((x) => x.ruleId === 'vh-py-inj-cmd-shell')).toBe(true);
   });
@@ -86,6 +110,12 @@ describe('python auth / config rules', () => {
     const src = `DEBUG = os.getenv("DEBUG") == "true"`;
     const f = scan(PYTHON_AUTH_RULES, 'settings.py', src);
     expect(f.some((x) => x.ruleId === 'vh-py-django-debug-true')).toBe(false);
+  });
+
+  it('fires on DEBUG = True with inline # comment (round-5 regression)', () => {
+    const src = `DEBUG = True  # for dev`;
+    const f = scan(PYTHON_AUTH_RULES, 'settings.py', src);
+    expect(f.some((x) => x.ruleId === 'vh-py-django-debug-true')).toBe(true);
   });
 
   it('fires on hardcoded SECRET_KEY', () => {

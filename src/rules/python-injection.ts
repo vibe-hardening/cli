@@ -14,20 +14,29 @@ export const PYTHON_INJECTION_RULES: SecretRule[] = [
     remediation:
       'Use parameterised queries with placeholders (? / %s / :param) or an ORM. Never interpolate user input into SQL literals.',
     patterns: [
+      // Call site: cursor.execute / conn.execute / db.execute /
+      // session.execute / engine.execute (SQLAlchemy) / sa.execute /
+      // tx.execute / bare execute( when imported directly.
       {
         name: 'fstring',
         regex:
-          /(?:cursor|conn|db|session)\.execute\s*\(\s*f["'][^"']*\{[^}]+\}[^"']*["']/g,
+          /(?:cursor|conn|db|session|engine|sa|tx)\.execute\s*\(\s*f["'][^"']*\{[^}]+\}[^"']*["']/g,
       },
       {
         name: 'format',
         regex:
-          /(?:cursor|conn|db|session)\.execute\s*\(\s*["'][^"']*\{\}[^"']*["']\.format\(/g,
+          /(?:cursor|conn|db|session|engine|sa|tx)\.execute\s*\(\s*["'][^"']*\{\}[^"']*["']\.format\(/g,
       },
       {
         name: 'concat',
         regex:
-          /(?:cursor|conn|db|session)\.execute\s*\(\s*["'][^"']+["']\s*\+\s*(?:request\.|user_input|params\[|args\.)/g,
+          /(?:cursor|conn|db|session|engine|sa|tx)\.execute\s*\(\s*["'][^"']+["']\s*\+\s*(?:request\.|user_input|params\[|args\.)/g,
+      },
+      // SQLAlchemy text() wrapper form — engine.execute(text(f"..."))
+      {
+        name: 'sa-text',
+        regex:
+          /\.execute\s*\(\s*text\s*\(\s*f["'][^"']*\{[^}]+\}/g,
       },
     ],
   },
@@ -39,10 +48,20 @@ export const PYTHON_INJECTION_RULES: SecretRule[] = [
     remediation:
       'Use subprocess.run with a list argument and shell=False. Never pass user input through a shell.',
     patterns: [
+      // subprocess.{call,run,Popen,check_output,check_call}(..., shell=True)
       {
         name: 'subprocess-shell',
         regex:
           /subprocess\.(?:call|run|Popen|check_output|check_call)\s*\([^)]*shell\s*=\s*True[^)]*\)/g,
+      },
+      // Bare call after `from subprocess import ...` — regex can't see
+      // imports, so we match the function names followed by shell=True
+      // directly. Some false-positive risk on user-defined run()/call()
+      // but the shell=True kwarg + code context make it unlikely.
+      {
+        name: 'subprocess-bare',
+        regex:
+          /\b(?:call|run|Popen|check_output|check_call)\s*\([^)]*shell\s*=\s*True[^)]*\)/g,
       },
       {
         name: 'os-system',

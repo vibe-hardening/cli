@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { runScanCommand } from './commands/scan.js';
 import type { Severity } from './core/types.js';
 import { walk } from './core/walker.js';
@@ -97,7 +97,11 @@ export function buildProgram(): Command {
         const report = await runScan({ files, offline: !!cmdOpts.offline });
         const svg = renderBadge(report.score.score, report.score.grade);
         if (cmdOpts.output) {
-          await writeFile(cmdOpts.output, svg, 'utf8');
+          const target = resolve(cmdOpts.output);
+          // Create parent dir on demand so `badge -o build/a/b.svg`
+          // works even when `build/a/` doesn't exist yet.
+          await mkdir(dirname(target), { recursive: true });
+          await writeFile(target, svg, 'utf8');
         } else {
           process.stdout.write(svg + '\n');
         }
