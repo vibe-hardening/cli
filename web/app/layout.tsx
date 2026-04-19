@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { JetBrains_Mono, Archivo_Black } from 'next/font/google';
+import { JetBrains_Mono, Archivo_Black, Noto_Sans_TC } from 'next/font/google';
 import './globals.css';
 
 const mono = JetBrains_Mono({
@@ -13,6 +13,13 @@ const display = Archivo_Black({
   subsets: ['latin'],
   weight: '400',
   variable: '--font-display-loaded',
+  display: 'swap',
+});
+
+const displayZh = Noto_Sans_TC({
+  subsets: ['latin'],
+  weight: '900',
+  variable: '--font-display-zh-loaded',
   display: 'swap',
 });
 
@@ -42,7 +49,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${mono.variable} ${display.variable}`}>
+    <html
+      lang="en"
+      className={`${mono.variable} ${display.variable} ${displayZh.variable}`}
+    >
       <body className="scanlines noise">{children}</body>
     </html>
   );
