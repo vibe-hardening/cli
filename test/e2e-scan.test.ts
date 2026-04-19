@@ -38,7 +38,7 @@ afterAll(async () => {
 describe('e2e: scan the bad-app fixture', () => {
   it('finds the expected mix of critical / high / medium', async () => {
     const files = await walk({ cwd: FIXTURE });
-    const report = await runScan({ files });
+    const report = await runScan({ files, offline: true });
 
     expect(report.filesScanned).toBeGreaterThanOrEqual(4);
     expect(report.summary.critical).toBeGreaterThanOrEqual(3);
@@ -47,7 +47,7 @@ describe('e2e: scan the bad-app fixture', () => {
 
   it('detects OpenAI secret in app/api/chat/route.ts', async () => {
     const files = await walk({ cwd: FIXTURE });
-    const { findings } = await runScan({ files });
+    const { findings } = await runScan({ files, offline: true });
     const hit = findings.find(
       (f) =>
         f.ruleId === 'vh-secret-openai' &&
@@ -59,7 +59,7 @@ describe('e2e: scan the bad-app fixture', () => {
 
   it('detects Supabase RLS missing for public.posts', async () => {
     const files = await walk({ cwd: FIXTURE });
-    const { findings } = await runScan({ files });
+    const { findings } = await runScan({ files, offline: true });
     const hit = findings.find(
       (f) =>
         f.ruleId === 'vh-supabase-rls-disabled' &&
@@ -71,7 +71,7 @@ describe('e2e: scan the bad-app fixture', () => {
 
   it('detects missing auth on both GET and POST routes', async () => {
     const files = await walk({ cwd: FIXTURE });
-    const { findings } = await runScan({ files });
+    const { findings } = await runScan({ files, offline: true });
     const methods = findings
       .filter((f) => f.ruleId === 'vh-auth-missing-middleware')
       .map((f) => f.metadata?.method);
@@ -81,7 +81,7 @@ describe('e2e: scan the bad-app fixture', () => {
 
   it('detects Stripe + GitHub PAT in .env.local', async () => {
     const files = await walk({ cwd: FIXTURE });
-    const { findings } = await runScan({ files });
+    const { findings } = await runScan({ files, offline: true });
     const envFindings = findings.filter((f) => f.file === '.env.local');
     const ruleIds = envFindings.map((f) => f.ruleId);
     expect(ruleIds).toContain('vh-secret-stripe');
@@ -90,13 +90,13 @@ describe('e2e: scan the bad-app fixture', () => {
 
   it('respects severity floor when set to critical', async () => {
     const files = await walk({ cwd: FIXTURE });
-    const { findings } = await runScan({ files, minSeverity: 'critical' });
+    const { findings } = await runScan({ files, minSeverity: 'critical', offline: true });
     expect(findings.every((f) => f.severity === 'critical')).toBe(true);
   });
 
   it('sorts findings by severity desc then file then line', async () => {
     const files = await walk({ cwd: FIXTURE });
-    const { findings } = await runScan({ files });
+    const { findings } = await runScan({ files, offline: true });
     for (let i = 1; i < findings.length; i++) {
       const prev = findings[i - 1]!;
       const cur = findings[i]!;

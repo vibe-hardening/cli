@@ -35,6 +35,13 @@ export function renderConsole(report: ScanReport): string {
   lines.push(
     `${banner} ${pc.dim('scan complete')}  ${pc.dim(`·  ${report.filesScanned} files  ·  ${report.durationMs}ms`)}`,
   );
+
+  if (report.platform.platform !== 'unknown') {
+    const pct = Math.round(report.platform.confidence * 100);
+    lines.push(
+      `${pc.dim('platform')}  ${pc.bold(report.platform.platform)}  ${pc.dim(`(${pct}% confidence)`)}`,
+    );
+  }
   lines.push('');
 
   if (report.findings.length === 0) {

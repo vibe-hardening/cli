@@ -21,6 +21,7 @@ export interface ScanCommandOptions {
   format: 'console' | 'json';
   output?: string;
   severity: Severity;
+  offline: boolean;
   version: string;
 }
 
@@ -48,7 +49,11 @@ export async function runScanCommand(
   }
 
   const files = await walk({ cwd });
-  const report = await runScan({ files, minSeverity: opts.severity });
+  const report = await runScan({
+    files,
+    minSeverity: opts.severity,
+    offline: opts.offline,
+  });
 
   if (opts.format === 'json') {
     const json = renderJson(report, opts.version);

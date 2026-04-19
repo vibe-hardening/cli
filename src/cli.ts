@@ -37,16 +37,27 @@ export function buildProgram(): Command {
       'minimum severity to report: critical | high | medium | low | info',
       'info',
     )
+    .option(
+      '--offline',
+      'skip network-dependent checks (OSV.dev CVE scan, npm registry lookup)',
+      false,
+    )
     .action(
       async (
         cwd: string,
-        cmdOpts: { format: string; output?: string; severity: string },
+        cmdOpts: {
+          format: string;
+          output?: string;
+          severity: string;
+          offline: boolean;
+        },
       ) => {
         const code = await runScanCommand({
           cwd: resolve(cwd),
           format: cmdOpts.format as 'console' | 'json',
           output: cmdOpts.output,
           severity: cmdOpts.severity as Severity,
+          offline: !!cmdOpts.offline,
           version,
         });
         process.exit(code);

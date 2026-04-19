@@ -31,6 +31,23 @@ export const DEFAULT_INCLUDE: string[] = [
   '**/*.{yml,yaml,toml}',
   '**/Dockerfile*',
   '**/*.md',
+  // AI IDE fingerprint files (content + existence both useful)
+  '.cursorrules',
+  '.cursor/**',
+  '.claude/**',
+  'CLAUDE.md',
+  '.bolt/**',
+  '.lovable/**',
+  '.windsurf/**',
+  '.windsurfrules',
+  '.devin/**',
+  'devin.yaml',
+  '.replit',
+  'replit.nix',
+  'stackblitz.config.json',
+  '.mcp.json',
+  '.cursorindexingignore',
+  'index.html',
 ];
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;

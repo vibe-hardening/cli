@@ -5,6 +5,7 @@ export interface JsonReport {
   createdAt: string;
   filesScanned: number;
   durationMs: number;
+  platform: ScanReport['platform'];
   summary: ScanReport['summary'];
   findings: ScanReport['findings'];
 }
@@ -15,6 +16,7 @@ export function renderJson(report: ScanReport, version: string): string {
     createdAt: new Date().toISOString(),
     filesScanned: report.filesScanned,
     durationMs: report.durationMs,
+    platform: report.platform,
     summary: report.summary,
     findings: report.findings,
   };
