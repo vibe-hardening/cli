@@ -10,6 +10,8 @@ import type { PlatformFingerprint } from '../detectors/platform.js';
 import { computeScore } from '../scoring/score.js';
 import type { ScoreBreakdown } from '../scoring/score.js';
 import { applySuppressions } from './suppression.js';
+import { verifySecret } from '../verifiers/index.js';
+import type { VerifierKind } from '../verifiers/index.js';
 import { SECRET_RULES } from '../rules/secrets.js';
 import { INJECTION_RULES } from '../rules/injection.js';
 import { NETWORK_RULES } from '../rules/network.js';
@@ -73,6 +75,13 @@ export interface ScanOptions {
    * real API keys do get pasted into READMEs.
    */
   includeDocs?: boolean;
+  /**
+   * When true, every finding whose rule declares `verify` will have
+   * its captured secret live-checked against the provider. The
+   * orchestrator is the only place this runs; the CLI gates it behind
+   * `--own` so users can't accidentally probe third-party keys.
+   */
+  verify?: boolean;
 }
 
 function hasExt(path: string, exts: string[]): boolean {
@@ -285,6 +294,38 @@ export async function runScan(opts: ScanOptions): Promise<ScanReport> {
   }
 
   const suppressed = applySuppressions(opts.files, all);
+
+  if (opts.verify) {
+    for (const f of suppressed) {
+      const rawValue = f.metadata?._rawValue;
+      const kind = f.metadata?._verifyKind;
+      if (typeof rawValue !== 'string' || typeof kind !== 'string') continue;
+      try {
+        const result = await verifySecret(kind as VerifierKind, rawValue, {
+          fetchImpl: opts.fetchImpl,
+        });
+        if (!f.metadata) f.metadata = {};
+        f.metadata.verify = result;
+      } catch (err) {
+        if (!f.metadata) f.metadata = {};
+        f.metadata.verify = {
+          kind,
+          status: 'unknown',
+          error: err instanceof Error ? err.message : 'verify failed',
+          checkedAt: new Date().toISOString(),
+        };
+      }
+    }
+  }
+
+  // Strip internal fields from metadata so they do not leak via JSON
+  // or HTML reports. `verify` stays.
+  for (const f of suppressed) {
+    if (f.metadata) {
+      delete f.metadata._rawValue;
+      delete f.metadata._verifyKind;
+    }
+  }
 
   suppressed.sort((a, b) => {
     const r = SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity];

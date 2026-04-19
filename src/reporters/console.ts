@@ -2,6 +2,7 @@ import pc from 'picocolors';
 import type { Finding, Severity } from '../core/types.js';
 import type { ScanReport } from '../core/scan.js';
 import type { Grade } from '../scoring/score.js';
+import type { VerifyResult } from '../verifiers/index.js';
 
 function gradeLine(score: number, grade: Grade): string {
   const colour =
@@ -93,6 +94,24 @@ function severityRank(s: Severity): number {
   return { critical: 4, high: 3, medium: 2, low: 1, info: 0 }[s];
 }
 
+function renderVerify(v: VerifyResult): string {
+  const extras: string[] = [];
+  if (v.info) {
+    for (const [k, val] of Object.entries(v.info)) {
+      if (val !== undefined && val !== '') extras.push(`${k}=${val}`);
+    }
+  }
+  const extra = extras.length > 0 ? ` ${pc.dim(`(${extras.join(', ')})`)}` : '';
+  if (v.status === 'live') {
+    return `${pc.bgRed(pc.white(pc.bold(' LIVE KEY ')))} ${pc.red(pc.bold(v.kind))}${extra}`;
+  }
+  if (v.status === 'revoked') {
+    return `${pc.green('✓ revoked')} ${pc.dim(v.kind)}${extra}`;
+  }
+  const reason = v.error ? ` — ${v.error}` : '';
+  return `${pc.dim('? unverified')} ${pc.dim(v.kind + reason)}`;
+}
+
 export function renderConsole(report: ScanReport): string {
   const lines: string[] = [];
   const banner = pc.bold(pc.cyan('vibe-hardening'));
@@ -127,6 +146,10 @@ export function renderConsole(report: ScanReport): string {
       lines.push(`         ${f.message}`);
       if (f.snippet) {
         lines.push(`         ${pc.dim('snippet:')} ${pc.dim(f.snippet)}`);
+      }
+      const verify = f.metadata?.verify as VerifyResult | undefined;
+      if (verify) {
+        lines.push(`         ${pc.dim('verify: ')} ${renderVerify(verify)}`);
       }
       if (f.remediation) {
         lines.push(`         ${pc.green('→')} ${f.remediation}`);

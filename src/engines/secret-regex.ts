@@ -19,6 +19,15 @@ export interface SecretRule {
   patterns: SecretPattern[];
   excludeFilenamePatterns?: RegExp[];
   /**
+   * Provider kind for --verify live check. When set, findings from
+   * this rule expose `metadata._rawValue` and `metadata._verifyKind`
+   * so the orchestrator can call the matching verifier. Both fields
+   * are stripped by reporters before serialisation.
+   */
+  verify?: {
+    kind: 'openai' | 'anthropic' | 'stripe' | 'github-pat' | 'slack';
+  };
+  /**
    * When true, a finding is emitted only when *every* `patterns[i]` has at
    * least one match in the file. The finding uses the first match of the
    * first pattern for line/column reporting. Enables composite rules like
@@ -75,6 +84,16 @@ function evalPattern(
     }
 
     const { line, column } = offsetToLineCol(src, m.index);
+    const metadata: Record<string, unknown> = {
+      patternName: pattern.name,
+      length: matched.length,
+    };
+    if (rule.verify) {
+      // Kept internal for the verify pipeline. Reporters strip these
+      // before JSON / HTML serialisation.
+      metadata._rawValue = matched;
+      metadata._verifyKind = rule.verify.kind;
+    }
     findings.push({
       ruleId: rule.id,
       severity: rule.severity,
@@ -85,7 +104,7 @@ function evalPattern(
       snippet: redact(matched),
       message: rule.message,
       remediation: rule.remediation,
-      metadata: { patternName: pattern.name, length: matched.length },
+      metadata,
     });
   }
   return findings;

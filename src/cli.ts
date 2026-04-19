@@ -60,6 +60,16 @@ export function buildProgram(): Command {
       '--no-gitignore',
       'ignore .gitignore entries when deciding which files to scan (by default .gitignore is respected)',
     )
+    .option(
+      '--verify',
+      'live-check detected secrets against provider APIs (requires --own)',
+      false,
+    )
+    .option(
+      '--own',
+      'confirm the detected secrets belong to you — required alongside --verify to prevent accidentally probing third-party credentials',
+      false,
+    )
     .action(
       async (
         cwd: string,
@@ -71,6 +81,8 @@ export function buildProgram(): Command {
           includeTests: boolean;
           includeDocs: boolean;
           gitignore: boolean;
+          verify: boolean;
+          own: boolean;
         },
       ) => {
         const code = await runScanCommand({
@@ -83,6 +95,8 @@ export function buildProgram(): Command {
           includeDocs: !!cmdOpts.includeDocs,
           // commander exposes --no-gitignore as gitignore:false
           respectGitignore: cmdOpts.gitignore !== false,
+          verify: !!cmdOpts.verify,
+          own: !!cmdOpts.own,
           version,
         });
         process.exit(code);

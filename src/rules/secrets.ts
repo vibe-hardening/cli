@@ -27,6 +27,7 @@ export const SECRET_RULES: SecretRule[] = [
     message: 'OpenAI API key hardcoded in source',
     remediation:
       'Move to process.env.OPENAI_API_KEY and revoke the leaked key at platform.openai.com/api-keys.',
+    verify: { kind: 'openai' },
     excludeFilenamePatterns: [ENV_EXAMPLE_FILE],
     patterns: [
       {
@@ -58,6 +59,7 @@ export const SECRET_RULES: SecretRule[] = [
     message: 'Anthropic API key hardcoded in source',
     remediation:
       'Rotate at console.anthropic.com and move to process.env.ANTHROPIC_API_KEY.',
+    verify: { kind: 'anthropic' },
     excludeFilenamePatterns: [ENV_EXAMPLE_FILE],
     patterns: [
       {
@@ -74,6 +76,7 @@ export const SECRET_RULES: SecretRule[] = [
     message: 'Stripe secret/restricted key (live) hardcoded',
     remediation:
       'Roll the key on Stripe Dashboard → Developers → API keys. Treat as compromised.',
+    verify: { kind: 'stripe' },
     excludeFilenamePatterns: [ENV_EXAMPLE_FILE],
     patterns: [
       {
@@ -95,6 +98,7 @@ export const SECRET_RULES: SecretRule[] = [
     message: 'GitHub Personal Access Token exposed',
     remediation:
       'Revoke at github.com/settings/tokens. Prefer fine-grained tokens and store in env vars.',
+    verify: { kind: 'github-pat' },
     excludeFilenamePatterns: [ENV_EXAMPLE_FILE],
     patterns: [
       {
@@ -192,6 +196,7 @@ export const SECRET_RULES: SecretRule[] = [
     message: 'Slack token exposed',
     remediation:
       'Revoke at api.slack.com/apps → OAuth & Permissions, regenerate, and move to env.',
+    verify: { kind: 'slack' },
     excludeFilenamePatterns: [ENV_EXAMPLE_FILE],
     patterns: [
       {

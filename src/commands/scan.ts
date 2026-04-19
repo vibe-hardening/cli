@@ -26,6 +26,8 @@ export interface ScanCommandOptions {
   includeTests: boolean;
   includeDocs: boolean;
   respectGitignore: boolean;
+  verify: boolean;
+  own: boolean;
   version: string;
 }
 
@@ -54,6 +56,24 @@ export async function runScanCommand(
     );
   }
 
+  // --verify makes real HTTP calls to provider APIs using the found
+  // secret. Without --own the user might unknowingly probe someone
+  // else's credentials — we hard-gate it and warn instead of failing
+  // so CI pipelines don't break if --own is forgotten.
+  let verifyEnabled = false;
+  if (opts.verify) {
+    if (!opts.own) {
+      process.stderr.write(
+        pc.yellow(
+          'warning: --verify requires --own to confirm the keys are yours.\n' +
+            '         refusing to probe third-party credentials. skipping live check.\n',
+        ),
+      );
+    } else {
+      verifyEnabled = true;
+    }
+  }
+
   const files = await walk({ cwd, respectGitignore: opts.respectGitignore });
   const report = await runScan({
     files,
@@ -61,6 +81,7 @@ export async function runScanCommand(
     offline: opts.offline,
     includeTests: opts.includeTests,
     includeDocs: opts.includeDocs,
+    verify: verifyEnabled,
   });
 
   // Create parent dir on demand so `--output foo/bar.html` works even
