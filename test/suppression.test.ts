@@ -58,6 +58,21 @@ describe('inline disable directive parsing', () => {
     expect(d[0]?.ruleIds).toEqual(['vh-secret-openai']);
   });
 
+  it('accepts # comment form (Python / YAML / bash)', () => {
+    const d = parseDirectives(
+      '# vibe-hardening-disable-next-line vh-py-django-debug-true\nDEBUG = True',
+    );
+    expect(d).toHaveLength(1);
+    expect(d[0]?.ruleIds).toEqual(['vh-py-django-debug-true']);
+  });
+
+  it('accepts <!-- HTML/Markdown comment --> form', () => {
+    const d = parseDirectives(
+      '<!-- vibe-hardening-disable-next-line vh-secret-openai -->\nkey',
+    );
+    expect(d[0]?.ruleIds).toEqual(['vh-secret-openai']);
+  });
+
   it('ignores non-directive comments', () => {
     expect(parseDirectives('// this is a regular comment')).toHaveLength(0);
   });

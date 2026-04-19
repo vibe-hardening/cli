@@ -33,7 +33,9 @@ export async function runScanCommand(
 ): Promise<number> {
   if (!VALID_FORMATS.has(opts.format)) {
     process.stderr.write(
-      pc.red(`error: unknown format "${opts.format}". use console | json.\n`),
+      pc.red(
+        `error: unknown format "${opts.format}". use console | json | html.\n`,
+      ),
     );
     return 2;
   }

@@ -13,8 +13,9 @@ import type { FileContext, Finding } from './types.js';
  * Block-form directives (file-wide / begin-end) are out of scope for
  * the preview release.
  */
+// Comment-open tokens: '//', '/*', '#' (Python/YAML/bash), '<!--' (HTML/Markdown).
 const RE_DIRECTIVE =
-  /\/[/*]\s*vibe-hardening-disable-next-line(?:\s+([a-z0-9,\-*\s]+))?/i;
+  /(?:\/[/*]|#|<!--)\s*vibe-hardening-disable-next-line(?:\s+([a-z0-9,\-*\s]+))?/i;
 
 interface Directive {
   lineAffected: number; // the line number the directive suppresses
