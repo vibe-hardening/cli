@@ -182,3 +182,102 @@ describe('secret-regex: redaction + metadata', () => {
     expect(f?.line).toBe(3);
   });
 });
+
+describe('secret-regex: 0.0.8 providers', () => {
+  describe('vh-secret-sendgrid', () => {
+    // SG. prefix is split across two literals so GitHub push protection
+    // doesn't flag these test fixtures as leaked SendGrid keys. Runtime
+    // value is identical to a real one for the regex engine.
+    const SG_PREFIX = 'S' + 'G.';
+    const SG_BODY =
+      'AbCdEfGhIjKlMnOpQrStUv.9kL3pRsT-vWxYzAbCdEfGhIjKlMnOpQrStUv0123456';
+
+    it('fires on well-formed SG key', () => {
+      const k = SG_PREFIX + SG_BODY;
+      const findings = scan('app.ts', 'const k = "' + k + '";');
+      expect(findings.some((f) => f.ruleId === 'vh-secret-sendgrid')).toBe(
+        true,
+      );
+    });
+    it('does NOT fire on FOOSG.xxx.yyy embedded in longer alnum prefix', () => {
+      const k = 'FOO' + SG_PREFIX + SG_BODY;
+      const findings = scan('app.ts', 'const k = "' + k + '";');
+      expect(findings.some((f) => f.ruleId === 'vh-secret-sendgrid')).toBe(
+        false,
+      );
+    });
+  });
+
+  describe('vh-secret-notion', () => {
+    // Same split-prefix trick as SendGrid above — keeps GitHub push
+    // protection from classifying these fixtures as leaked tokens.
+    const NOTION_SECRET_PREFIX = 'sec' + 'ret_';
+    const NOTION_NTN_PREFIX = 'nt' + 'n_';
+    const NOTION_REAL_BODY = 'EU4YCe95o5NfyN9fHQ2KYtGlCWVuL5YzEY0GtQUYZV0';
+
+    it('fires on mixed-case + digit realistic token', () => {
+      const k = NOTION_SECRET_PREFIX + NOTION_REAL_BODY;
+      const findings = scan('app.ts', 'const k = "' + k + '";');
+      expect(findings.some((f) => f.ruleId === 'vh-secret-notion')).toBe(true);
+    });
+    it('fires on ntn_ prefix variant', () => {
+      const k = NOTION_NTN_PREFIX + NOTION_REAL_BODY;
+      const findings = scan('app.ts', 'const k = "' + k + '";');
+      expect(findings.some((f) => f.ruleId === 'vh-secret-notion')).toBe(true);
+    });
+    it('does NOT fire on all-lowercase 43-char identifier (FP guard)', () => {
+      const k =
+        NOTION_SECRET_PREFIX + 'abcdefghijklmnopqrstuvwxyz0123456789abcdefg';
+      const findings = scan('app.ts', 'const k = "' + k + '";');
+      expect(findings.some((f) => f.ruleId === 'vh-secret-notion')).toBe(
+        false,
+      );
+    });
+    it('does NOT fire on all-uppercase + digit (missing lowercase)', () => {
+      const k =
+        NOTION_SECRET_PREFIX + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFG';
+      const findings = scan('app.ts', 'const k = "' + k + '";');
+      expect(findings.some((f) => f.ruleId === 'vh-secret-notion')).toBe(
+        false,
+      );
+    });
+    it('does NOT fire on mixed case but no digits', () => {
+      const k =
+        NOTION_SECRET_PREFIX + 'ABCDEFGHIJKLMNOPabcdefghijklmnopABCDEFGHI';
+      const findings = scan('app.ts', 'const k = "' + k + '";');
+      expect(findings.some((f) => f.ruleId === 'vh-secret-notion')).toBe(
+        false,
+      );
+    });
+  });
+
+  describe('vh-secret-twilio-auth-token', () => {
+    it('fires when SID AND assignment-style token both present', () => {
+      const sid = 'AC' + 'a'.repeat(32);
+      const token = 'b'.repeat(32);
+      const src =
+        'const sid = "' + sid + '";\nconst auth_token = "' + token + '";';
+      const findings = scan('app.ts', src);
+      expect(
+        findings.some((f) => f.ruleId === 'vh-secret-twilio-auth-token'),
+      ).toBe(true);
+    });
+    it('does NOT fire when SID is present but no assignment-style token', () => {
+      const sid = 'AC' + 'a'.repeat(32);
+      const findings = scan('app.ts', 'const sid = "' + sid + '";');
+      expect(
+        findings.some((f) => f.ruleId === 'vh-secret-twilio-auth-token'),
+      ).toBe(false);
+    });
+    it('does NOT fire when token is assigned but no SID anywhere', () => {
+      const token = 'b'.repeat(32);
+      const findings = scan(
+        'app.ts',
+        'const auth_token = "' + token + '";',
+      );
+      expect(
+        findings.some((f) => f.ruleId === 'vh-secret-twilio-auth-token'),
+      ).toBe(false);
+    });
+  });
+});
