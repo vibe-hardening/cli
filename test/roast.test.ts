@@ -6,8 +6,36 @@ import {
   roastMessage,
   ROAST_EMPTY,
   ROAST_GRADE_LINES,
+  ROAST_DEPENDENCY_CVE_PREFIX,
 } from '../src/reporters/roast-messages.js';
+import { SECRET_RULES } from '../src/rules/secrets.js';
+import { INJECTION_RULES } from '../src/rules/injection.js';
+import { NETWORK_RULES } from '../src/rules/network.js';
+import { AUTH_PATTERN_RULES } from '../src/rules/auth-patterns.js';
+import { PYTHON_INJECTION_RULES } from '../src/rules/python-injection.js';
+import { PYTHON_AUTH_RULES } from '../src/rules/python-auth.js';
 import type { ScanReport } from '../src/core/scan.js';
+
+// Engine-emitted rule IDs not present in any rules/*.ts file.
+const ENGINE_EMITTED_RULE_IDS = [
+  'vh-auth-missing-middleware',
+  'vh-supabase-rls-disabled',
+  'vh-secret-supabase-service-role',
+  'vh-llm-hallucinated-package',
+  'vh-llm-low-trust-package',
+];
+
+function allShippedRuleIds(): string[] {
+  const fromRules = [
+    ...SECRET_RULES,
+    ...INJECTION_RULES,
+    ...NETWORK_RULES,
+    ...AUTH_PATTERN_RULES,
+    ...PYTHON_INJECTION_RULES,
+    ...PYTHON_AUTH_RULES,
+  ].map((r) => r.id);
+  return [...new Set([...fromRules, ...ENGINE_EMITTED_RULE_IDS])];
+}
 
 function baseReport(overrides: Partial<ScanReport> = {}): ScanReport {
   return {
@@ -21,31 +49,50 @@ function baseReport(overrides: Partial<ScanReport> = {}): ScanReport {
   };
 }
 
-describe('roast: message dictionary', () => {
-  it('has roasts for every shipped secret rule', () => {
-    const shipped = [
-      'vh-secret-openai',
-      'vh-secret-anthropic',
-      'vh-secret-stripe',
-      'vh-secret-github-pat',
-      'vh-secret-slack-token',
-      'vh-secret-sendgrid',
-      'vh-secret-notion',
-      'vh-secret-twilio-auth-token',
-      'vh-secret-aws-access-key',
-      'vh-secret-db-url',
-      'vh-secret-jwt-hardcoded',
-      'vh-secret-next-public-risky',
-    ];
-    for (const id of shipped) {
-      expect(ROAST_MESSAGES[id], `missing roast for ${id}`).toBeTruthy();
-    }
+describe('roast: dictionary ↔ shipped rule IDs cross-check', () => {
+  it('every shipped rule ID has a roast entry', () => {
+    const shipped = allShippedRuleIds();
+    const missing = shipped.filter((id) => !(id in ROAST_MESSAGES));
+    expect(
+      missing,
+      `rules missing roast entries: ${missing.join(', ')}`,
+    ).toEqual([]);
   });
 
+  it('every roast key maps to a real emitted rule ID (no dead entries)', () => {
+    const shipped = new Set(allShippedRuleIds());
+    const orphans = Object.keys(ROAST_MESSAGES).filter(
+      (id) => !shipped.has(id),
+    );
+    expect(
+      orphans,
+      `orphan roast keys (no matching rule): ${orphans.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  it('all roast strings contain no ANSI escape / control characters', () => {
+    // eslint-disable-next-line no-control-regex
+    const ansi = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F\x1B]/;
+    for (const [id, msg] of Object.entries(ROAST_MESSAGES)) {
+      expect(ansi.test(msg), `${id} contains control char`).toBe(false);
+    }
+    for (const [g, line] of Object.entries(ROAST_GRADE_LINES)) {
+      expect(ansi.test(line), `grade ${g} contains control char`).toBe(false);
+    }
+    expect(ansi.test(ROAST_EMPTY)).toBe(false);
+  });
+});
+
+describe('roast: helper behaviour', () => {
   it('has a grade line for every letter grade', () => {
     for (const grade of ['A', 'B', 'C', 'D', 'F'] as const) {
       expect(ROAST_GRADE_LINES[grade]).toBeTruthy();
     }
+  });
+
+  it('roastMessage returns the roast when ruleId is known', () => {
+    const out = roastMessage('vh-secret-openai', 'ignored fallback');
+    expect(out).toContain('token bill');
   });
 
   it('roastMessage falls back to original message for unknown ruleId', () => {
@@ -54,13 +101,30 @@ describe('roast: message dictionary', () => {
     );
   });
 
-  it('roastMessage generates prefix-based roast for CVE rules', () => {
+  it('CVE: strips pkg@ver prefix from single-CVE message', () => {
     const out = roastMessage(
-      'vh-dep-cve-hono@4.12.2',
-      'hono@4.12.2: GHSA-xxx — some summary',
+      'vh-dep-cve-GHSA-xxx',
+      'hono@4.12.2: GHSA-xxx — brief summary',
     );
-    expect(out).toContain('npm update');
-    expect(out).toContain('GHSA-xxx');
+    expect(out).toBe(
+      `${ROAST_DEPENDENCY_CVE_PREFIX} GHSA-xxx — brief summary`,
+    );
+  });
+
+  it('CVE: does NOT mangle grouped-format message (regression)', () => {
+    // Previously the regex greedily matched "everything up to first
+    // colon" which reduced `...worst: medium` to just `medium`. The
+    // pkg@ver-anchored replacement must leave this message intact so
+    // the user still sees the vuln count and package info.
+    const grouped =
+      'hono@4.12.2 has 8 known vulnerabilities — worst: medium';
+    const out = roastMessage('vh-dep-cve-hono@4.12.2', grouped);
+    expect(out).toBe(`${ROAST_DEPENDENCY_CVE_PREFIX} ${grouped}`);
+    expect(out).toContain('8 known vulnerabilities');
+    expect(out).toContain('hono@4.12.2');
+    // Regression guard: the broken version would produce just
+    // "PREFIX medium" with the package name stripped.
+    expect(out).not.toBe(`${ROAST_DEPENDENCY_CVE_PREFIX} medium`);
   });
 });
 
@@ -122,10 +186,10 @@ describe('roast: console reporter integration', () => {
   it('default console shows the normal empty message', () => {
     const out = renderConsole(baseReport());
     expect(out).toContain('ship with confidence');
-    expect(out).not.toContain('Did you even try');
+    expect(out).not.toContain(ROAST_EMPTY);
   });
 
-  it('roast mode preserves the unknown-rule fallback', () => {
+  it('roast mode preserves unknown-rule fallback', () => {
     const unknown = {
       ...findingFixture,
       ruleId: 'vh-definitely-not-a-real-rule',
@@ -140,10 +204,31 @@ describe('roast: console reporter integration', () => {
     );
     expect(out).toContain('SOMETHING ORIGINAL');
   });
+
+  it('roast mode handles mixed known + unknown rules in one report', () => {
+    const findings = [
+      { ...findingFixture },
+      {
+        ...findingFixture,
+        ruleId: 'vh-mystery-rule',
+        message: 'MYSTERY MESSAGE',
+        file: 'other.ts',
+      },
+    ];
+    const out = renderConsole(
+      baseReport({
+        findings,
+        summary: { critical: 2, high: 0, medium: 0, low: 0, info: 0 },
+      }),
+      { roast: true },
+    );
+    expect(out).toContain('token bill');
+    expect(out).toContain('MYSTERY MESSAGE');
+  });
 });
 
 describe('roast: JSON reporter is NOT affected', () => {
-  it('JSON output keeps the original neutral message', () => {
+  it('JSON output keeps the original neutral message even with --roast', () => {
     const report = baseReport({
       findings: [
         {
@@ -161,7 +246,7 @@ describe('roast: JSON reporter is NOT affected', () => {
       ],
       summary: { critical: 1, high: 0, medium: 0, low: 0, info: 0 },
     });
-    const json = JSON.parse(renderJson(report, '0.0.9-preview.0'));
+    const json = JSON.parse(renderJson(report, '0.0.9-preview.1'));
     expect(json.findings[0].message).toBe('OpenAI API key hardcoded in source');
     expect(JSON.stringify(json)).not.toContain('token bill');
   });

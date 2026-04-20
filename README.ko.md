@@ -92,6 +92,27 @@ verifier가 있는 키 (OpenAI, Anthropic, Stripe, GitHub PAT, Slack, SendGrid, 
 
 `--own`은 의도적인 안전벨트로, CLI는 소유를 주장하지 않은 키의 조사를 거부합니다. `--own` 없이 `--verify`를 실행하면 stderr 경고가 출력되고 탐지 전용 모드로 돌아갑니다.
 
+### `--roast` 모드
+
+중립적인 룰 메시지를 신랄한 brutalist 한 줄로 교체하고, 점수 줄에도 등급별 한마디를 추가합니다:
+
+```
+ CRITICAL  vh-secret-openai  (2:12)
+           OpenAI key in source. Your token bill just rang. It's scared.
+           snippet: sk-pro…opqr
+
+score      42 / 100  [F]   This is a hostage note to yourself.
+```
+
+출시된 모든 룰에 수작업 카피 (43개 — secrets / injection / auth / network / Python / 공급망)가 있습니다. 의존성 CVE는 prefix 기반 roast. 미등록 룰 ID는 중립 메시지로 fallback.
+
+**콘솔 전용** — JSON과 HTML 리포터는 완전히 건드리지 않아서 CI 아티팩트, 컴플라이언스 리포트, 기계 파싱용 출력은 전문적으로 유지됩니다. 다른 플래그와 자유롭게 조합 가능:
+
+```bash
+npx vibe-hardening scan --roast
+npx vibe-hardening scan --verify --own --roast
+```
+
 ### HTML 리포트
 
 ```bash

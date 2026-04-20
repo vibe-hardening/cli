@@ -92,6 +92,27 @@ verifier がある鍵 (OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGr
 
 `--own` は意図的な安全装置で、CLI は所有を宣言していない鍵の調査を拒否します。`--own` なしで `--verify` を実行すると stderr に警告が出て検出のみのモードに戻ります。
 
+### `--roast` モード
+
+中性なルールメッセージを辛辣な brutalist ワンライナーに置き換え、スコア行にもグレード別の一言を追加します:
+
+```
+ CRITICAL  vh-secret-openai  (2:12)
+           OpenAI key in source. Your token bill just rang. It's scared.
+           snippet: sk-pro…opqr
+
+score      42 / 100  [F]   This is a hostage note to yourself.
+```
+
+シップ済みの全ルールに手書きの台詞 (43 件 — secrets / injection / auth / network / Python / サプライチェーン) があります。依存 CVE はプレフィックスベースの roast。未知のルール ID は中性メッセージにフォールバック。
+
+**コンソール専用** — JSON と HTML レポーターには一切触れないため、CI アーティファクト、コンプライアンスレポート、機械パース用の出力はプロフェッショナルなまま。他のフラグと自由に組み合わせ可能:
+
+```bash
+npx vibe-hardening scan --roast
+npx vibe-hardening scan --verify --own --roast
+```
+
 ### HTML レポート
 
 ```bash

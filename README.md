@@ -98,6 +98,32 @@ destructive) and classifies each as:
 claim to own. Without it, `--verify` emits a stderr warning and falls back to
 detection-only.
 
+### `--roast` mode
+
+Dry brutalist one-liners instead of neutral rule messages, plus a per-grade
+quip on the score line:
+
+```
+ CRITICAL  vh-secret-openai  (2:12)
+           OpenAI key in source. Your token bill just rang. It's scared.
+           snippet: sk-pro…opqr
+
+score      42 / 100  [F]   This is a hostage note to yourself.
+```
+
+Every shipped rule has a hand-written line (43 entries covering secrets /
+injection / auth / network / Python / supply chain). Dependency CVEs get a
+prefix-based roast. Unknown rule IDs fall back to the neutral message.
+
+**Console-only** — the JSON and HTML reporters are completely untouched, so
+CI artifacts, compliance reports, and anything machine-parseable stay
+professional. Combine freely with other flags:
+
+```bash
+npx vibe-hardening scan --roast
+npx vibe-hardening scan --verify --own --roast
+```
+
 ### HTML report
 
 ```bash

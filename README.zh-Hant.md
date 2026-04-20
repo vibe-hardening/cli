@@ -92,6 +92,27 @@ npx vibe-hardening scan --roast
 
 `--own` 是故意加的安全帶，CLI 拒絕去探測你沒聲明擁有的金鑰。沒加 `--own` 時，`--verify` 會丟 stderr 警告並退回只偵測模式。
 
+### `--roast` 模式
+
+把中性 rule 訊息換成毒舌 brutalist 一句話，分數列也加一段吐槽：
+
+```
+ CRITICAL  vh-secret-openai  (2:12)
+           OpenAI key in source. Your token bill just rang. It's scared.
+           snippet: sk-pro…opqr
+
+score      42 / 100  [F]   This is a hostage note to yourself.
+```
+
+每一條 shipped rule 都有手寫台詞（43 條，涵蓋 secrets / injection / auth / network / Python / 供應鏈）。依賴 CVE 用 prefix roast。未知 rule 會 fallback 到原本的中性訊息。
+
+**只影響 console** — JSON 跟 HTML reporter 完全不碰，CI artifact / 合規報告 / 任何機器解析用的都保持專業。跟其他 flag 可以自由組合：
+
+```bash
+npx vibe-hardening scan --roast
+npx vibe-hardening scan --verify --own --roast
+```
+
 ### HTML 報告
 
 ```bash
