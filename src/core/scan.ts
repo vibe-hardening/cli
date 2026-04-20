@@ -280,13 +280,20 @@ export async function runScan(opts: ScanOptions): Promise<ScanReport> {
     const lockfile = findRootLockfile(opts.files);
     if (lockfile) {
       try {
-        const osvFindings = await scanOsv(lockfile, { fetchImpl: opts.fetchImpl });
+        const osvFindings = await scanOsv(lockfile, {
+          fetchImpl: opts.fetchImpl,
+          onWarning: opts.onWarning,
+        });
         for (const f of osvFindings) {
           if (SEVERITY_RANK[f.severity] >= minRank) all.push(f);
         }
       } catch (err) {
+        // scanOsv's internal batch catches already surface per-batch
+        // failures via onWarning. Reaching this outer catch means
+        // something unexpected threw (lockfile parse bug, programming
+        // error) — worth warning separately.
         opts.onWarning?.(
-          `OSV CVE lookup failed — dependency vulnerability results may be incomplete (${err instanceof Error ? err.message : 'network error'})`,
+          `OSV lookup crashed unexpectedly: ${err instanceof Error ? err.message : 'unknown error'}`,
         );
       }
     }
@@ -294,13 +301,16 @@ export async function runScan(opts: ScanOptions): Promise<ScanReport> {
     const pkg = findPackageJson(opts.files);
     if (pkg) {
       try {
-        const hFindings = await scanHallucinated(pkg, { fetchImpl: opts.fetchImpl });
+        const hFindings = await scanHallucinated(pkg, {
+          fetchImpl: opts.fetchImpl,
+          onWarning: opts.onWarning,
+        });
         for (const f of hFindings) {
           if (SEVERITY_RANK[f.severity] >= minRank) all.push(f);
         }
       } catch (err) {
         opts.onWarning?.(
-          `hallucinated-package check failed — supply-chain results may be incomplete (${err instanceof Error ? err.message : 'network error'})`,
+          `hallucinated-package check crashed unexpectedly: ${err instanceof Error ? err.message : 'unknown error'}`,
         );
       }
     }

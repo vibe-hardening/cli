@@ -163,3 +163,25 @@ describe('hallucination: scan', () => {
     expect(f[0]?.snippet).toContain('^9.9.9');
   });
 });
+
+describe('hallucination: onWarning (regression for silent-network-failure bug)', () => {
+  it('calls onWarning when every registry lookup fails', async () => {
+    const pkg = JSON.stringify({
+      dependencies: { 'foo-lib': '1.0.0', 'bar-lib': '2.0.0' },
+    });
+    const stubFetch = (async () => {
+      throw new Error('DNS failure');
+    }) as unknown as typeof fetch;
+
+    const warnings: string[] = [];
+    const f = await scanHallucinated(
+      { path: 'package.json', content: pkg },
+      { fetchImpl: stubFetch, onWarning: (m) => warnings.push(m) },
+    );
+
+    expect(f).toEqual([]);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toMatch(/registry lookups failed/i);
+    expect(warnings[0]).toContain('2/2');
+  });
+});

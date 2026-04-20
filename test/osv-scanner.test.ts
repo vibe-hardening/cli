@@ -139,3 +139,45 @@ describe('osv: scanning + finding generation', () => {
     expect(f[0]?.severity).toBe('critical');
   });
 });
+
+describe('osv: onWarning (regression for silent-network-failure bug)', () => {
+  it('calls onWarning when every OSV batch fails', async () => {
+    const lock = JSON.stringify({
+      lockfileVersion: 3,
+      packages: { 'node_modules/hono': { version: '4.0.0' } },
+    });
+    const stubFetch = (async () => {
+      throw new Error('ECONNRESET');
+    }) as unknown as typeof fetch;
+
+    const warnings: string[] = [];
+    const f = await scanOsv(
+      { path: 'package-lock.json', content: lock },
+      { fetchImpl: stubFetch, onWarning: (m) => warnings.push(m) },
+    );
+
+    expect(f).toEqual([]);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toMatch(/OSV.*batch.*failed/i);
+    expect(warnings[0]).toContain('ECONNRESET');
+  });
+
+  it('does NOT call onWarning when all batches succeed', async () => {
+    const lock = JSON.stringify({
+      lockfileVersion: 3,
+      packages: { 'node_modules/hono': { version: '4.0.0' } },
+    });
+    const stubFetch = (async () =>
+      new Response(JSON.stringify({ results: [{ vulns: [] }] }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })) as unknown as typeof fetch;
+
+    const warnings: string[] = [];
+    await scanOsv(
+      { path: 'package-lock.json', content: lock },
+      { fetchImpl: stubFetch, onWarning: (m) => warnings.push(m) },
+    );
+    expect(warnings).toEqual([]);
+  });
+});

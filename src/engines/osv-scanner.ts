@@ -24,6 +24,14 @@ export interface OsvScanOptions {
   signal?: AbortSignal;
   maxBatchSize?: number;
   fetchImpl?: typeof fetch;
+  /**
+   * Called once with a summary if any OSV batch failed (DNS / offline /
+   * timeout / 5xx). Without this hook the engine silently skips failing
+   * batches and returns a partial result, which means a user on a
+   * restricted network would see a clean score even though CVE lookups
+   * actually didn't happen.
+   */
+  onWarning?: (message: string) => void;
 }
 
 interface LockPackage {
@@ -158,8 +166,12 @@ async function queryOsv(
   // users with lots of deps.
   const batchSize = opts.maxBatchSize ?? 500;
   const result = new Map<string, OsvVulnerability[]>();
+  let batchesAttempted = 0;
+  let batchesFailed = 0;
+  let lastError = '';
 
   for (let i = 0; i < packages.length; i += batchSize) {
+    batchesAttempted++;
     const chunk = packages.slice(i, i + batchSize);
     const queries: OsvQuery[] = chunk.map((p) => ({
       package: { name: p.name, ecosystem: 'npm' },
@@ -174,16 +186,23 @@ async function queryOsv(
         body: JSON.stringify({ queries }),
         signal: withDefaultTimeout(opts.signal),
       });
-    } catch {
-      // timeout / DNS / offline — skip this batch, continue with next
+    } catch (err) {
+      batchesFailed++;
+      lastError = err instanceof Error ? err.message : 'network error';
       continue;
     }
-    if (!resp.ok) continue;
+    if (!resp.ok) {
+      batchesFailed++;
+      lastError = `HTTP ${resp.status}`;
+      continue;
+    }
 
     let body: OsvResponse;
     try {
       body = (await resp.json()) as OsvResponse;
     } catch {
+      batchesFailed++;
+      lastError = 'invalid JSON response';
       continue;
     }
 
@@ -195,6 +214,13 @@ async function queryOsv(
       result.set(`${pkg.name}@${pkg.version}`, vulns);
     }
   }
+
+  if (batchesFailed > 0 && opts.onWarning) {
+    opts.onWarning(
+      `OSV CVE lookup: ${batchesFailed}/${batchesAttempted} batch${batchesAttempted === 1 ? '' : 'es'} failed (${lastError}). Dependency vulnerability results may be incomplete.`,
+    );
+  }
+
   return result;
 }
 

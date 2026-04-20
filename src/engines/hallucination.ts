@@ -8,6 +8,13 @@ export interface HallucinationOptions {
   signal?: AbortSignal;
   concurrency?: number;
   minWeeklyDownloads?: number;
+  /**
+   * Called once with a summary if npm registry lookups failed for one
+   * or more packages. Without this hook the engine treats each failed
+   * fetch as `unknown` and silently returns zero findings on offline /
+   * restricted networks — giving users a false sense of safety.
+   */
+  onWarning?: (message: string) => void;
 }
 
 interface DependencyRef {
@@ -168,6 +175,20 @@ export async function scanHallucinated(
     dep: d,
     result: await checkSingle(d.name, opts),
   }));
+
+  // Surface a single warning if a substantial fraction of the registry
+  // lookups failed — otherwise a user on a restricted network gets a
+  // clean "no hallucinated packages" report that actually means "we
+  // couldn't check at all."
+  const fetchFailed = checks.filter(
+    (c) =>
+      c.result.status === 'unknown' && c.result.reason === 'fetch-failed',
+  ).length;
+  if (fetchFailed > 0 && opts.onWarning) {
+    opts.onWarning(
+      `hallucinated-package check: npm registry lookups failed for ${fetchFailed}/${checks.length} dependencies. Slopsquat results may be incomplete.`,
+    );
+  }
 
   const findings: Finding[] = [];
   for (const { dep, result } of checks) {
