@@ -36,7 +36,7 @@ npx vibe-hardening scan
 
 **対応言語**: JavaScript / TypeScript / **Python** (Django / Flask / FastAPI).
 
-40以上のルール、8カテゴリー。**v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** が生成したリポジトリ向けに調整されています。
+47のルール、9カテゴリー。**v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** が生成したリポジトリ向けに調整されています。
 
 | カテゴリー | 例 |
 |-----------|-----|
@@ -84,10 +84,10 @@ platform  v0  (74% confidence)
 
 プレビューリリース — Phase 1 MVPは **2026-05-13** にProduct Huntでのローンチを目標としています。
 
-現在のカバレッジ (`v0.0.5-preview.0`):
+現在のカバレッジ (`v0.0.8-preview.3`):
 - 対応言語: JavaScript / TypeScript / Python (Django、Flask、FastAPI)
 - 6つのエンジン: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM幻覚
-- 40以上のルール、162のテスト、一般的なリポジトリを5秒以内にスキャン
+- 47のルール、217のテスト、一般的なリポジトリを5秒以内にスキャン
 - 出力形式: カラーターミナル、CI用JSON、スタンドアロンHTMLレポート
 - 0-100セキュリティスコア + A-F グレード + SVG README バッジ
 - インライン抑制: `// vibe-hardening-disable-next-line vh-rule-id`
