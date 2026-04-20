@@ -82,6 +82,12 @@ export async function runScanCommand(
     includeTests: opts.includeTests,
     includeDocs: opts.includeDocs,
     verify: verifyEnabled,
+    // Non-fatal scan errors (network down, provider timeout) surface
+    // to stderr so users on restricted networks don't silently
+    // receive a clean score when supply-chain checks actually failed.
+    onWarning: (msg) => {
+      process.stderr.write(`${pc.yellow('warning:')} ${msg}\n`);
+    },
   });
 
   // Create parent dir on demand so `--output foo/bar.html` works even

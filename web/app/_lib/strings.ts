@@ -141,7 +141,7 @@ export const strings: Record<Locale, Strings> = {
     },
     features: {
       label1: 'What it checks —',
-      label2: '44 rules across 11 categories.',
+      label2: '47 rules across 9 categories.',
       items: [
         {
           code: 'SEC-01',
@@ -263,7 +263,7 @@ export const strings: Record<Locale, Strings> = {
     },
     features: {
       label1: '我們檢查什麼 —',
-      label2: '11 類別共 44 條規則。',
+      label2: '9 類別共 47 條規則。',
       items: [
         {
           code: 'SEC-01',

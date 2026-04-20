@@ -82,6 +82,15 @@ export interface ScanOptions {
    * `--own` so users can't accidentally probe third-party keys.
    */
   verify?: boolean;
+  /**
+   * Called with a human-readable message when a non-fatal error
+   * happens during the scan — typically a network failure on the OSV
+   * CVE lookup or the hallucinated-package check. These errors used
+   * to be silently swallowed, which meant a user on a restricted
+   * network got a clean score with no indication that supply-chain
+   * checks were skipped. The CLI wires this to a stderr warning.
+   */
+  onWarning?: (message: string) => void;
 }
 
 function hasExt(path: string, exts: string[]): boolean {
@@ -275,8 +284,10 @@ export async function runScan(opts: ScanOptions): Promise<ScanReport> {
         for (const f of osvFindings) {
           if (SEVERITY_RANK[f.severity] >= minRank) all.push(f);
         }
-      } catch {
-        // network down / throttled — skip silently
+      } catch (err) {
+        opts.onWarning?.(
+          `OSV CVE lookup failed — dependency vulnerability results may be incomplete (${err instanceof Error ? err.message : 'network error'})`,
+        );
       }
     }
 
@@ -287,8 +298,10 @@ export async function runScan(opts: ScanOptions): Promise<ScanReport> {
         for (const f of hFindings) {
           if (SEVERITY_RANK[f.severity] >= minRank) all.push(f);
         }
-      } catch {
-        // same
+      } catch (err) {
+        opts.onWarning?.(
+          `hallucinated-package check failed — supply-chain results may be incomplete (${err instanceof Error ? err.message : 'network error'})`,
+        );
       }
     }
   }
