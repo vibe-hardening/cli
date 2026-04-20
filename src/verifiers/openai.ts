@@ -13,42 +13,47 @@ export async function verifyOpenAI(
 ): Promise<VerifyResult> {
   const fetchFn = opts.fetchImpl ?? fetch;
   const checkedAt = new Date().toISOString();
+  const timeout = defaultTimeoutSignal(opts);
 
-  let resp: Response;
   try {
-    resp = await fetchFn('https://api.openai.com/v1/models', {
-      method: 'GET',
-      headers: {
-        authorization: `Bearer ${key}`,
-        'user-agent': USER_AGENT,
-      },
-      signal: defaultTimeoutSignal(opts),
-    });
-  } catch (e) {
+    let resp: Response;
+    try {
+      resp = await fetchFn('https://api.openai.com/v1/models', {
+        method: 'GET',
+        headers: {
+          authorization: `Bearer ${key}`,
+          'user-agent': USER_AGENT,
+        },
+        signal: timeout.signal,
+      });
+    } catch (e) {
+      return {
+        kind: KIND,
+        status: 'unknown',
+        error: e instanceof Error ? e.message : 'fetch failed',
+        checkedAt,
+      };
+    }
+
+    if (resp.status === 200) {
+      return { kind: KIND, status: 'live', httpStatus: 200, checkedAt };
+    }
+    if (resp.status === 401 || resp.status === 403) {
+      return {
+        kind: KIND,
+        status: 'revoked',
+        httpStatus: resp.status,
+        checkedAt,
+      };
+    }
     return {
       kind: KIND,
       status: 'unknown',
-      error: e instanceof Error ? e.message : 'fetch failed',
-      checkedAt,
-    };
-  }
-
-  if (resp.status === 200) {
-    return { kind: KIND, status: 'live', httpStatus: 200, checkedAt };
-  }
-  if (resp.status === 401 || resp.status === 403) {
-    return {
-      kind: KIND,
-      status: 'revoked',
       httpStatus: resp.status,
+      error: `unexpected status ${resp.status}`,
       checkedAt,
     };
+  } finally {
+    timeout.clear();
   }
-  return {
-    kind: KIND,
-    status: 'unknown',
-    httpStatus: resp.status,
-    error: `unexpected status ${resp.status}`,
-    checkedAt,
-  };
 }

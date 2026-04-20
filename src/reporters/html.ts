@@ -1,5 +1,6 @@
 import type { ScanReport } from '../core/scan.js';
 import type { Finding, Severity } from '../core/types.js';
+import type { VerifyResult } from '../verifiers/index.js';
 import { renderBadge } from '../scoring/badge.js';
 
 function escapeHtml(s: string): string {
@@ -25,7 +26,36 @@ function groupByFile(findings: Finding[]): Map<string, Finding[]> {
   return m;
 }
 
+function renderVerifyHtml(v: VerifyResult): string {
+  const extras: string[] = [];
+  if (v.info) {
+    for (const [k, val] of Object.entries(v.info)) {
+      if (val !== undefined && val !== '') extras.push(`${k}=${String(val)}`);
+    }
+  }
+  const meta = extras.length ? escapeHtml(extras.join(' · ')) : '';
+  if (v.status === 'live') {
+    return `<div class="vh-verify vh-verify-live">
+      <span class="vh-verify-badge">▲ LIVE KEY</span>
+      <span class="vh-verify-kind">${escapeHtml(v.kind)}</span>
+      ${meta ? `<span class="vh-verify-meta">${meta}</span>` : ''}
+    </div>`;
+  }
+  if (v.status === 'revoked') {
+    return `<div class="vh-verify vh-verify-revoked">
+      <span class="vh-verify-badge">✓ REVOKED</span>
+      <span class="vh-verify-kind">${escapeHtml(v.kind)}</span>
+    </div>`;
+  }
+  const reason = v.error ? ` — ${escapeHtml(v.error)}` : '';
+  return `<div class="vh-verify vh-verify-unknown">
+    <span class="vh-verify-badge">? UNVERIFIED</span>
+    <span class="vh-verify-kind">${escapeHtml(v.kind)}${reason}</span>
+  </div>`;
+}
+
 function renderFindingHtml(f: Finding): string {
+  const verify = f.metadata?.verify as VerifyResult | undefined;
   return `<div class="vh-finding ${severityClass(f.severity)}">
   <div class="vh-finding-head">
     <span class="vh-badge vh-badge-${f.severity}">${f.severity.toUpperCase()}</span>
@@ -38,6 +68,7 @@ function renderFindingHtml(f: Finding): string {
       ? `<div class="vh-snippet"><span class="vh-label">snippet:</span> <code>${escapeHtml(f.snippet)}</code></div>`
       : ''
   }
+  ${verify ? renderVerifyHtml(verify) : ''}
   ${
     f.remediation
       ? `<div class="vh-fix"><span class="vh-label">fix:</span> ${escapeHtml(f.remediation)}</div>`
@@ -157,6 +188,25 @@ export function renderHtml(report: ScanReport, version: string): string {
   .vh-snippet, .vh-fix { font-size: 12px; color: #aaa; margin-top: 6px; white-space: pre-wrap; }
   .vh-label { color: #6a6a6a; text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px; }
   .vh-snippet code { color: #eaeaea; background: #141414; padding: 2px 6px; }
+  .vh-verify {
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    margin-top: 10px; padding: 8px 12px;
+    font-size: 11px; letter-spacing: 0.1em;
+  }
+  .vh-verify-badge {
+    font-family: 'Archivo Black', sans-serif; font-size: 11px; letter-spacing: 0.15em;
+    padding: 4px 10px;
+  }
+  .vh-verify-kind { text-transform: uppercase; color: #eaeaea; }
+  .vh-verify-meta { color: #6a6a6a; }
+  .vh-verify-live { background: #ff2a2a; color: #0a0a0a; }
+  .vh-verify-live .vh-verify-badge { background: #0a0a0a; color: #ff2a2a; }
+  .vh-verify-live .vh-verify-kind { color: #0a0a0a; }
+  .vh-verify-live .vh-verify-meta { color: #0a0a0a; opacity: 0.7; }
+  .vh-verify-revoked { background: #141414; border: 1px solid #4af626; }
+  .vh-verify-revoked .vh-verify-badge { color: #4af626; }
+  .vh-verify-unknown { background: #141414; border: 1px solid #2a2a2a; }
+  .vh-verify-unknown .vh-verify-badge { color: #6a6a6a; }
   footer {
     border-top: 1px solid #2a2a2a; padding: 32px; margin-top: 64px;
     display: flex; justify-content: space-between; align-items: center;

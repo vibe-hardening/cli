@@ -68,11 +68,32 @@ export async function verifySecret(
   }
 }
 
-export function defaultTimeoutSignal(
-  opts: VerifierOptions,
-): AbortSignal {
-  if (opts.signal) return opts.signal;
-  return AbortSignal.timeout(opts.timeoutMs ?? 5_000);
+/**
+ * Verifier timeout handle.
+ *
+ * `AbortSignal.timeout()` creates a timer that stays alive until it fires,
+ * preventing the Node event loop from exiting even after the fetch
+ * resolves. We return a manual `AbortController` + `setTimeout` pair so
+ * the caller can `clear()` once the response is in hand.
+ */
+export interface TimeoutHandle {
+  signal: AbortSignal;
+  clear(): void;
+}
+
+export function defaultTimeoutSignal(opts: VerifierOptions): TimeoutHandle {
+  if (opts.signal) {
+    return { signal: opts.signal, clear: () => undefined };
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? 5_000);
+  // Allow Node to exit if this is the only pending timer — tests using
+  // `--detectOpenHandles` would otherwise hang even after all assertions
+  // pass.
+  if (typeof timer === 'object' && timer !== null && 'unref' in timer) {
+    (timer as { unref: () => void }).unref();
+  }
+  return { signal: controller.signal, clear: () => clearTimeout(timer) };
 }
 
 export const USER_AGENT =

@@ -296,26 +296,32 @@ export async function runScan(opts: ScanOptions): Promise<ScanReport> {
   const suppressed = applySuppressions(opts.files, all);
 
   if (opts.verify) {
-    for (const f of suppressed) {
-      const rawValue = f.metadata?._rawValue;
-      const kind = f.metadata?._verifyKind;
-      if (typeof rawValue !== 'string' || typeof kind !== 'string') continue;
-      try {
-        const result = await verifySecret(kind as VerifierKind, rawValue, {
-          fetchImpl: opts.fetchImpl,
-        });
-        if (!f.metadata) f.metadata = {};
-        f.metadata.verify = result;
-      } catch (err) {
-        if (!f.metadata) f.metadata = {};
-        f.metadata.verify = {
-          kind,
-          status: 'unknown',
-          error: err instanceof Error ? err.message : 'verify failed',
-          checkedAt: new Date().toISOString(),
-        };
-      }
-    }
+    // Verify in parallel: N secrets at 5 s timeout each would take
+    // N × 5 s worst-case sequentially. With Promise.all the total is
+    // the single slowest call. We rely on each verifier swallowing its
+    // own errors and never throwing, so Promise.all won't short-circuit.
+    await Promise.all(
+      suppressed.map(async (f) => {
+        const rawValue = f.metadata?._rawValue;
+        const kind = f.metadata?._verifyKind;
+        if (typeof rawValue !== 'string' || typeof kind !== 'string') return;
+        try {
+          const result = await verifySecret(kind as VerifierKind, rawValue, {
+            fetchImpl: opts.fetchImpl,
+          });
+          if (!f.metadata) f.metadata = {};
+          f.metadata.verify = result;
+        } catch (err) {
+          if (!f.metadata) f.metadata = {};
+          f.metadata.verify = {
+            kind,
+            status: 'unknown',
+            error: err instanceof Error ? err.message : 'verify failed',
+            checkedAt: new Date().toISOString(),
+          };
+        }
+      }),
+    );
   }
 
   // Strip internal fields from metadata so they do not leak via JSON
