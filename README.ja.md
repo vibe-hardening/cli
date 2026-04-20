@@ -70,6 +70,12 @@ npx vibe-hardening scan --offline
 
 # 漏洩した鍵がプロバイダーでまだ有効かをライブ検証 (--own が必要)
 npx vibe-hardening scan --verify --own
+
+# スタンドアロン HTML レポート — 共有可能、保存後はオフラインでも閲覧可
+npx vibe-hardening scan --format html -o report.html
+
+# 現在のスコアとグレードを表示する SVG バッジ、README に埋め込める
+npx vibe-hardening badge -o .github/vibe-hardening.svg
 ```
 
 ### `--verify` ライブキー検証
@@ -81,6 +87,60 @@ verifier がある鍵 (OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGr
 - **unverified** — レート制限、オフライン、または verifier がない
 
 `--own` は意図的な安全装置で、CLI は所有を宣言していない鍵の調査を拒否します。`--own` なしで `--verify` を実行すると stderr に警告が出て検出のみのモードに戻ります。
+
+### HTML レポート
+
+```bash
+npx vibe-hardening scan --format html -o report.html
+# macOS:   open report.html
+# Linux:   xdg-open report.html
+# Windows: start report.html
+```
+
+単一自己完結ファイル (外部依存は Google Fonts のみ) — メール添付、Slack 送信、CI アーティファクトのアップロードに安全。100 件以上の findings でも通常 50 KB 未満。
+
+**含まれるもの**: hero ブロック (グレード、スコア)、重大度集計、ファイルごとにグループ化された findings (rule ID / 行:列 / snippet / 修正方法)、`--verify` 結果バッジ (▲ LIVE KEY / ✓ REVOKED / ? UNVERIFIED)、再利用可能なインライン SVG スコアバッジ。
+
+**含まれないもの**: 生の秘密鍵値 (reporter 実行前に strip 済み)、絶対パス (相対のみ)、環境変数。reporter は `process.env` に一切触れないため、HTML を共有しても安全です。
+
+### CI 統合 (GitHub Actions)
+
+```yaml
+name: vibe-hardening
+on: [pull_request, push]
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npx -y vibe-hardening scan --format html -o vh-report.html
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vibe-hardening-report
+          path: vh-report.html
+```
+
+critical または high の finding があると `scan` は exit 1 で終了するため、CI は回帰を即座に失敗扱いにできます。`upload-artifact` で HTML が PR ページから直接ダウンロード可能になります。
+
+ほとんどのチームは CI では `--verify --own` を**実行しません** — CI でプロバイダーに live API コールを投げるのはレート制限に引っかかりやすく、ローカル実行のみで十分です。
+
+### README バッジ
+
+```bash
+npx vibe-hardening badge -o .github/vibe-hardening.svg
+```
+
+トップレベル README で参照:
+
+```markdown
+![vibe-hardening](./.github/vibe-hardening.svg)
+```
+
+main ブランチマージ後に再生成して最新状態を保ちます。SVG は約 500 バイト、ランタイム不要、GitHub でネイティブ描画されます。
 
 ## プラットフォーム指紋検出
 

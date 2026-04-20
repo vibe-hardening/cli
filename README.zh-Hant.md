@@ -70,6 +70,12 @@ npx vibe-hardening scan --offline
 
 # 即時驗證找到的金鑰在 provider 上是否還活著（需 --own）
 npx vibe-hardening scan --verify --own
+
+# 獨立 HTML 報告 — 可分享、存檔後離線也能看
+npx vibe-hardening scan --format html -o report.html
+
+# 產生顯示目前分數跟等級的 SVG badge，可貼進 README
+npx vibe-hardening badge -o .github/vibe-hardening.svg
 ```
 
 ### `--verify` 即時金鑰驗證
@@ -81,6 +87,60 @@ npx vibe-hardening scan --verify --own
 - **unverified** — 被限流、離線，或該 kind 沒 verifier
 
 `--own` 是故意加的安全帶，CLI 拒絕去探測你沒聲明擁有的金鑰。沒加 `--own` 時，`--verify` 會丟 stderr 警告並退回只偵測模式。
+
+### HTML 報告
+
+```bash
+npx vibe-hardening scan --format html -o report.html
+# macOS:   open report.html
+# Linux:   xdg-open report.html
+# Windows: start report.html
+```
+
+單檔自包含（只有 Google Fonts 是外部資源），可以放心 email、丟 Slack、或當 CI artifact 上傳。就算 100 個以上 findings 通常也 < 50 KB。
+
+**包含**：hero 區塊（等級、分數）、嚴重度統計、依檔案分組的 findings（rule ID / 行號 / snippet / 修法）、`--verify` 結果徽章（▲ LIVE KEY / ✓ REVOKED / ? UNVERIFIED）、可重用的 inline SVG 分數 badge。
+
+**不包含**：原始金鑰值（reporter 產出前就 strip 掉）、絕對路徑（只留相對路徑）、環境變數。reporter 永遠不碰 `process.env`，分享 HTML 很安全。
+
+### CI 整合（GitHub Actions）
+
+```yaml
+name: vibe-hardening
+on: [pull_request, push]
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npx -y vibe-hardening scan --format html -o vh-report.html
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vibe-hardening-report
+          path: vh-report.html
+```
+
+有任何 critical 或 high 時 `scan` 會 exit 1，CI 立刻失敗。`upload-artifact` 會在 PR 頁面產生下載連結讓 reviewer 點開 HTML 報告。
+
+大部分團隊**不在 CI 跑** `--verify --own` — 對 provider 打 live API 在 CI 裡不是理想時機（容易撞 rate limit），本地跑就好。
+
+### README badge
+
+```bash
+npx vibe-hardening badge -o .github/vibe-hardening.svg
+```
+
+然後在 README 裡引用：
+
+```markdown
+![vibe-hardening](./.github/vibe-hardening.svg)
+```
+
+main branch merge 後重跑一次保持最新。SVG 約 500 bytes，無 runtime，GitHub 直接原生 render。
 
 ## 平台指紋偵測
 

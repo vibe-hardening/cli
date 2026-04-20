@@ -70,6 +70,12 @@ npx vibe-hardening scan --offline
 
 # 유출된 키가 provider에서 아직 유효한지 실시간 확인 (--own 필요)
 npx vibe-hardening scan --verify --own
+
+# 독립 HTML 리포트 — 공유 가능, 저장 후 오프라인에서도 열람 가능
+npx vibe-hardening scan --format html -o report.html
+
+# 현재 점수와 등급을 표시하는 SVG 배지, README에 삽입 가능
+npx vibe-hardening badge -o .github/vibe-hardening.svg
 ```
 
 ### `--verify` 실시간 키 확인
@@ -81,6 +87,60 @@ verifier가 있는 키 (OpenAI, Anthropic, Stripe, GitHub PAT, Slack, SendGrid, 
 - **unverified** — 속도 제한, 오프라인, 또는 해당 kind에 verifier 없음
 
 `--own`은 의도적인 안전벨트로, CLI는 소유를 주장하지 않은 키의 조사를 거부합니다. `--own` 없이 `--verify`를 실행하면 stderr 경고가 출력되고 탐지 전용 모드로 돌아갑니다.
+
+### HTML 리포트
+
+```bash
+npx vibe-hardening scan --format html -o report.html
+# macOS:   open report.html
+# Linux:   xdg-open report.html
+# Windows: start report.html
+```
+
+단일 자체 포함 파일 (외부 의존성은 Google Fonts뿐) — 이메일 첨부, Slack 전송, CI 아티팩트 업로드에 안전합니다. 100개 이상 findings가 있어도 보통 50 KB 미만.
+
+**포함**: hero 블록 (등급, 점수), 심각도 요약, 파일별로 그룹화된 findings (rule ID / 행:열 / snippet / 수정 방법), `--verify` 결과 배지 (▲ LIVE KEY / ✓ REVOKED / ? UNVERIFIED), 재사용 가능한 인라인 SVG 점수 배지.
+
+**미포함**: 원시 키 값 (reporter 실행 전 제거), 절대 경로 (상대 경로만), 환경 변수. reporter는 `process.env`에 전혀 접근하지 않으므로 HTML 공유가 안전합니다.
+
+### CI 통합 (GitHub Actions)
+
+```yaml
+name: vibe-hardening
+on: [pull_request, push]
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npx -y vibe-hardening scan --format html -o vh-report.html
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vibe-hardening-report
+          path: vh-report.html
+```
+
+critical 또는 high finding이 있으면 `scan`은 exit 1로 종료되므로 CI가 즉시 실패 처리합니다. `upload-artifact`로 HTML이 PR 페이지에서 다운로드 가능해집니다.
+
+대부분의 팀은 CI에서 `--verify --own`을 **실행하지 않습니다** — CI에서 provider에 live API 호출을 보내는 건 rate limit에 걸리기 쉽고, 로컬에서만 실행해도 충분합니다.
+
+### README 배지
+
+```bash
+npx vibe-hardening badge -o .github/vibe-hardening.svg
+```
+
+최상위 README에서 참조:
+
+```markdown
+![vibe-hardening](./.github/vibe-hardening.svg)
+```
+
+main 브랜치 머지 후 재생성하여 최신 상태 유지. SVG는 약 500 바이트, 런타임 불필요, GitHub에서 네이티브 렌더링.
 
 ## 플랫폼 지문 탐지
 

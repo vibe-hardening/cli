@@ -71,6 +71,12 @@ npx vibe-hardening scan --offline
 # Live-check every leaked key against the provider — tells you which
 # ones are still valid vs. already revoked (opt-in, requires --own).
 npx vibe-hardening scan --verify --own
+
+# Standalone HTML report — sharable, works offline once saved.
+npx vibe-hardening scan --format html -o report.html
+
+# SVG badge showing current score + grade. Embed in your README.
+npx vibe-hardening badge -o .github/vibe-hardening.svg
 ```
 
 ### `--verify` live key check
@@ -87,6 +93,71 @@ destructive) and classifies each as:
 `--own` is a deliberate seatbelt so the CLI refuses to probe keys you don't
 claim to own. Without it, `--verify` emits a stderr warning and falls back to
 detection-only.
+
+### HTML report
+
+```bash
+npx vibe-hardening scan --format html -o report.html
+# macOS:   open report.html
+# Linux:   xdg-open report.html
+# Windows: start report.html
+```
+
+Single self-contained file (only Google Fonts as external dep) — safe to
+email, attach in Slack, or upload as a CI artifact. Usually under 50 KB
+even for 100+ findings.
+
+**Included**: hero block with grade and score, severity summary counts,
+grouped per-file findings with rule ID / line:column / snippet / fix,
+live `--verify` badges (▲ LIVE KEY / ✓ REVOKED / ? UNVERIFIED), and an
+inline SVG score badge you can reuse.
+
+**NOT included**: raw secret values (stripped before the reporter runs),
+absolute file paths (relative only), environment variables. The reporter
+never reads `process.env`, so the HTML is safe to share.
+
+### CI integration (GitHub Actions)
+
+```yaml
+name: vibe-hardening
+on: [pull_request, push]
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npx -y vibe-hardening scan --format html -o vh-report.html
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vibe-hardening-report
+          path: vh-report.html
+```
+
+`scan` exits with code 1 when any critical or high finding is present, so
+CI fails fast on regressions. `upload-artifact` surfaces the HTML on the
+PR page for reviewers to click-through.
+
+Most teams skip `--verify --own` in CI and run it locally only — live
+provider calls in CI are usually the wrong time to discover a rate limit.
+
+### Badge for README
+
+```bash
+npx vibe-hardening badge -o .github/vibe-hardening.svg
+```
+
+Then reference it in your top-level README:
+
+```markdown
+![vibe-hardening](./.github/vibe-hardening.svg)
+```
+
+Run as a post-merge step on `main` to keep it current. The SVG is around
+500 bytes and has no runtime — renders natively on GitHub.
 
 ## Platform detection
 
