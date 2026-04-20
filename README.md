@@ -90,7 +90,7 @@ Slack, SendGrid, Notion), `--verify --own` makes one minimal read call per
 finding against the provider (list models, auth test, etc. — **never**
 destructive) and classifies each as:
 
-- **LIVE KEY** — rotate immediately (shown with estimated abuse cost, e.g. `~ $2,400/month (GPU inference resale)`)
+- **LIVE KEY** — rotate immediately (shown with estimated abuse cost, e.g. `~ est. $2,000–$5,000/mo (GPU inference resale)`)
 - **revoked** — safe, housekeep at leisure
 - **unverified** — rate-limited, offline, or no verifier for that kind
 
@@ -214,10 +214,10 @@ Supported: `v0` / `lovable` / `bolt` / `cursor` / `claude-code` / `replit-agent`
 
 Preview release — Phase 1 MVP targeting **2026-05-13** on Product Hunt.
 
-Current coverage (`v0.0.10-preview.1`):
+Current coverage (`v0.0.10-preview.2`):
 - Languages: JavaScript / TypeScript / Python (Django, Flask, FastAPI)
 - 6 engines: RLS diff · JWT payload · auth AST · pattern-regex · OSV.dev · LLM hallucination
-- 47 rules · 242 tests · scans typical repo in under 5 seconds
+- 47 rules · 244 tests · scans typical repo in under 5 seconds
 - Live key verification for 7 providers (OpenAI / Anthropic / Stripe / GitHub PAT / Slack / SendGrid / Notion)
 - Estimated abuse-cost figure next to every LIVE KEY (8 providers incl. Twilio)
 - Output: coloured console · JSON for CI · standalone HTML report
