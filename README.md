@@ -103,10 +103,10 @@ Supported: `v0` / `lovable` / `bolt` / `cursor` / `claude-code` / `replit-agent`
 
 Preview release — Phase 1 MVP targeting **2026-05-13** on Product Hunt.
 
-Current coverage (`v0.0.8-preview.1`):
+Current coverage (`v0.0.8-preview.3`):
 - Languages: JavaScript / TypeScript / Python (Django, Flask, FastAPI)
 - 6 engines: RLS diff · JWT payload · auth AST · pattern-regex · OSV.dev · LLM hallucination
-- 47 rules · 214 tests · scans typical repo in under 5 seconds
+- 47 rules · 217 tests · scans typical repo in under 5 seconds
 - Live key verification for 7 providers (OpenAI / Anthropic / Stripe / GitHub PAT / Slack / SendGrid / Notion)
 - Output: coloured console · JSON for CI · standalone HTML report
 - 0–100 security score with A–F grade + SVG README badge
