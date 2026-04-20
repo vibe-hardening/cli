@@ -277,14 +277,19 @@ export const SECRET_RULES: SecretRule[] = [
     ],
   },
   {
-    id: 'vh-secret-gemini',
+    // Rule covers the ENTIRE Google API key surface (Gemini, AI
+    // Studio, Maps, YouTube, Cloud, Vertex AI) since they all share
+    // the `AIzaSy` prefix. The rule ID and category name reflect that
+    // — a user grepping for `vh-secret-gemini` would be surprised to
+    // see a Maps-only key in the finding, so we name it broadly.
+    id: 'vh-secret-google-api',
     severity: 'critical',
     category: 'secret',
     message:
       'Google API key exposed (used for Gemini / AI Studio / Maps / YouTube / Cloud)',
     remediation:
-      'Revoke at aistudio.google.com/app/apikey (if Gemini) or console.cloud.google.com/apis/credentials. A leaked unrestricted Google API key can incur GCP billing or Gemini inference charges within minutes.',
-    verify: { kind: 'gemini' },
+      'Revoke at aistudio.google.com/app/apikey (if Gemini) or console.cloud.google.com/apis/credentials. A leaked unrestricted Google API key can incur GCP billing (Compute Engine, Storage egress, Translation) within minutes — worst-case crypto-mining abuse reaches 5-figure USD before detection.',
+    verify: { kind: 'google-api' },
     excludeFilenamePatterns: [ENV_EXAMPLE_FILE],
     patterns: [
       {

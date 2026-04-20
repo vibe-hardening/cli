@@ -34,7 +34,7 @@ export interface SecretRule {
       | 'sendgrid'
       | 'twilio'
       | 'notion'
-      | 'gemini';
+      | 'google-api';
   };
   /**
    * When true, a finding is emitted only when *every* `patterns[i]` has at

@@ -175,7 +175,7 @@ describe('verifySecret dispatcher', () => {
     expect(r.status).toBe('revoked');
   });
 
-  it('gemini: 200 -> live', async () => {
+  it('google-api: 200 -> live', async () => {
     const fake: FakeFetch = async (url) => {
       expect(url).toContain(
         'generativelanguage.googleapis.com/v1beta/models',
@@ -184,36 +184,58 @@ describe('verifySecret dispatcher', () => {
       return jsonResponse(200, { models: [] });
     };
     const r = await verifySecret(
-      'gemini',
+      'google-api',
       'AIzaSy' + 'A'.repeat(33),
       { fetchImpl: fake as typeof fetch },
     );
     expect(r.status).toBe('live');
   });
 
-  it('gemini: 400 -> revoked (API_KEY_INVALID)', async () => {
+  it('google-api: 400 -> revoked (API_KEY_INVALID body, top-level)', async () => {
     const fake: FakeFetch = async () =>
       jsonResponse(400, {
         error: { code: 400, message: 'API key not valid' },
       });
-    const r = await verifySecret('gemini', 'AIzaSy' + 'B'.repeat(33), {
-      fetchImpl: fake as typeof fetch,
-    });
+    const r = await verifySecret(
+      'google-api',
+      'AIzaSy' + 'B'.repeat(33),
+      { fetchImpl: fake as typeof fetch },
+    );
     expect(r.status).toBe('revoked');
   });
 
-  it('gemini: 403 -> unknown (scope-restricted, not revoked)', async () => {
-    // A 403 means the key exists and is valid, but doesn't have the
-    // Generative Language API enabled. Could be live for Maps / Cloud.
+  it('google-api: 403 + PERMISSION_DENIED -> unknown (scope-restricted)', async () => {
+    // The key likely still works for Maps / YouTube / Cloud — don't
+    // falsely claim it is revoked.
     const fake: FakeFetch = async () =>
       jsonResponse(403, {
         error: { code: 403, status: 'PERMISSION_DENIED' },
       });
-    const r = await verifySecret('gemini', 'AIzaSy' + 'C'.repeat(33), {
-      fetchImpl: fake as typeof fetch,
-    });
+    const r = await verifySecret(
+      'google-api',
+      'AIzaSy' + 'C'.repeat(33),
+      { fetchImpl: fake as typeof fetch },
+    );
     expect(r.status).toBe('unknown');
     expect(r.error).toContain('restricted');
+    expect(r.info?.googleErrorStatus).toBe('PERMISSION_DENIED');
+  });
+
+  it('google-api: 403 + API_KEY_INVALID -> revoked (truly dead)', async () => {
+    // Distinguish genuinely revoked keys from merely scope-restricted
+    // ones — a previous version lumped both into `unknown` and missed
+    // real revocations.
+    const fake: FakeFetch = async () =>
+      jsonResponse(403, {
+        error: { code: 403, status: 'API_KEY_INVALID' },
+      });
+    const r = await verifySecret(
+      'google-api',
+      'AIzaSy' + 'D'.repeat(33),
+      { fetchImpl: fake as typeof fetch },
+    );
+    expect(r.status).toBe('revoked');
+    expect(r.info?.googleErrorStatus).toBe('API_KEY_INVALID');
   });
 
   it('network failure -> unknown, never throws', async () => {

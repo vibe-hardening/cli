@@ -194,13 +194,13 @@ describe('secret-regex: Gemini / Google API key', () => {
   it('fires on AIzaSy-prefixed 39-char key', () => {
     const k = GEMINI_PREFIX + GEMINI_BODY;
     const findings = scan('app.ts', 'const k = "' + k + '";');
-    expect(findings.some((f) => f.ruleId === 'vh-secret-gemini')).toBe(true);
+    expect(findings.some((f) => f.ruleId === 'vh-secret-google-api')).toBe(true);
   });
 
   it('does NOT fire on short AIzaSy string (wrong length)', () => {
     const k = GEMINI_PREFIX + 'tooShort';
     const findings = scan('app.ts', 'const k = "' + k + '";');
-    expect(findings.some((f) => f.ruleId === 'vh-secret-gemini')).toBe(
+    expect(findings.some((f) => f.ruleId === 'vh-secret-google-api')).toBe(
       false,
     );
   });
@@ -209,7 +209,7 @@ describe('secret-regex: Gemini / Google API key', () => {
     // "your_" is in PLACEHOLDER_MARKERS → disallowSubstrings filters it.
     const k = GEMINI_PREFIX + 'your_keyhereAbc123Def456Ghi789Jk';
     const findings = scan('app.ts', 'const k = "' + k + '";');
-    expect(findings.some((f) => f.ruleId === 'vh-secret-gemini')).toBe(
+    expect(findings.some((f) => f.ruleId === 'vh-secret-google-api')).toBe(
       false,
     );
   });

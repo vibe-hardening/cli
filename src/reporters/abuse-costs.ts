@@ -82,11 +82,11 @@ export const ABUSE_COSTS: Record<VerifierKind, AbuseCost> = {
     source:
       'estimate: Twilio publishes SMS pumping guidance but no per-incident median. Range reflects observed account abuse before detection.',
   },
-  gemini: {
-    label: '$1,000–$5,000/mo',
-    vector: 'Gemini inference resale OR GCP billing abuse',
+  'google-api': {
+    label: '$1,000–$50,000/mo',
+    vector: 'GCP billing abuse (crypto mining, egress) OR Gemini resale',
     source:
-      'estimate: similar to OpenAI abuse (unrestricted Google API key may also unlock Maps / Cloud billing, widening potential blast radius).',
+      'estimate: wide range reflects blast radius — pure Gemini inference resale is ~$1-5k/mo; an unrestricted Google API key with Compute Engine access can reach $50k+/mo via crypto-mining GPU abuse (same pattern as AWS access-key incidents).',
   },
 };
 

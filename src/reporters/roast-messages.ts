@@ -54,7 +54,7 @@ export const ROAST_MESSAGES: Record<string, string> = {
     "NEXT_PUBLIC_SECRET. The word 'PUBLIC' is doing a lot of work.",
   'vh-secret-supabase-service-role':
     'service_role JWT in source. That key bypasses RLS for every row in every table.',
-  'vh-secret-gemini':
+  'vh-secret-google-api':
     'Google API key exposed. Gemini inference, Maps, or GCP billing — your choice of disaster. Likely all three.',
 
   // ── Auth (src/rules/auth-patterns.ts) ──

@@ -1,9 +1,24 @@
 import type { VerifierKind, VerifierOptions, VerifyResult } from './index.js';
 import { defaultTimeoutSignal, drainResponse, USER_AGENT } from './index.js';
 
-const KIND: VerifierKind = 'gemini';
+const KIND: VerifierKind = 'google-api';
 
-export async function verifyGemini(
+/**
+ * Verifies a Google API key (shared format `AIzaSy...` across every
+ * Google service — Gemini, Maps, YouTube, Cloud, Vertex AI, etc.) by
+ * hitting the Generative Language listing endpoint.
+ *
+ * HTTP status interpretation:
+ *   200  → `live`    — key is valid AND has the Gemini API enabled
+ *   400  → `revoked` — `API_KEY_INVALID` (hard failure signal)
+ *   403  → body-dependent:
+ *          · `error.status === 'API_KEY_INVALID'` → `revoked`
+ *          · anything else (`PERMISSION_DENIED`, referrer-blocked,
+ *            scope-restricted) → `unknown` — key may still be live
+ *            for Maps / YouTube / Cloud, we can't tell from here.
+ *   other → `unknown`
+ */
+export async function verifyGoogleApi(
   key: string,
   opts: VerifierOptions = {},
 ): Promise<VerifyResult> {
@@ -38,8 +53,7 @@ export async function verifyGemini(
     if (resp.status === 200) {
       return { kind: KIND, status: 'live', httpStatus: 200, checkedAt };
     }
-    // Google distinguishes key-invalid (400 API_KEY_INVALID) from
-    // key-scope-restricted (403 / 401). 400 is a hard revoke signal.
+
     if (resp.status === 400) {
       return {
         kind: KIND,
@@ -48,20 +62,42 @@ export async function verifyGemini(
         checkedAt,
       };
     }
-    // 403 often means "this Google API key exists and is valid, but
-    // doesn't have the Generative Language API enabled" — the key
-    // could still be live for Maps / YouTube / Cloud. Report
-    // 'unknown' instead of a misleading 'revoked'.
+
+    // 403 is ambiguous on Google APIs — could be a genuinely invalid
+    // key OR a scope-restricted one. Peek at the error.status field
+    // to disambiguate; fall back to `unknown` if we can't parse.
     if (resp.status === 403 || resp.status === 401) {
+      let errorStatus = '';
+      try {
+        const body = (await resp.clone().json()) as {
+          error?: { status?: string };
+        };
+        errorStatus = body.error?.status ?? '';
+      } catch {
+        // JSON parse failed — treat as unknown (conservative).
+      }
+
+      if (errorStatus === 'API_KEY_INVALID') {
+        return {
+          kind: KIND,
+          status: 'revoked',
+          httpStatus: resp.status,
+          info: { googleErrorStatus: errorStatus },
+          checkedAt,
+        };
+      }
+
       return {
         kind: KIND,
         status: 'unknown',
         httpStatus: resp.status,
+        info: errorStatus ? { googleErrorStatus: errorStatus } : undefined,
         error:
-          'key may be valid but restricted to non-Gemini Google APIs (Maps / YouTube / Cloud)',
+          'key may be valid but restricted to non-Gemini Google APIs (Maps / YouTube / Cloud) or blocked by referrer / IP policy',
         checkedAt,
       };
     }
+
     return {
       kind: KIND,
       status: 'unknown',

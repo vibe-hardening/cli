@@ -7,7 +7,7 @@ export type VerifierKind =
   | 'sendgrid'
   | 'twilio'
   | 'notion'
-  | 'gemini';
+  | 'google-api';
 
 export type VerifyStatus = 'live' | 'revoked' | 'unknown';
 
@@ -37,7 +37,7 @@ import { verifySlack } from './slack.js';
 import { verifySendgrid } from './sendgrid.js';
 import { verifyTwilio } from './twilio.js';
 import { verifyNotion } from './notion.js';
-import { verifyGemini } from './gemini.js';
+import { verifyGoogleApi } from './google-api.js';
 
 /**
  * Dispatch a verification call for a given secret kind. Each verifier
@@ -86,8 +86,8 @@ export async function verifySecret(
       return verifyTwilio(value, opts);
     case 'notion':
       return verifyNotion(value, opts);
-    case 'gemini':
-      return verifyGemini(value, opts);
+    case 'google-api':
+      return verifyGoogleApi(value, opts);
     default: {
       // Exhaustiveness guard: if a new VerifierKind is added to the
       // union but missing from this switch, TypeScript will fail at
