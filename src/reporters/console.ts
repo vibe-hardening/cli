@@ -140,8 +140,11 @@ function renderVerify(v: VerifyResult): string {
     // ran `npx vibe-hardening` on a weekend project. Numbers come from
     // ABUSE_COSTS (see abuse-costs.ts for sources).
     const cost = abuseCostFor(v.kind);
+    // `est.` marker is deliberate — the figures are order-of-magnitude
+    // estimates, not published medians. Making that visible inline
+    // avoids the "your tool is lying with fake precision" critique.
     const costLine = cost
-      ? ` ${pc.dim('~')} ${pc.bold(pc.red(cost.label))} ${pc.dim(`(${cost.vector})`)}`
+      ? ` ${pc.dim('~')} ${pc.dim('est.')} ${pc.bold(pc.red(cost.label))} ${pc.dim(`(${cost.vector})`)}`
       : '';
     return `${pc.bgRed(pc.white(pc.bold(' LIVE KEY ')))} ${pc.red(pc.bold(v.kind))}${extra}${costLine}`;
   }

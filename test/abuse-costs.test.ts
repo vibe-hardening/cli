@@ -77,6 +77,94 @@ describe('abuse-costs: data integrity', () => {
   });
 });
 
+describe('abuse-costs: inline render marks figures as estimates', () => {
+  it('console renderVerify includes an "est." marker next to every cost', async () => {
+    const { renderConsole } = await import('../src/reporters/console.js');
+    const stripAnsi = (s: string) =>
+      // eslint-disable-next-line no-control-regex
+      s.replace(/\x1b\[[0-9;]*m/g, '');
+    for (const kind of KINDS) {
+      const out = renderConsole({
+        findings: [
+          {
+            ruleId: 'vh-secret-' + kind,
+            severity: 'critical',
+            category: 'secret',
+            file: 'a.ts',
+            line: 1,
+            column: 1,
+            snippet: 'x',
+            message: 'y',
+            remediation: 'z',
+            metadata: {
+              verify: {
+                kind,
+                status: 'live',
+                httpStatus: 200,
+                checkedAt: 'now',
+              },
+            },
+          },
+        ],
+        summary: { critical: 1, high: 0, medium: 0, low: 0, info: 0 },
+        filesScanned: 1,
+        durationMs: 1,
+        platform: {
+          platform: 'unknown',
+          confidence: 0,
+          signals: [],
+          secondary: [],
+        },
+        score: { score: 50, grade: 'D', deductions: [] },
+      });
+      expect(stripAnsi(out), `${kind} missing est. marker`).toContain('est.');
+    }
+  });
+
+  it('HTML renderVerifyHtml includes an "est." marker next to every cost', async () => {
+    const { renderHtml } = await import('../src/reporters/html.js');
+    for (const kind of KINDS) {
+      const html = renderHtml(
+        {
+          findings: [
+            {
+              ruleId: 'vh-secret-' + kind,
+              severity: 'critical',
+              category: 'secret',
+              file: 'a.ts',
+              line: 1,
+              column: 1,
+              snippet: 'x',
+              message: 'y',
+              remediation: 'z',
+              metadata: {
+                verify: {
+                  kind,
+                  status: 'live',
+                  httpStatus: 200,
+                  checkedAt: 'now',
+                },
+              },
+            },
+          ],
+          summary: { critical: 1, high: 0, medium: 0, low: 0, info: 0 },
+          filesScanned: 1,
+          durationMs: 1,
+          platform: {
+            platform: 'unknown',
+            confidence: 0,
+            signals: [],
+            secondary: [],
+          },
+          score: { score: 50, grade: 'D', deductions: [] },
+        },
+        '0.0.10-preview.2',
+      );
+      expect(html, `${kind} HTML missing est. marker`).toContain('est.');
+    }
+  });
+});
+
 describe('abuse-costs: helper', () => {
   it('abuseCostFor returns the entry for every known kind', () => {
     for (const k of KINDS) {

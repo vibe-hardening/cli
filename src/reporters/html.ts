@@ -38,7 +38,7 @@ function renderVerifyHtml(v: VerifyResult): string {
   if (v.status === 'live') {
     const cost = abuseCostFor(v.kind);
     const costFragment = cost
-      ? `<span class="vh-verify-cost">~ ${escapeHtml(cost.label)} <span class="vh-verify-cost-vector">(${escapeHtml(cost.vector)})</span></span>`
+      ? `<span class="vh-verify-cost">~ <span class="vh-verify-cost-est">est.</span> ${escapeHtml(cost.label)} <span class="vh-verify-cost-vector">(${escapeHtml(cost.vector)})</span></span>`
       : '';
     return `<div class="vh-verify vh-verify-live">
       <span class="vh-verify-badge">▲ LIVE KEY</span>
@@ -212,6 +212,10 @@ export function renderHtml(report: ScanReport, version: string): string {
   .vh-verify-cost-vector {
     font-family: 'JetBrains Mono', monospace; font-weight: normal;
     letter-spacing: 0.08em; font-size: 10px; opacity: 0.75;
+  }
+  .vh-verify-cost-est {
+    font-family: 'JetBrains Mono', monospace; font-weight: normal;
+    font-size: 10px; opacity: 0.6; margin-right: 2px;
   }
   .vh-verify-live { background: #ff2a2a; color: #0a0a0a; }
   .vh-verify-live .vh-verify-badge { background: #0a0a0a; color: #ff2a2a; }
