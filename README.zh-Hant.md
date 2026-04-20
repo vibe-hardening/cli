@@ -40,7 +40,7 @@ npx vibe-hardening scan
 
 | 類別 | 例子 |
 |------|------|
-| **Secret 洩漏** | OpenAI `sk-proj-`、Anthropic `sk-ant-`、Stripe `sk_live_`、GitHub PAT、AWS 金鑰、Supabase `service_role` JWT、DB 連線字串、Slack token、JWT 簽章金鑰 |
+| **Secret 洩漏** | OpenAI `sk-proj-`、Anthropic `sk-ant-`、Stripe `sk_live_`、GitHub PAT、AWS 金鑰、Supabase `service_role` JWT、DB 連線字串、Slack token、SendGrid `SG.`、Notion `secret_`/`ntn_`、Twilio Account SID + Auth Token、JWT 簽章金鑰 |
 | **注入攻擊** | SQL template literal、NoSQL `req.body`、`child_process.exec` 字串拼接、path traversal、`dangerouslySetInnerHTML` 未清洗 |
 | **網路層** | CORS `*` + credentials、CORS 反射 origin、SSRF `fetch(req.body.url)`、open redirect |
 | **Auth** | Next.js API route 沒 auth（AST 分析）、JWT `alg: none`、`\|\| true` bypass、`// TODO: add auth`、弱 cookie |

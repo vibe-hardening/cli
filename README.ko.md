@@ -40,7 +40,7 @@ npx vibe-hardening scan
 
 | 카테고리 | 예시 |
 |---------|------|
-| **시크릿 유출** | OpenAI `sk-proj-`、Anthropic `sk-ant-`、Stripe `sk_live_`、GitHub PAT、AWS 키、Supabase `service_role` JWT、DB 연결 문자열、Slack 토큰、JWT 서명 키 |
+| **시크릿 유출** | OpenAI `sk-proj-`、Anthropic `sk-ant-`、Stripe `sk_live_`、GitHub PAT、AWS 키、Supabase `service_role` JWT、DB 연결 문자열、Slack 토큰、SendGrid `SG.`、Notion `secret_`/`ntn_`、Twilio Account SID + Auth Token、JWT 서명 키 |
 | **인젝션 공격** | SQL 템플릿 리터럴、NoSQL `req.body`、`child_process.exec` 문자열 조합、path traversal、새니타이저 없는 `dangerouslySetInnerHTML` |
 | **네트워크** | CORS `*` + credentials、CORS origin 반사、SSRF `fetch(req.body.url)`、오픈 리다이렉트 |
 | **인증** | Next.js API route 인증 누락 (AST 분석)、JWT `alg: none`、`\|\| true` 우회、`// TODO: add auth`、약한 쿠키 |
