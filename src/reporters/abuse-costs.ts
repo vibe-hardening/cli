@@ -82,6 +82,12 @@ export const ABUSE_COSTS: Record<VerifierKind, AbuseCost> = {
     source:
       'estimate: Twilio publishes SMS pumping guidance but no per-incident median. Range reflects observed account abuse before detection.',
   },
+  gemini: {
+    label: '$1,000–$5,000/mo',
+    vector: 'Gemini inference resale OR GCP billing abuse',
+    source:
+      'estimate: similar to OpenAI abuse (unrestricted Google API key may also unlock Maps / Cloud billing, widening potential blast radius).',
+  },
 };
 
 /**

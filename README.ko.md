@@ -36,7 +36,7 @@ npx vibe-hardening scan
 
 **지원 언어**: JavaScript / TypeScript / **Python** (Django / Flask / FastAPI).
 
-47개 규칙, 9개 카테고리. **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 로 생성된 저장소에 최적화되어 있습니다.
+48개 규칙, 9개 카테고리. **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 로 생성된 저장소에 최적화되어 있습니다.
 
 | 카테고리 | 예시 |
 |---------|------|
@@ -182,10 +182,10 @@ platform  v0  (74% confidence)
 
 프리뷰 릴리스 — Phase 1 MVP는 **2026-05-13** Product Hunt 출시가 목표입니다.
 
-현재 커버리지 (`v0.0.10-preview.2`):
+현재 커버리지 (`v0.0.11-preview.0`):
 - 지원 언어: JavaScript / TypeScript / Python (Django, Flask, FastAPI)
 - 6개 엔진: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 환각
-- 47개 규칙、244개 테스트、일반적인 repo를 5초 이내에 스캔
+- 48개 규칙、250개 테스트、일반적인 repo를 5초 이내에 스캔
 - 7개 provider 실시간 키 확인 (OpenAI, Anthropic, Stripe, GitHub PAT, Slack, SendGrid, Notion)
 - 출력 형식: 컬러 터미널、CI용 JSON、독립형 HTML 보고서
 - 0-100 보안 점수 + A-F 등급 + SVG README 배지

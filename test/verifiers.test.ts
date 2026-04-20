@@ -175,6 +175,47 @@ describe('verifySecret dispatcher', () => {
     expect(r.status).toBe('revoked');
   });
 
+  it('gemini: 200 -> live', async () => {
+    const fake: FakeFetch = async (url) => {
+      expect(url).toContain(
+        'generativelanguage.googleapis.com/v1beta/models',
+      );
+      expect(url).toContain('key=AIzaSy');
+      return jsonResponse(200, { models: [] });
+    };
+    const r = await verifySecret(
+      'gemini',
+      'AIzaSy' + 'A'.repeat(33),
+      { fetchImpl: fake as typeof fetch },
+    );
+    expect(r.status).toBe('live');
+  });
+
+  it('gemini: 400 -> revoked (API_KEY_INVALID)', async () => {
+    const fake: FakeFetch = async () =>
+      jsonResponse(400, {
+        error: { code: 400, message: 'API key not valid' },
+      });
+    const r = await verifySecret('gemini', 'AIzaSy' + 'B'.repeat(33), {
+      fetchImpl: fake as typeof fetch,
+    });
+    expect(r.status).toBe('revoked');
+  });
+
+  it('gemini: 403 -> unknown (scope-restricted, not revoked)', async () => {
+    // A 403 means the key exists and is valid, but doesn't have the
+    // Generative Language API enabled. Could be live for Maps / Cloud.
+    const fake: FakeFetch = async () =>
+      jsonResponse(403, {
+        error: { code: 403, status: 'PERMISSION_DENIED' },
+      });
+    const r = await verifySecret('gemini', 'AIzaSy' + 'C'.repeat(33), {
+      fetchImpl: fake as typeof fetch,
+    });
+    expect(r.status).toBe('unknown');
+    expect(r.error).toContain('restricted');
+  });
+
   it('network failure -> unknown, never throws', async () => {
     const fake: FakeFetch = async () => {
       throw new Error('ECONNREFUSED');

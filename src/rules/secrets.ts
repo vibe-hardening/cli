@@ -276,4 +276,25 @@ export const SECRET_RULES: SecretRule[] = [
       },
     ],
   },
+  {
+    id: 'vh-secret-gemini',
+    severity: 'critical',
+    category: 'secret',
+    message:
+      'Google API key exposed (used for Gemini / AI Studio / Maps / YouTube / Cloud)',
+    remediation:
+      'Revoke at aistudio.google.com/app/apikey (if Gemini) or console.cloud.google.com/apis/credentials. A leaked unrestricted Google API key can incur GCP billing or Gemini inference charges within minutes.',
+    verify: { kind: 'gemini' },
+    excludeFilenamePatterns: [ENV_EXAMPLE_FILE],
+    patterns: [
+      {
+        name: 'aizasy',
+        // All Google API keys share the `AIzaSy` prefix plus 33 chars
+        // of [A-Za-z0-9_-]. The prefix is distinctive enough that a
+        // word boundary is sufficient — no lookaheads needed.
+        regex: /\bAIzaSy[A-Za-z0-9_-]{33}\b/g,
+        disallowSubstrings: PLACEHOLDER_MARKERS,
+      },
+    ],
+  },
 ];

@@ -183,6 +183,38 @@ describe('secret-regex: redaction + metadata', () => {
   });
 });
 
+describe('secret-regex: Gemini / Google API key', () => {
+  // AIzaSy prefix is split so GitHub push protection doesn't flag
+  // these fixtures as real leaked Google API keys.
+  const GEMINI_PREFIX = 'AI' + 'zaSy';
+
+  // Body = 33 chars of [A-Za-z0-9_-] to match the regex exactly.
+  const GEMINI_BODY = 'Abc123Def456Ghi789Jkl012Mno345Pqr';
+
+  it('fires on AIzaSy-prefixed 39-char key', () => {
+    const k = GEMINI_PREFIX + GEMINI_BODY;
+    const findings = scan('app.ts', 'const k = "' + k + '";');
+    expect(findings.some((f) => f.ruleId === 'vh-secret-gemini')).toBe(true);
+  });
+
+  it('does NOT fire on short AIzaSy string (wrong length)', () => {
+    const k = GEMINI_PREFIX + 'tooShort';
+    const findings = scan('app.ts', 'const k = "' + k + '";');
+    expect(findings.some((f) => f.ruleId === 'vh-secret-gemini')).toBe(
+      false,
+    );
+  });
+
+  it('does NOT fire on placeholder key containing "your_"', () => {
+    // "your_" is in PLACEHOLDER_MARKERS → disallowSubstrings filters it.
+    const k = GEMINI_PREFIX + 'your_keyhereAbc123Def456Ghi789Jk';
+    const findings = scan('app.ts', 'const k = "' + k + '";');
+    expect(findings.some((f) => f.ruleId === 'vh-secret-gemini')).toBe(
+      false,
+    );
+  });
+});
+
 describe('secret-regex: 0.0.8 providers', () => {
   describe('vh-secret-sendgrid', () => {
     // SG. prefix is split across two literals so GitHub push protection

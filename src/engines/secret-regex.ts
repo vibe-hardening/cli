@@ -33,7 +33,8 @@ export interface SecretRule {
       | 'slack'
       | 'sendgrid'
       | 'twilio'
-      | 'notion';
+      | 'notion'
+      | 'gemini';
   };
   /**
    * When true, a finding is emitted only when *every* `patterns[i]` has at

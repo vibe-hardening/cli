@@ -36,7 +36,7 @@ npx vibe-hardening scan
 
 **支持语言**：JavaScript / TypeScript / **Python**（Django / Flask / FastAPI）。
 
-47 条规则、9 大类别。针对 **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 生成的仓库做了专门调优。
+48 条规则、9 大类别。针对 **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 生成的仓库做了专门调优。
 
 | 类别 | 示例 |
 |------|------|
@@ -182,10 +182,10 @@ platform  v0  (74% confidence)
 
 预览版 —— Phase 1 MVP 目标 **2026-05-13** 上 Product Hunt。
 
-当前覆盖（`v0.0.10-preview.2`）：
+当前覆盖（`v0.0.11-preview.0`）：
 - 支持语言：JavaScript / TypeScript / Python（Django、Flask、FastAPI）
 - 6 个引擎：RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 幻觉
-- 47 条规则、244 个测试、一般仓库 5 秒内扫描完毕
+- 48 条规则、250 个测试、一般仓库 5 秒内扫描完毕
 - 7 家 provider 实时密钥验证（OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion）
 - 输出格式：彩色终端、CI 用 JSON、独立 HTML 报告
 - 0-100 安全分数 + A-F 等级 + SVG README badge
