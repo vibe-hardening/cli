@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { verifySecret } from '../src/verifiers/index.js';
+import { verifySecret, runWithConcurrency } from '../src/verifiers/index.js';
 
 type FakeFetch = (url: string, init?: RequestInit) => Promise<Response>;
 
@@ -117,5 +117,67 @@ describe('verifySecret dispatcher', () => {
     });
     expect(r.status).toBe('unknown');
     expect(r.error).toContain('ECONNREFUSED');
+  });
+
+  it('rejects secret containing CRLF (header injection guard)', async () => {
+    let called = false;
+    const fake: FakeFetch = async () => {
+      called = true;
+      return jsonResponse(200, {});
+    };
+    const r = await verifySecret(
+      'openai',
+      'sk-abc\r\nX-Injected: evil',
+      { fetchImpl: fake as typeof fetch },
+    );
+    expect(called).toBe(false);
+    expect(r.status).toBe('unknown');
+    expect(r.error).toContain('control');
+  });
+
+  it('rejects secret containing NUL byte', async () => {
+    let called = false;
+    const fake: FakeFetch = async () => {
+      called = true;
+      return jsonResponse(200, {});
+    };
+    const r = await verifySecret('github-pat', 'ghp_abc\0def', {
+      fetchImpl: fake as typeof fetch,
+    });
+    expect(called).toBe(false);
+    expect(r.status).toBe('unknown');
+  });
+});
+
+describe('runWithConcurrency', () => {
+  it('caps in-flight tasks at the given limit', async () => {
+    const items = Array.from({ length: 20 }, (_, i) => i);
+    let inFlight = 0;
+    let maxSeen = 0;
+    await runWithConcurrency(items, 5, async () => {
+      inFlight++;
+      maxSeen = Math.max(maxSeen, inFlight);
+      await new Promise((r) => setTimeout(r, 10));
+      inFlight--;
+    });
+    expect(maxSeen).toBeLessThanOrEqual(5);
+    expect(maxSeen).toBeGreaterThan(0);
+  });
+
+  it('handles empty list', async () => {
+    let called = 0;
+    await runWithConcurrency([], 5, async () => {
+      called++;
+    });
+    expect(called).toBe(0);
+  });
+
+  it('processes every item exactly once', async () => {
+    const items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const processed: number[] = [];
+    await runWithConcurrency(items, 3, async (n) => {
+      processed.push(n);
+    });
+    expect(processed.sort((a, b) => a - b)).toEqual(items);
   });
 });

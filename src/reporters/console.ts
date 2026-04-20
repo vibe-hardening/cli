@@ -94,11 +94,25 @@ function severityRank(s: Severity): number {
   return { critical: 4, high: 3, medium: 2, low: 1, info: 0 }[s];
 }
 
+// Strip ANSI escape and other control characters from strings that
+// originate from a provider API response (Slack `error`, GitHub
+// `login`, …). Without this, a crafted provider reply containing
+// e.g. `\x1b[2J` could clear the terminal or inject fake prompt text
+// when the console reporter writes to a TTY.
+function sanitizeForTerminal(s: string): string {
+  // eslint-disable-next-line no-control-regex
+  return s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+}
+
 function renderVerify(v: VerifyResult): string {
   const extras: string[] = [];
   if (v.info) {
     for (const [k, val] of Object.entries(v.info)) {
-      if (val !== undefined && val !== '') extras.push(`${k}=${val}`);
+      if (val !== undefined && val !== '') {
+        const safe =
+          typeof val === 'string' ? sanitizeForTerminal(val) : String(val);
+        extras.push(`${k}=${safe}`);
+      }
     }
   }
   const extra = extras.length > 0 ? ` ${pc.dim(`(${extras.join(', ')})`)}` : '';
@@ -108,7 +122,7 @@ function renderVerify(v: VerifyResult): string {
   if (v.status === 'revoked') {
     return `${pc.green('✓ revoked')} ${pc.dim(v.kind)}${extra}`;
   }
-  const reason = v.error ? ` — ${v.error}` : '';
+  const reason = v.error ? ` — ${sanitizeForTerminal(v.error)}` : '';
   return `${pc.dim('? unverified')} ${pc.dim(v.kind + reason)}`;
 }
 

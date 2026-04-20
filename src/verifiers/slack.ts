@@ -3,7 +3,7 @@ import type {
   VerifierOptions,
   VerifyResult,
 } from './index.js';
-import { defaultTimeoutSignal, USER_AGENT } from './index.js';
+import { defaultTimeoutSignal, drainResponse, USER_AGENT } from './index.js';
 
 const KIND: VerifierKind = 'slack';
 
@@ -14,11 +14,11 @@ export async function verifySlack(
   const fetchFn = opts.fetchImpl ?? fetch;
   const checkedAt = new Date().toISOString();
   const timeout = defaultTimeoutSignal(opts);
+  let resp: Response | undefined;
 
   try {
     // auth.test echoes back the authenticated user/team when the token
     // is live; returns { ok: false, error: 'invalid_auth' } otherwise.
-    let resp: Response;
     try {
       resp = await fetchFn('https://slack.com/api/auth.test', {
         method: 'POST',
@@ -90,6 +90,7 @@ export async function verifySlack(
       checkedAt,
     };
   } finally {
+    drainResponse(resp);
     timeout.clear();
   }
 }

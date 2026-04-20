@@ -3,7 +3,7 @@ import type {
   VerifierOptions,
   VerifyResult,
 } from './index.js';
-import { defaultTimeoutSignal, USER_AGENT } from './index.js';
+import { defaultTimeoutSignal, drainResponse, USER_AGENT } from './index.js';
 
 const KIND: VerifierKind = 'anthropic';
 
@@ -14,10 +14,10 @@ export async function verifyAnthropic(
   const fetchFn = opts.fetchImpl ?? fetch;
   const checkedAt = new Date().toISOString();
   const timeout = defaultTimeoutSignal(opts);
+  let resp: Response | undefined;
 
   try {
     // `/v1/models` is read-only and does not consume tokens.
-    let resp: Response;
     try {
       resp = await fetchFn('https://api.anthropic.com/v1/models', {
         method: 'GET',
@@ -56,6 +56,7 @@ export async function verifyAnthropic(
       checkedAt,
     };
   } finally {
+    drainResponse(resp);
     timeout.clear();
   }
 }

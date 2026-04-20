@@ -10,7 +10,7 @@ import type { PlatformFingerprint } from '../detectors/platform.js';
 import { computeScore } from '../scoring/score.js';
 import type { ScoreBreakdown } from '../scoring/score.js';
 import { applySuppressions } from './suppression.js';
-import { verifySecret } from '../verifiers/index.js';
+import { verifySecret, runWithConcurrency } from '../verifiers/index.js';
 import type { VerifierKind } from '../verifiers/index.js';
 import { SECRET_RULES } from '../rules/secrets.js';
 import { INJECTION_RULES } from '../rules/injection.js';
@@ -296,32 +296,30 @@ export async function runScan(opts: ScanOptions): Promise<ScanReport> {
   const suppressed = applySuppressions(opts.files, all);
 
   if (opts.verify) {
-    // Verify in parallel: N secrets at 5 s timeout each would take
-    // N × 5 s worst-case sequentially. With Promise.all the total is
-    // the single slowest call. We rely on each verifier swallowing its
-    // own errors and never throwing, so Promise.all won't short-circuit.
-    await Promise.all(
-      suppressed.map(async (f) => {
-        const rawValue = f.metadata?._rawValue;
-        const kind = f.metadata?._verifyKind;
-        if (typeof rawValue !== 'string' || typeof kind !== 'string') return;
-        try {
-          const result = await verifySecret(kind as VerifierKind, rawValue, {
-            fetchImpl: opts.fetchImpl,
-          });
-          if (!f.metadata) f.metadata = {};
-          f.metadata.verify = result;
-        } catch (err) {
-          if (!f.metadata) f.metadata = {};
-          f.metadata.verify = {
-            kind,
-            status: 'unknown',
-            error: err instanceof Error ? err.message : 'verify failed',
-            checkedAt: new Date().toISOString(),
-          };
-        }
-      }),
-    );
+    // Cap at 5 in-flight verify requests. Bursting all findings at
+    // once trips GitHub's secondary rate-limit and OpenAI's RPM cap,
+    // which would return HTTP 429/403 and mark every key as "unknown"
+    // — effectively making the feature silently no-op on large repos.
+    await runWithConcurrency(suppressed, 5, async (f) => {
+      const rawValue = f.metadata?._rawValue;
+      const kind = f.metadata?._verifyKind;
+      if (typeof rawValue !== 'string' || typeof kind !== 'string') return;
+      try {
+        const result = await verifySecret(kind as VerifierKind, rawValue, {
+          fetchImpl: opts.fetchImpl,
+        });
+        if (!f.metadata) f.metadata = {};
+        f.metadata.verify = result;
+      } catch (err) {
+        if (!f.metadata) f.metadata = {};
+        f.metadata.verify = {
+          kind,
+          status: 'unknown',
+          error: err instanceof Error ? err.message : 'verify failed',
+          checkedAt: new Date().toISOString(),
+        };
+      }
+    });
   }
 
   // Strip internal fields from metadata so they do not leak via JSON

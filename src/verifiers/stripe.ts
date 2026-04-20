@@ -3,7 +3,7 @@ import type {
   VerifierOptions,
   VerifyResult,
 } from './index.js';
-import { defaultTimeoutSignal, USER_AGENT } from './index.js';
+import { defaultTimeoutSignal, drainResponse, USER_AGENT } from './index.js';
 
 const KIND: VerifierKind = 'stripe';
 
@@ -14,13 +14,13 @@ export async function verifyStripe(
   const fetchFn = opts.fetchImpl ?? fetch;
   const checkedAt = new Date().toISOString();
   const timeout = defaultTimeoutSignal(opts);
+  let resp: Response | undefined;
 
   // Stripe uses HTTP Basic auth: key as username, empty password.
   const authHeader = `Basic ${Buffer.from(`${key}:`).toString('base64')}`;
 
   try {
     // `/v1/charges?limit=1` is a cheap read; does not create anything.
-    let resp: Response;
     try {
       resp = await fetchFn('https://api.stripe.com/v1/charges?limit=1', {
         method: 'GET',
@@ -65,6 +65,7 @@ export async function verifyStripe(
       checkedAt,
     };
   } finally {
+    drainResponse(resp);
     timeout.clear();
   }
 }

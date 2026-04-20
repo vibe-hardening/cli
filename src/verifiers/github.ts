@@ -3,7 +3,7 @@ import type {
   VerifierOptions,
   VerifyResult,
 } from './index.js';
-import { defaultTimeoutSignal, USER_AGENT } from './index.js';
+import { defaultTimeoutSignal, drainResponse, USER_AGENT } from './index.js';
 
 const KIND: VerifierKind = 'github-pat';
 
@@ -14,9 +14,9 @@ export async function verifyGithub(
   const fetchFn = opts.fetchImpl ?? fetch;
   const checkedAt = new Date().toISOString();
   const timeout = defaultTimeoutSignal(opts);
+  let resp: Response | undefined;
 
   try {
-    let resp: Response;
     try {
       resp = await fetchFn('https://api.github.com/user', {
         method: 'GET',
@@ -73,6 +73,7 @@ export async function verifyGithub(
       checkedAt,
     };
   } finally {
+    drainResponse(resp);
     timeout.clear();
   }
 }

@@ -47,6 +47,20 @@ export async function verifySecret(
   value: string,
   opts: VerifierOptions = {},
 ): Promise<VerifyResult> {
+  // Defense against CRLF header injection: a real API key never
+  // contains newline or NUL bytes. Any captured value that does is
+  // either a regex miscapture or an injection attempt. Reject before
+  // the value reaches any `fetch` header-construction path — some
+  // custom fetchImpls (e.g. test mocks) don't validate headers the
+  // way undici does.
+  if (/[\r\n\0]/.test(value)) {
+    return {
+      kind,
+      status: 'unknown',
+      error: 'invalid secret: contains control characters',
+      checkedAt: new Date().toISOString(),
+    };
+  }
   switch (kind) {
     case 'openai':
       return verifyOpenAI(value, opts);
@@ -65,6 +79,48 @@ export async function verifySecret(
         error: `no verifier for kind "${kind as string}"`,
         checkedAt: new Date().toISOString(),
       };
+  }
+}
+
+/**
+ * Run an async task over a list with a bounded concurrency. Used for
+ * the verify loop: a burst of 50 parallel fetches against one provider
+ * trips secondary rate limits (GitHub) or RPM caps (OpenAI), so every
+ * result comes back as `unknown`. Cap at 5 in-flight.
+ */
+export async function runWithConcurrency<T>(
+  items: T[],
+  limit: number,
+  task: (item: T) => Promise<void>,
+): Promise<void> {
+  if (items.length === 0) return;
+  let next = 0;
+  const worker = async (): Promise<void> => {
+    while (true) {
+      const idx = next++;
+      if (idx >= items.length) return;
+      await task(items[idx]!);
+    }
+  };
+  const workers = Array.from(
+    { length: Math.min(limit, items.length) },
+    worker,
+  );
+  await Promise.all(workers);
+}
+
+/**
+ * Fire-and-forget body drain. Node's undici keeps the socket in the
+ * pool until the response stream is fully consumed or cancelled — on
+ * the 401/403/429 paths we don't read the body, so without this call
+ * the socket stays half-open and future verifies queue behind it.
+ */
+export function drainResponse(resp: Response | undefined): void {
+  if (!resp || !resp.body) return;
+  try {
+    resp.body.cancel().catch(() => undefined);
+  } catch {
+    // already locked / consumed — no-op
   }
 }
 
