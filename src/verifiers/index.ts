@@ -84,13 +84,19 @@ export async function verifySecret(
       return verifyTwilio(value, opts);
     case 'notion':
       return verifyNotion(value, opts);
-    default:
+    default: {
+      // Exhaustiveness guard: if a new VerifierKind is added to the
+      // union but missing from this switch, TypeScript will fail at
+      // this assignment with "Type 'string' is not assignable to
+      // type 'never'". Prevents silent no-op verifier dispatches.
+      const _exhaustive: never = kind;
       return {
-        kind,
+        kind: _exhaustive,
         status: 'unknown',
-        error: `no verifier for kind "${kind as string}"`,
+        error: `no verifier for kind "${_exhaustive as string}"`,
         checkedAt: new Date().toISOString(),
       };
+    }
   }
 }
 
@@ -165,4 +171,4 @@ export function defaultTimeoutSignal(opts: VerifierOptions): TimeoutHandle {
 }
 
 export const USER_AGENT =
-  'vibe-hardening/0.0.7 (+https://vibe-hardening.io) self-verification';
+  'vibe-hardening/0.0.8 (+https://vibe-hardening.io) self-verification';

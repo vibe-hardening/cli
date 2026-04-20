@@ -218,7 +218,8 @@ export const SECRET_RULES: SecretRule[] = [
     patterns: [
       {
         name: 'sg',
-        regex: /SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}/g,
+        // \b prevents `FOOSG.xxx.yyy` inside a longer base64 blob from matching.
+        regex: /\bSG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}/g,
         disallowSubstrings: PLACEHOLDER_MARKERS,
       },
     ],
@@ -261,8 +262,17 @@ export const SECRET_RULES: SecretRule[] = [
     patterns: [
       {
         name: 'secret',
-        regex: /\b(?:secret|ntn)_[A-Za-z0-9]{43}\b/g,
+        // `secret_` is a common variable-name prefix, so the simple
+        // `secret_[A-Za-z0-9]{43}` pattern would false-positive on any
+        // 43-char identifier (e.g. `secret_abcdefghijkl…abcdefg`). Real
+        // Notion tokens use a mixed-case alphanumeric body — require
+        // at least one uppercase AND one lowercase AND one digit via
+        // three lookaheads. This filters synthetic all-lowercase
+        // identifiers without rejecting real tokens.
+        regex:
+          /\b(?:secret|ntn)_(?=[A-Za-z0-9]{43}\b)(?=[A-Za-z0-9]*[A-Z])(?=[A-Za-z0-9]*[a-z])(?=[A-Za-z0-9]*[0-9])[A-Za-z0-9]{43}\b/g,
         disallowSubstrings: PLACEHOLDER_MARKERS,
+        minEntropy: 4.0,
       },
     ],
   },
