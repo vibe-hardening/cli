@@ -291,6 +291,25 @@ export function Landing({ locale }: { locale: Locale }) {
             method="POST"
             className="mt-9 flex flex-col sm:flex-row gap-3"
           >
+            {/* Honeypot: real users never see or fill this; bots
+                submitting the form by replaying the POST will populate
+                it, and Formspree drops any submission where `_gotcha`
+                is non-empty. */}
+            <input
+              type="text"
+              name="_gotcha"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                left: '-9999px',
+                width: '1px',
+                height: '1px',
+                opacity: 0,
+                pointerEvents: 'none',
+              }}
+            />
             <input
               type="email"
               name="email"

@@ -107,7 +107,17 @@ function osvSeverityFor(v: OsvVulnerability): Severity {
 }
 
 function firstUrl(v: OsvVulnerability): string | undefined {
-  return v.references?.find((r) => r.type === 'ADVISORY' || r.type === 'WEB')?.url;
+  const raw = v.references?.find(
+    (r) => r.type === 'ADVISORY' || r.type === 'WEB',
+  )?.url;
+  if (!raw) return undefined;
+  // OSV references come from a third-party API. Only trust https:// —
+  // a compromised mirror could otherwise inject `javascript:` or
+  // `data:` schemes that would become a clickable XSS vector in any
+  // downstream tool that renders the `remediation` field as HTML
+  // without its own sanitisation.
+  if (!/^https:\/\//i.test(raw)) return undefined;
+  return raw;
 }
 
 /**
