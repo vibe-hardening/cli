@@ -94,10 +94,15 @@ destructive) and classifies each as:
 - **revoked** — safe, housekeep at leisure
 - **unverified** — rate-limited, offline, or no verifier for that kind
 
-Abuse cost figures are hand-curated from public incident reports and
-provider abuse policies (Verizon DBIR, Stripe Radar, Twilio 2024 SMS
-pumping advisory, community reports). They are order-of-magnitude
-estimates, not precise — chosen to make abstract risk concrete.
+Abuse cost figures are **order-of-magnitude estimates**, not published
+medians. Most providers do not release per-incident cost statistics.
+Each entry's `source` field (see `src/reporters/abuse-costs.ts`) names
+what the figure is actually derived from — community incident reports,
+public abuse policies, Verizon DBIR 2024 SaaS-credential category, CISA
+advisories, or explicit arithmetic from pricing × observed abuse
+windows. Where no independent data exists, the source says so rather
+than citing a document that doesn't exist. Treat the figure as "how
+bad could this get — roughly."
 
 `--own` is a deliberate seatbelt so the CLI refuses to probe keys you don't
 claim to own. Without it, `--verify` emits a stderr warning and falls back to
@@ -209,10 +214,10 @@ Supported: `v0` / `lovable` / `bolt` / `cursor` / `claude-code` / `replit-agent`
 
 Preview release — Phase 1 MVP targeting **2026-05-13** on Product Hunt.
 
-Current coverage (`v0.0.10-preview.0`):
+Current coverage (`v0.0.10-preview.1`):
 - Languages: JavaScript / TypeScript / Python (Django, Flask, FastAPI)
 - 6 engines: RLS diff · JWT payload · auth AST · pattern-regex · OSV.dev · LLM hallucination
-- 47 rules · 240 tests · scans typical repo in under 5 seconds
+- 47 rules · 242 tests · scans typical repo in under 5 seconds
 - Live key verification for 7 providers (OpenAI / Anthropic / Stripe / GitHub PAT / Slack / SendGrid / Notion)
 - Estimated abuse-cost figure next to every LIVE KEY (8 providers incl. Twilio)
 - Output: coloured console · JSON for CI · standalone HTML report

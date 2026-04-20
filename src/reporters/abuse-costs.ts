@@ -1,69 +1,86 @@
 import type { VerifierKind } from '../verifiers/index.js';
 
 /**
- * Hand-curated estimated cost of a leaked credential being actively
- * abused, sourced from public incident reports and provider abuse
- * policies. Shown next to LIVE verify results in the console + HTML
- * reports to make the abstract risk concrete for the user.
+ * Estimated financial impact when a leaked credential is actively
+ * abused in the wild. Shown next to LIVE verify results in console +
+ * HTML reports to make the abstract risk concrete.
  *
- * These numbers are **not** precise — they are order-of-magnitude
- * estimates chosen to make the impact legible. Sources cited below;
- * PRs with better data welcome.
+ *   ╔═══════════════════════════════════════════════════════════════╗
+ *   ║  IMPORTANT: these are ORDER-OF-MAGNITUDE ESTIMATES, not       ║
+ *   ║  published medians. Most providers do not publish per-        ║
+ *   ║  incident cost statistics. The numbers below are derived      ║
+ *   ║  from:                                                         ║
+ *   ║    1. Public abuse policies + pricing pages                   ║
+ *   ║    2. Community incident reports (GitHub Security Lab,        ║
+ *   ║       truffle.security, Verizon DBIR)                          ║
+ *   ║    3. Order-of-magnitude arithmetic from observed abuse       ║
+ *   ║       windows × resource cost                                  ║
+ *   ║  Treat the figure as "how bad could this get — roughly" not   ║
+ *   ║  as a forecast or insurance underwriter's quote.              ║
+ *   ╚═══════════════════════════════════════════════════════════════╝
  *
- * Rule of thumb used for each:
- *   - Pick the most common abuse vector for that credential type
- *   - Use a 50th-percentile ("median") figure, not worst case
- *   - Round to the nearest realistic $100 to avoid false precision
+ * PRs with better-sourced numbers welcome. Each `source` field names
+ * what the figure is actually based on — no citations claim a
+ * document that doesn't exist.
  */
 export interface AbuseCost {
-  /** Short phrase shown inline, e.g. "$2,400/month" or "$14k/incident". */
+  /** Short phrase shown inline. Either a specific dollar amount, a
+   *  dollar range, or a category word. Under 30 chars. */
   label: string;
-  /** One-word descriptor of the dominant abuse pattern. */
+  /** One-phrase descriptor of the dominant abuse pattern. */
   vector: string;
-  /** Citation string — URL or publication reference. */
+  /** What the estimate is based on. Never a fabricated publication. */
   source: string;
 }
 
 export const ABUSE_COSTS: Record<VerifierKind, AbuseCost> = {
   openai: {
-    label: '$2,400/month',
-    vector: 'GPU inference resale',
-    source: 'avg abuse window before detection × $80/day GPU cost (community reports 2024-2025)',
+    label: '$2,000–$5,000/mo',
+    vector: 'GPU inference resale via stolen key',
+    source:
+      'estimate: ~30-day typical abuse window × ~$80/day resold inference capacity. No published OpenAI per-incident median.',
   },
   anthropic: {
-    label: '$1,800/month',
+    label: '$1,500–$4,000/mo',
     vector: 'Claude API resale',
-    source: 'estimated from similar OpenAI abuse patterns',
+    source:
+      'estimate: Anthropic has no public abuse stats; projected from pricing + OpenAI-style resale patterns.',
   },
   stripe: {
-    label: '$14,000/incident',
-    vector: 'fraudulent charge rollbacks',
-    source: 'Stripe Radar 2023 threat report, median dispute chain',
+    label: '$5,000–$50,000/incident',
+    vector: 'fraudulent charges + dispute chargebacks',
+    source:
+      'estimate: wide range depending on time-to-detect. Stripe publishes aggregate fraud stats but no per-incident median for leaked-key abuse.',
   },
   'github-pat': {
-    label: '$50,000+/incident',
-    vector: 'supply-chain commit + downstream',
-    source: 'CISA / GitHub Security 2024 incident summaries',
+    label: '$10,000–$500,000/incident',
+    vector: 'supply-chain commit → downstream compromise',
+    source:
+      'estimate: CISA advisory AA23-025A and public incidents (Codecov, SolarWinds tangent, Dropbox 2022) show wide blast-radius.',
   },
   slack: {
-    label: '$3,000/incident',
-    vector: 'data exfiltration + internal phishing',
-    source: 'Verizon DBIR 2024 SaaS token breach median',
+    label: '$1,000–$20,000/incident',
+    vector: 'data exfiltration + internal phishing pivot',
+    source:
+      'estimate: Verizon DBIR 2024 SaaS credential breach category median (not Slack-specific).',
   },
   sendgrid: {
-    label: '$500/day',
-    vector: 'email spam, domain reputation loss',
-    source: 'Twilio/SendGrid abuse policy + deliverability costs',
+    label: '$200–$2,000/day',
+    vector: 'email spam burst, domain reputation loss',
+    source:
+      'estimate: SendGrid abuse thresholds + typical IP warm-up cost to recover sender reputation post-blacklist.',
   },
   notion: {
-    label: 'data breach',
-    vector: 'strategy docs, contracts, customer lists',
-    source: 'no direct financial median — impact is reputational/legal',
+    label: '$5,000–$500,000/incident',
+    vector: 'NDA / strategy docs / customer data leak',
+    source:
+      'estimate: range spans internal leak to GDPR-actionable PII exposure. No Notion-specific public stat.',
   },
   twilio: {
-    label: '$8,000/incident',
+    label: '$2,000–$50,000/incident',
     vector: 'international SMS pumping fraud',
-    source: 'Twilio 2024 SMS pumping advisory, median per compromised account',
+    source:
+      'estimate: Twilio publishes SMS pumping guidance but no per-incident median. Range reflects observed account abuse before detection.',
   },
 };
 
@@ -71,6 +88,12 @@ export const ABUSE_COSTS: Record<VerifierKind, AbuseCost> = {
  * Returns the AbuseCost entry for a verifier kind, or undefined
  * if the kind is unknown. Callers should render the cost inline
  * only when the verify result is `status: 'live'`.
+ *
+ * The `Record<VerifierKind, AbuseCost>` type on ABUSE_COSTS means
+ * TypeScript will fail at compile time if a new VerifierKind is
+ * added to the union without a corresponding entry here — the
+ * runtime `kind in ABUSE_COSTS` check is just defensive for callers
+ * passing arbitrary strings (e.g. from an older verify payload).
  */
 export function abuseCostFor(kind: string): AbuseCost | undefined {
   if (kind in ABUSE_COSTS) {
