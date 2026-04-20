@@ -67,7 +67,20 @@ npx vibe-hardening scan --severity high
 
 # 네트워크 체크 건너뛰기 (OSV, npm registry)
 npx vibe-hardening scan --offline
+
+# 유출된 키가 provider에서 아직 유효한지 실시간 확인 (--own 필요)
+npx vibe-hardening scan --verify --own
 ```
+
+### `--verify` 실시간 키 확인
+
+verifier가 있는 키 (OpenAI, Anthropic, Stripe, GitHub PAT, Slack, SendGrid, Notion)에 대해, `--verify --own`은 발견된 각 키마다 provider의 최소 읽기 API (list models, auth test 등 — **절대** 파괴적이지 않음)를 한 번 호출하여 다음으로 분류합니다:
+
+- **LIVE KEY** — 즉시 교체
+- **revoked** — 안전, 여유 있을 때 정리
+- **unverified** — 속도 제한, 오프라인, 또는 해당 kind에 verifier 없음
+
+`--own`은 의도적인 안전벨트로, CLI는 소유를 주장하지 않은 키의 조사를 거부합니다. `--own` 없이 `--verify`를 실행하면 stderr 경고가 출력되고 탐지 전용 모드로 돌아갑니다.
 
 ## 플랫폼 지문 탐지
 
@@ -88,13 +101,15 @@ platform  v0  (74% confidence)
 - 지원 언어: JavaScript / TypeScript / Python (Django, Flask, FastAPI)
 - 6개 엔진: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 환각
 - 47개 규칙、217개 테스트、일반적인 repo를 5초 이내에 스캔
+- 7개 provider 실시간 키 확인 (OpenAI, Anthropic, Stripe, GitHub PAT, Slack, SendGrid, Notion)
 - 출력 형식: 컬러 터미널、CI용 JSON、독립형 HTML 보고서
 - 0-100 보안 점수 + A-F 등급 + SVG README 배지
 - 인라인 억제: `// vibe-hardening-disable-next-line vh-rule-id`
 - 8개 AI 플랫폼 지문 탐지
 
 로드맵:
-- 라이브 키 검증 (`--verify`로 provider API에 질의하여 유출된 키가 여전히 활성인지 확인)
+- Go / Rust 지원 (Phase 3)
+- GitHub Action + PR 코멘트 봇
 - Markdown reporter
 - Pro 대시보드、GitHub App、Slack 알림 (출시 후)
 

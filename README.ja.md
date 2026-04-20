@@ -67,7 +67,20 @@ npx vibe-hardening scan --severity high
 
 # ネットワークチェックをスキップ (OSV、npm registry)
 npx vibe-hardening scan --offline
+
+# 漏洩した鍵がプロバイダーでまだ有効かをライブ検証 (--own が必要)
+npx vibe-hardening scan --verify --own
 ```
+
+### `--verify` ライブキー検証
+
+verifier がある鍵 (OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion) について、`--verify --own` は検出した鍵ごとにプロバイダーの最小限の読み取り API (list models、auth test など — **絶対に**破壊的ではない) を1回呼び出し、以下に分類します：
+
+- **LIVE KEY** — 即座にローテーション
+- **revoked** — 安全、後で整理
+- **unverified** — レート制限、オフライン、または verifier がない
+
+`--own` は意図的な安全装置で、CLI は所有を宣言していない鍵の調査を拒否します。`--own` なしで `--verify` を実行すると stderr に警告が出て検出のみのモードに戻ります。
 
 ## プラットフォーム指紋検出
 
@@ -88,13 +101,15 @@ platform  v0  (74% confidence)
 - 対応言語: JavaScript / TypeScript / Python (Django、Flask、FastAPI)
 - 6つのエンジン: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM幻覚
 - 47のルール、217のテスト、一般的なリポジトリを5秒以内にスキャン
+- 7 プロバイダーのライブキー検証 (OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion)
 - 出力形式: カラーターミナル、CI用JSON、スタンドアロンHTMLレポート
 - 0-100セキュリティスコア + A-F グレード + SVG README バッジ
 - インライン抑制: `// vibe-hardening-disable-next-line vh-rule-id`
 - 8つのAIプラットフォームの指紋検出
 
 ロードマップ:
-- ライブキー検証 (`--verify` でプロバイダーAPIに問い合わせ、漏洩したキーがまだ有効か確認)
+- Go / Rust サポート (Phase 3)
+- GitHub Action + PR コメントボット
 - Markdown reporter
 - Pro ダッシュボード、GitHub App、Slack通知（ローンチ後）
 

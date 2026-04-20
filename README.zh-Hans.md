@@ -67,7 +67,20 @@ npx vibe-hardening scan --severity high
 
 # 跳过网络检查（OSV、npm registry）
 npx vibe-hardening scan --offline
+
+# 实时验证找到的密钥在 provider 上是否还有效（需要 --own）
+npx vibe-hardening scan --verify --own
 ```
+
+### `--verify` 实时密钥验证
+
+对有 verifier 的密钥（OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion），`--verify --own` 会对每个发现的密钥打一次 provider 最轻量的读取 API（list models、auth test 等，**绝不**破坏性），分类成：
+
+- **LIVE KEY** — 立即轮换
+- **revoked** — 安全，有空再清理
+- **unverified** — 被限流、离线，或该 kind 没 verifier
+
+`--own` 是故意加的安全带，CLI 会拒绝探测你没声明拥有的密钥。没加 `--own` 时，`--verify` 会输出 stderr 警告并退回只检测模式。
 
 ## 平台指纹检测
 
@@ -88,13 +101,15 @@ platform  v0  (74% confidence)
 - 支持语言：JavaScript / TypeScript / Python（Django、Flask、FastAPI）
 - 6 个引擎：RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 幻觉
 - 47 条规则、217 个测试、一般仓库 5 秒内扫描完毕
+- 7 家 provider 实时密钥验证（OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion）
 - 输出格式：彩色终端、CI 用 JSON、独立 HTML 报告
 - 0-100 安全分数 + A-F 等级 + SVG README badge
 - 行内抑制：`// vibe-hardening-disable-next-line vh-rule-id`
 - 8 家 AI 平台指纹检测
 
 路线图：
-- 实时密钥验证（`--verify` 调用 provider API 确认泄露密钥是否仍然有效）
+- Go / Rust 支持（Phase 3）
+- GitHub Action + PR 评论机器人
 - Markdown reporter
 - Pro 控制台、GitHub App、Slack 通知（上线后）
 
