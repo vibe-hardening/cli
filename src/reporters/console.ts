@@ -8,6 +8,7 @@ import {
   ROAST_GRADE_LINES,
   ROAST_EMPTY,
 } from './roast-messages.js';
+import { abuseCostFor } from './abuse-costs.js';
 
 export interface ConsoleOptions {
   /**
@@ -134,7 +135,15 @@ function renderVerify(v: VerifyResult): string {
   }
   const extra = extras.length > 0 ? ` ${pc.dim(`(${extras.join(', ')})`)}` : '';
   if (v.status === 'live') {
-    return `${pc.bgRed(pc.white(pc.bold(' LIVE KEY ')))} ${pc.red(pc.bold(v.kind))}${extra}`;
+    // Show an estimated abuse cost next to LIVE KEY — concrete dollar
+    // figure is more visceral than "severe" for a vibe coder who just
+    // ran `npx vibe-hardening` on a weekend project. Numbers come from
+    // ABUSE_COSTS (see abuse-costs.ts for sources).
+    const cost = abuseCostFor(v.kind);
+    const costLine = cost
+      ? ` ${pc.dim('~')} ${pc.bold(pc.red(cost.label))} ${pc.dim(`(${cost.vector})`)}`
+      : '';
+    return `${pc.bgRed(pc.white(pc.bold(' LIVE KEY ')))} ${pc.red(pc.bold(v.kind))}${extra}${costLine}`;
   }
   if (v.status === 'revoked') {
     return `${pc.green('✓ revoked')} ${pc.dim(v.kind)}${extra}`;

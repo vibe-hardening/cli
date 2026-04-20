@@ -90,9 +90,14 @@ Slack, SendGrid, Notion), `--verify --own` makes one minimal read call per
 finding against the provider (list models, auth test, etc. — **never**
 destructive) and classifies each as:
 
-- **LIVE KEY** — rotate immediately
+- **LIVE KEY** — rotate immediately (shown with estimated abuse cost, e.g. `~ $2,400/month (GPU inference resale)`)
 - **revoked** — safe, housekeep at leisure
 - **unverified** — rate-limited, offline, or no verifier for that kind
+
+Abuse cost figures are hand-curated from public incident reports and
+provider abuse policies (Verizon DBIR, Stripe Radar, Twilio 2024 SMS
+pumping advisory, community reports). They are order-of-magnitude
+estimates, not precise — chosen to make abstract risk concrete.
 
 `--own` is a deliberate seatbelt so the CLI refuses to probe keys you don't
 claim to own. Without it, `--verify` emits a stderr warning and falls back to
@@ -204,11 +209,12 @@ Supported: `v0` / `lovable` / `bolt` / `cursor` / `claude-code` / `replit-agent`
 
 Preview release — Phase 1 MVP targeting **2026-05-13** on Product Hunt.
 
-Current coverage (`v0.0.9-preview.2`):
+Current coverage (`v0.0.10-preview.0`):
 - Languages: JavaScript / TypeScript / Python (Django, Flask, FastAPI)
 - 6 engines: RLS diff · JWT payload · auth AST · pattern-regex · OSV.dev · LLM hallucination
-- 47 rules · 234 tests · scans typical repo in under 5 seconds
+- 47 rules · 240 tests · scans typical repo in under 5 seconds
 - Live key verification for 7 providers (OpenAI / Anthropic / Stripe / GitHub PAT / Slack / SendGrid / Notion)
+- Estimated abuse-cost figure next to every LIVE KEY (8 providers incl. Twilio)
 - Output: coloured console · JSON for CI · standalone HTML report
 - 0–100 security score with A–F grade + SVG README badge
 - Inline suppression: `// vibe-hardening-disable-next-line vh-rule-id`

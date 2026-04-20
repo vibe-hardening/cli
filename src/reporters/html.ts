@@ -2,6 +2,7 @@ import type { ScanReport } from '../core/scan.js';
 import type { Finding, Severity } from '../core/types.js';
 import type { VerifyResult } from '../verifiers/index.js';
 import { renderBadge } from '../scoring/badge.js';
+import { abuseCostFor } from './abuse-costs.js';
 
 function escapeHtml(s: string): string {
   return s
@@ -35,10 +36,15 @@ function renderVerifyHtml(v: VerifyResult): string {
   }
   const meta = extras.length ? escapeHtml(extras.join(' · ')) : '';
   if (v.status === 'live') {
+    const cost = abuseCostFor(v.kind);
+    const costFragment = cost
+      ? `<span class="vh-verify-cost">~ ${escapeHtml(cost.label)} <span class="vh-verify-cost-vector">(${escapeHtml(cost.vector)})</span></span>`
+      : '';
     return `<div class="vh-verify vh-verify-live">
       <span class="vh-verify-badge">▲ LIVE KEY</span>
       <span class="vh-verify-kind">${escapeHtml(v.kind)}</span>
       ${meta ? `<span class="vh-verify-meta">${meta}</span>` : ''}
+      ${costFragment}
     </div>`;
   }
   if (v.status === 'revoked') {
@@ -199,6 +205,14 @@ export function renderHtml(report: ScanReport, version: string): string {
   }
   .vh-verify-kind { text-transform: uppercase; color: #eaeaea; }
   .vh-verify-meta { color: #6a6a6a; }
+  .vh-verify-cost {
+    font-family: 'Archivo Black', sans-serif; letter-spacing: 0.05em;
+    margin-left: 4px;
+  }
+  .vh-verify-cost-vector {
+    font-family: 'JetBrains Mono', monospace; font-weight: normal;
+    letter-spacing: 0.08em; font-size: 10px; opacity: 0.75;
+  }
   .vh-verify-live { background: #ff2a2a; color: #0a0a0a; }
   .vh-verify-live .vh-verify-badge { background: #0a0a0a; color: #ff2a2a; }
   .vh-verify-live .vh-verify-kind { color: #0a0a0a; }
