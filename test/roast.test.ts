@@ -111,6 +111,16 @@ describe('roast: helper behaviour', () => {
     );
   });
 
+  it('CVE: handles scoped packages (@scope/name@ver)', () => {
+    const out = roastMessage(
+      'vh-dep-cve-GHSA-yyy',
+      '@hono/node-server@1.19.9: GHSA-yyy — brief summary',
+    );
+    expect(out).toBe(
+      `${ROAST_DEPENDENCY_CVE_PREFIX} GHSA-yyy — brief summary`,
+    );
+  });
+
   it('CVE: does NOT mangle grouped-format message (regression)', () => {
     // Previously the regex greedily matched "everything up to first
     // colon" which reduced `...worst: medium` to just `medium`. The

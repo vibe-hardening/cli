@@ -162,7 +162,11 @@ export const ROAST_DEPENDENCY_CVE_PREFIX =
  * producing a confusing one-word line.
  */
 function stripPkgPrefix(msg: string): string {
-  const m = /^[^@\s]+@[^\s:]+:\s*(.*)$/.exec(msg);
+  // Allow optional leading `@` for scoped npm packages like
+  // `@hono/node-server@1.19.9: GHSA-xxx — summary`. Without the
+  // `@?` the regex rejected every scoped package and fell back to
+  // returning the full message, making the roast line redundant.
+  const m = /^@?[^@\s]+@[^\s:]+:\s*(.*)$/.exec(msg);
   return m ? m[1]! : msg;
 }
 
