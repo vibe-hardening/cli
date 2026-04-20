@@ -3,8 +3,23 @@ import type { Finding, Severity } from '../core/types.js';
 import type { ScanReport } from '../core/scan.js';
 import type { Grade } from '../scoring/score.js';
 import type { VerifyResult } from '../verifiers/index.js';
+import {
+  roastMessage,
+  ROAST_GRADE_LINES,
+  ROAST_EMPTY,
+} from './roast-messages.js';
 
-function gradeLine(score: number, grade: Grade): string {
+export interface ConsoleOptions {
+  /**
+   * Roast mode: replaces neutral rule messages with dry brutalist
+   * one-liners, and swaps the grade line + empty-repo message for
+   * personality. Console-only — JSON / HTML reporters are never
+   * affected, so CI output + compliance artifacts stay professional.
+   */
+  roast?: boolean;
+}
+
+function gradeLine(score: number, grade: Grade, roast: boolean): string {
   const colour =
     grade === 'A'
       ? pc.green
@@ -15,7 +30,9 @@ function gradeLine(score: number, grade: Grade): string {
           : grade === 'D'
             ? pc.red
             : pc.red;
-  return `${pc.dim('score')}     ${colour(pc.bold(`${score} / 100`))}  ${colour(pc.bold(`[${grade}]`))}`;
+  const base = `${pc.dim('score')}     ${colour(pc.bold(`${score} / 100`))}  ${colour(pc.bold(`[${grade}]`))}`;
+  if (!roast) return base;
+  return `${base}   ${pc.dim(ROAST_GRADE_LINES[grade])}`;
 }
 
 function severityBadge(sev: Severity): string {
@@ -126,7 +143,11 @@ function renderVerify(v: VerifyResult): string {
   return `${pc.dim('? unverified')} ${pc.dim(v.kind + reason)}`;
 }
 
-export function renderConsole(report: ScanReport): string {
+export function renderConsole(
+  report: ScanReport,
+  opts: ConsoleOptions = {},
+): string {
+  const roast = opts.roast ?? false;
   const lines: string[] = [];
   const banner = pc.bold(pc.cyan('vibe-hardening'));
   lines.push('');
@@ -140,11 +161,14 @@ export function renderConsole(report: ScanReport): string {
       `${pc.dim('platform')}  ${pc.bold(report.platform.platform)}  ${pc.dim(`(${pct}% confidence)`)}`,
     );
   }
-  lines.push(gradeLine(report.score.score, report.score.grade));
+  lines.push(gradeLine(report.score.score, report.score.grade, roast));
   lines.push('');
 
   if (report.findings.length === 0) {
-    lines.push(pc.green(pc.bold('  ✓ no findings. ship with confidence.')));
+    const empty = roast
+      ? pc.dim(pc.italic(`  ${ROAST_EMPTY}`))
+      : pc.green(pc.bold('  ✓ no findings. ship with confidence.'));
+    lines.push(empty);
     lines.push('');
     return lines.join('\n');
   }
@@ -157,7 +181,8 @@ export function renderConsole(report: ScanReport): string {
       lines.push(
         `  ${severityBadge(f.severity)}  ${pc.bold(f.ruleId)}  ${pc.dim(`(${f.line}:${f.column})`)}`,
       );
-      lines.push(`         ${f.message}`);
+      const msg = roast ? roastMessage(f.ruleId, f.message) : f.message;
+      lines.push(`         ${msg}`);
       if (f.snippet) {
         lines.push(`         ${pc.dim('snippet:')} ${pc.dim(f.snippet)}`);
       }

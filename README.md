@@ -77,6 +77,10 @@ npx vibe-hardening scan --format html -o report.html
 
 # SVG badge showing current score + grade. Embed in your README.
 npx vibe-hardening badge -o .github/vibe-hardening.svg
+
+# --roast mode: dry brutalist one-liners instead of neutral messages.
+# Console-only — JSON / HTML output stays professional for CI artifacts.
+npx vibe-hardening scan --roast
 ```
 
 ### `--verify` live key check

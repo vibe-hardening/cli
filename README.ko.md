@@ -76,6 +76,10 @@ npx vibe-hardening scan --format html -o report.html
 
 # 현재 점수와 등급을 표시하는 SVG 배지, README에 삽입 가능
 npx vibe-hardening badge -o .github/vibe-hardening.svg
+
+# --roast 모드: 중립 메시지를 신랄한 brutalist 한 줄로 교체.
+# 콘솔 전용 — JSON / HTML 출력은 CI용으로 전문적으로 유지.
+npx vibe-hardening scan --roast
 ```
 
 ### `--verify` 실시간 키 확인

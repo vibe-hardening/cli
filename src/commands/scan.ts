@@ -28,6 +28,7 @@ export interface ScanCommandOptions {
   respectGitignore: boolean;
   verify: boolean;
   own: boolean;
+  roast: boolean;
   version: string;
 }
 
@@ -113,7 +114,7 @@ export async function runScanCommand(
       `${pc.green('✓')} HTML report written to ${pc.cyan(target)}\n`,
     );
   } else {
-    const out = renderConsole(report);
+    const out = renderConsole(report, { roast: opts.roast });
     if (opts.output) {
       await writeTo(opts.output, out);
     } else {

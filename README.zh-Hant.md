@@ -76,6 +76,10 @@ npx vibe-hardening scan --format html -o report.html
 
 # 產生顯示目前分數跟等級的 SVG badge，可貼進 README
 npx vibe-hardening badge -o .github/vibe-hardening.svg
+
+# --roast 模式：用毒舌 brutalist 一句話取代中性訊息。
+# 只影響 console — JSON / HTML 輸出維持專業給 CI 用。
+npx vibe-hardening scan --roast
 ```
 
 ### `--verify` 即時金鑰驗證

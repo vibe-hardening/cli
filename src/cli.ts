@@ -70,6 +70,11 @@ export function buildProgram(): Command {
       'confirm the detected secrets belong to you — required alongside --verify to prevent accidentally probing third-party credentials',
       false,
     )
+    .option(
+      '--roast',
+      'dry brutalist one-liners instead of neutral rule messages (console output only — JSON / HTML remain professional for CI)',
+      false,
+    )
     .action(
       async (
         cwd: string,
@@ -83,6 +88,7 @@ export function buildProgram(): Command {
           gitignore: boolean;
           verify: boolean;
           own: boolean;
+          roast: boolean;
         },
       ) => {
         const code = await runScanCommand({
@@ -97,6 +103,7 @@ export function buildProgram(): Command {
           respectGitignore: cmdOpts.gitignore !== false,
           verify: !!cmdOpts.verify,
           own: !!cmdOpts.own,
+          roast: !!cmdOpts.roast,
           version,
         });
         process.exit(code);

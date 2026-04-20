@@ -76,6 +76,10 @@ npx vibe-hardening scan --format html -o report.html
 
 # 現在のスコアとグレードを表示する SVG バッジ、README に埋め込める
 npx vibe-hardening badge -o .github/vibe-hardening.svg
+
+# --roast モード：中性メッセージを辛辣な brutalist ワンライナーに置換。
+# コンソール専用 — JSON / HTML は CI 用にプロフェッショナルなまま。
+npx vibe-hardening scan --roast
 ```
 
 ### `--verify` ライブキー検証
