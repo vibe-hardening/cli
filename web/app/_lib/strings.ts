@@ -93,9 +93,9 @@ export const strings: Record<Locale, Strings> = {
       'vibe-hardening / one-command security scanner for AI-generated code',
     classbar: {
       unit: '▲ VH-001 · FOR THE VIBE CODER ·',
-      rev: 'REV 0.0.4 · CHAN 04',
+      rev: 'REV 0.0.7 · CHAN 07',
       geo: 'LAT 25.03°N · LNG 121.56°E',
-      date: '▲ 2026-04-19 ▲',
+      date: '▲ 2026-04-20 ▲',
     },
     nav: {
       source: 'Source ↗',
@@ -141,12 +141,12 @@ export const strings: Record<Locale, Strings> = {
     },
     features: {
       label1: 'What it checks —',
-      label2: '87 rules across 12 domains.',
+      label2: '44 rules across 11 categories.',
       items: [
         {
           code: 'SEC-01',
           title: 'AI-aware rules',
-          body: "Trained on 4,200 shipped vibe-coded apps. Knows what a v0 export, a Cursor loop, a Lovable scaffold each tend to miss — and won't complain about what they get right.",
+          body: "Hand-tuned for v0 exports, Cursor loops, Lovable scaffolds, Bolt scaffolds, and Claude Code diffs. Knows what each tends to miss — and won't complain about what they get right.",
         },
         {
           code: 'AUT-02',
@@ -195,7 +195,7 @@ export const strings: Record<Locale, Strings> = {
       submit: 'SUBSCRIBE →',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.0.4',
+      brandCopy: '© 2026 · MIT · REV 0.0.7',
       colProductTitle: 'PRODUCT',
       colProductItems: ['CLI', 'Dashboard (soon)', 'GitHub App (soon)'],
       colSourceTitle: 'SOURCE',
@@ -215,9 +215,9 @@ export const strings: Record<Locale, Strings> = {
     title: 'vibe-hardening｜AI 生成程式碼的一鍵資安掃描工具',
     classbar: {
       unit: '▲ VH-001 · 獻給 VIBE CODER ·',
-      rev: 'REV 0.0.4 · CHAN 04',
+      rev: 'REV 0.0.7 · CHAN 07',
       geo: 'LAT 25.03°N · LNG 121.56°E',
-      date: '▲ 2026-04-19 ▲',
+      date: '▲ 2026-04-20 ▲',
     },
     nav: {
       source: '原始碼 ↗',
@@ -263,12 +263,12 @@ export const strings: Record<Locale, Strings> = {
     },
     features: {
       label1: '我們檢查什麼 —',
-      label2: '12 領域共 87 條規則。',
+      label2: '11 類別共 44 條規則。',
       items: [
         {
           code: 'SEC-01',
           title: 'AI 專屬規則庫',
-          body: '基於 4,200 個已上線的 vibe-coded 專案訓練。知道 v0 匯出、Cursor 循環、Lovable scaffold 各自最常漏掉什麼，也不會挑它們做對的事。',
+          body: '針對 v0 匯出、Cursor 循環、Lovable scaffold、Bolt 骨架、Claude Code diff 手動調校過的規則。知道它們各自最常漏掉什麼，也不會挑它們做對的事。',
         },
         {
           code: 'AUT-02',
@@ -316,7 +316,7 @@ export const strings: Record<Locale, Strings> = {
       submit: '訂閱 →',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.0.4',
+      brandCopy: '© 2026 · MIT · REV 0.0.7',
       colProductTitle: '產品',
       colProductItems: ['CLI', '儀表板（即將推出）', 'GitHub App（即將推出）'],
       colSourceTitle: '原始碼',
