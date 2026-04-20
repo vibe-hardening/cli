@@ -3,7 +3,10 @@ export type VerifierKind =
   | 'anthropic'
   | 'stripe'
   | 'github-pat'
-  | 'slack';
+  | 'slack'
+  | 'sendgrid'
+  | 'twilio'
+  | 'notion';
 
 export type VerifyStatus = 'live' | 'revoked' | 'unknown';
 
@@ -30,6 +33,9 @@ import { verifyAnthropic } from './anthropic.js';
 import { verifyStripe } from './stripe.js';
 import { verifyGithub } from './github.js';
 import { verifySlack } from './slack.js';
+import { verifySendgrid } from './sendgrid.js';
+import { verifyTwilio } from './twilio.js';
+import { verifyNotion } from './notion.js';
 
 /**
  * Dispatch a verification call for a given secret kind. Each verifier
@@ -72,6 +78,12 @@ export async function verifySecret(
       return verifyGithub(value, opts);
     case 'slack':
       return verifySlack(value, opts);
+    case 'sendgrid':
+      return verifySendgrid(value, opts);
+    case 'twilio':
+      return verifyTwilio(value, opts);
+    case 'notion':
+      return verifyNotion(value, opts);
     default:
       return {
         kind,

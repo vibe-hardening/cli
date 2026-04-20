@@ -206,4 +206,64 @@ export const SECRET_RULES: SecretRule[] = [
       },
     ],
   },
+  {
+    id: 'vh-secret-sendgrid',
+    severity: 'critical',
+    category: 'secret',
+    message: 'SendGrid API key exposed',
+    remediation:
+      'Revoke at app.sendgrid.com/settings/api_keys. Treat sent email from the leaked key as potentially spoofed.',
+    verify: { kind: 'sendgrid' },
+    excludeFilenamePatterns: [ENV_EXAMPLE_FILE],
+    patterns: [
+      {
+        name: 'sg',
+        regex: /SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}/g,
+        disallowSubstrings: PLACEHOLDER_MARKERS,
+      },
+    ],
+  },
+  {
+    id: 'vh-secret-twilio-auth-token',
+    severity: 'critical',
+    category: 'secret',
+    message: 'Twilio Account SID and Auth Token exposed',
+    remediation:
+      'Rotate the token at twilio.com/console → Account → API keys. A leaked Twilio token can send paid SMS.',
+    // No `verify` yet — Twilio verification needs the paired SID+Token
+    // sent together, which the current requireAllPatterns pipeline
+    // can't surface through `_rawValue` (it only carries the last
+    // pattern's match). Detection works; live-check is a v0.0.8+ item.
+    excludeFilenamePatterns: [ENV_EXAMPLE_FILE],
+    requireAllPatterns: true,
+    patterns: [
+      {
+        name: 'sid',
+        regex: /\bAC[0-9a-f]{32}\b/g,
+      },
+      {
+        name: 'token',
+        regex:
+          /(?:auth[_-]?token|twilio[_-]?token)\s*[:=]\s*["'`]([0-9a-f]{32})["'`]/gi,
+        captureGroup: 1,
+      },
+    ],
+  },
+  {
+    id: 'vh-secret-notion',
+    severity: 'high',
+    category: 'secret',
+    message: 'Notion integration token exposed',
+    remediation:
+      'Revoke at notion.so/my-integrations. A leaked token can read/write every page and database the integration is connected to.',
+    verify: { kind: 'notion' },
+    excludeFilenamePatterns: [ENV_EXAMPLE_FILE],
+    patterns: [
+      {
+        name: 'secret',
+        regex: /\b(?:secret|ntn)_[A-Za-z0-9]{43}\b/g,
+        disallowSubstrings: PLACEHOLDER_MARKERS,
+      },
+    ],
+  },
 ];

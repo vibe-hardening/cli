@@ -108,6 +108,73 @@ describe('verifySecret dispatcher', () => {
     expect(r.status).toBe('revoked');
   });
 
+  it('sendgrid: 200 -> live', async () => {
+    const fake: FakeFetch = async (url, init) => {
+      expect(url).toBe('https://api.sendgrid.com/v3/user/account');
+      const headers = init?.headers as Record<string, string>;
+      expect(headers.authorization).toBe('Bearer SG.x.y');
+      return jsonResponse(200, { type: 'free' });
+    };
+    const r = await verifySecret('sendgrid', 'SG.x.y', {
+      fetchImpl: fake as typeof fetch,
+    });
+    expect(r.status).toBe('live');
+  });
+
+  it('sendgrid: 401 -> revoked', async () => {
+    const fake: FakeFetch = async () => jsonResponse(401, {});
+    const r = await verifySecret('sendgrid', 'SG.bad.key', {
+      fetchImpl: fake as typeof fetch,
+    });
+    expect(r.status).toBe('revoked');
+  });
+
+  it('notion: 200 -> live', async () => {
+    const fake: FakeFetch = async (url, init) => {
+      expect(url).toBe('https://api.notion.com/v1/users/me');
+      const headers = init?.headers as Record<string, string>;
+      expect(headers['notion-version']).toBe('2022-06-28');
+      return jsonResponse(200, { object: 'user' });
+    };
+    const r = await verifySecret('notion', 'secret_live', {
+      fetchImpl: fake as typeof fetch,
+    });
+    expect(r.status).toBe('live');
+  });
+
+  it('notion: 401 -> revoked', async () => {
+    const fake: FakeFetch = async () => jsonResponse(401, {});
+    const r = await verifySecret('notion', 'secret_bad', {
+      fetchImpl: fake as typeof fetch,
+    });
+    expect(r.status).toBe('revoked');
+  });
+
+  it('twilio: 200 with SID:TOKEN combined value -> live', async () => {
+    const fake: FakeFetch = async (url, init) => {
+      expect(url).toContain('/Accounts/ACaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.json');
+      const headers = init?.headers as Record<string, string>;
+      expect(headers.authorization).toMatch(/^Basic /);
+      return jsonResponse(200, { status: 'active' });
+    };
+    const r = await verifySecret(
+      'twilio',
+      'ACaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:tokenliveaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      { fetchImpl: fake as typeof fetch },
+    );
+    expect(r.status).toBe('live');
+  });
+
+  it('twilio: 401 -> revoked', async () => {
+    const fake: FakeFetch = async () => jsonResponse(401, {});
+    const r = await verifySecret(
+      'twilio',
+      'AC11111111111111111111111111111111:badtokenbadtokenbadtokenbadtokenb',
+      { fetchImpl: fake as typeof fetch },
+    );
+    expect(r.status).toBe('revoked');
+  });
+
   it('network failure -> unknown, never throws', async () => {
     const fake: FakeFetch = async () => {
       throw new Error('ECONNREFUSED');

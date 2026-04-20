@@ -25,7 +25,15 @@ export interface SecretRule {
    * are stripped by reporters before serialisation.
    */
   verify?: {
-    kind: 'openai' | 'anthropic' | 'stripe' | 'github-pat' | 'slack';
+    kind:
+      | 'openai'
+      | 'anthropic'
+      | 'stripe'
+      | 'github-pat'
+      | 'slack'
+      | 'sendgrid'
+      | 'twilio'
+      | 'notion';
   };
   /**
    * When true, a finding is emitted only when *every* `patterns[i]` has at
