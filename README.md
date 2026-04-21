@@ -121,7 +121,7 @@ quip on the score line:
 score      42 / 100  [F]   This is a hostage note to yourself.
 ```
 
-Every shipped rule has a hand-written line (43 entries covering secrets /
+Every shipped rule has a hand-written line (48 entries covering secrets /
 injection / auth / network / Python / supply chain). Dependency CVEs get a
 prefix-based roast. Unknown rule IDs fall back to the neutral message.
 
@@ -214,7 +214,7 @@ Supported: `v0` / `lovable` / `bolt` / `cursor` / `claude-code` / `replit-agent`
 
 Preview release — Phase 1 MVP targeting **2026-05-13** on Product Hunt.
 
-Current coverage (`v0.0.12-preview.1`):
+Current coverage (`v0.0.12-preview.2`):
 - Languages: JavaScript / TypeScript / Python (Django, Flask, FastAPI)
 - 6 engines: RLS diff · JWT payload · auth AST · pattern-regex · OSV.dev · LLM hallucination
 - 48 rules · 260 tests · scans typical repo in under 5 seconds

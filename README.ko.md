@@ -104,7 +104,7 @@ verifier가 있는 키 (OpenAI, Anthropic, Stripe, GitHub PAT, Slack, SendGrid, 
 score      42 / 100  [F]   This is a hostage note to yourself.
 ```
 
-출시된 모든 룰에 수작업 카피 (43개 — secrets / injection / auth / network / Python / 공급망)가 있습니다. 의존성 CVE는 prefix 기반 roast. 미등록 룰 ID는 중립 메시지로 fallback.
+출시된 모든 룰에 수작업 카피 (48개 — secrets / injection / auth / network / Python / 공급망)가 있습니다. 의존성 CVE는 prefix 기반 roast. 미등록 룰 ID는 중립 메시지로 fallback.
 
 **콘솔 전용** — JSON과 HTML 리포터는 완전히 건드리지 않아서 CI 아티팩트, 컴플라이언스 리포트, 기계 파싱용 출력은 전문적으로 유지됩니다. 다른 플래그와 자유롭게 조합 가능:
 
@@ -182,7 +182,7 @@ platform  v0  (74% confidence)
 
 프리뷰 릴리스 — Phase 1 MVP는 **2026-05-13** Product Hunt 출시가 목표입니다.
 
-현재 커버리지 (`v0.0.12-preview.1`):
+현재 커버리지 (`v0.0.12-preview.2`):
 - 지원 언어: JavaScript / TypeScript / Python (Django, Flask, FastAPI)
 - 6개 엔진: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 환각
 - 48개 규칙、260개 테스트、일반적인 repo를 5초 이내에 스캔

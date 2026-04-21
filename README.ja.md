@@ -104,7 +104,7 @@ verifier がある鍵 (OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGr
 score      42 / 100  [F]   This is a hostage note to yourself.
 ```
 
-シップ済みの全ルールに手書きの台詞 (43 件 — secrets / injection / auth / network / Python / サプライチェーン) があります。依存 CVE はプレフィックスベースの roast。未知のルール ID は中性メッセージにフォールバック。
+シップ済みの全ルールに手書きの台詞 (48 件 — secrets / injection / auth / network / Python / サプライチェーン) があります。依存 CVE はプレフィックスベースの roast。未知のルール ID は中性メッセージにフォールバック。
 
 **コンソール専用** — JSON と HTML レポーターには一切触れないため、CI アーティファクト、コンプライアンスレポート、機械パース用の出力はプロフェッショナルなまま。他のフラグと自由に組み合わせ可能:
 
@@ -182,7 +182,7 @@ platform  v0  (74% confidence)
 
 プレビューリリース — Phase 1 MVPは **2026-05-13** にProduct Huntでのローンチを目標としています。
 
-現在のカバレッジ (`v0.0.12-preview.1`):
+現在のカバレッジ (`v0.0.12-preview.2`):
 - 対応言語: JavaScript / TypeScript / Python (Django、Flask、FastAPI)
 - 6つのエンジン: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM幻覚
 - 48のルール、260のテスト、一般的なリポジトリを5秒以内にスキャン

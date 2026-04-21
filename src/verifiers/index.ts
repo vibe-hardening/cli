@@ -175,4 +175,4 @@ export function defaultTimeoutSignal(opts: VerifierOptions): TimeoutHandle {
 }
 
 export const USER_AGENT =
-  'vibe-hardening/0.0.8 (+https://vibe-hardening.io) self-verification';
+  'vibe-hardening/0.0.12 (+https://vibe-hardening.io) self-verification';

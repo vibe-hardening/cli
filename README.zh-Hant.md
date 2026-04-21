@@ -104,7 +104,7 @@ npx vibe-hardening scan --roast
 score      42 / 100  [F]   This is a hostage note to yourself.
 ```
 
-每一條 shipped rule 都有手寫台詞（43 條，涵蓋 secrets / injection / auth / network / Python / 供應鏈）。依賴 CVE 用 prefix roast。未知 rule 會 fallback 到原本的中性訊息。
+每一條 shipped rule 都有手寫台詞（48 條，涵蓋 secrets / injection / auth / network / Python / 供應鏈）。依賴 CVE 用 prefix roast。未知 rule 會 fallback 到原本的中性訊息。
 
 **只影響 console** — JSON 跟 HTML reporter 完全不碰，CI artifact / 合規報告 / 任何機器解析用的都保持專業。跟其他 flag 可以自由組合：
 
@@ -182,7 +182,7 @@ platform  v0  (74% confidence)
 
 預覽版 —— Phase 1 MVP 目標 **2026-05-13** 上 Product Hunt。
 
-目前覆蓋（`v0.0.12-preview.1`）：
+目前覆蓋（`v0.0.12-preview.2`）：
 - 支援語言：JavaScript / TypeScript / Python（Django、Flask、FastAPI）
 - 6 個引擎：RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 幻覺
 - 48 條規則、260 個測試、一般 repo 5 秒內掃完

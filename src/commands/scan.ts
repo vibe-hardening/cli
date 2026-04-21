@@ -80,12 +80,24 @@ export async function runScanCommand(
   }
 
   // --verify makes real HTTP calls to provider APIs using the found
-  // secret. Without --own the user might unknowingly probe someone
-  // else's credentials — we hard-gate it and warn instead of failing
-  // so CI pipelines don't break if --own is forgotten.
+  // secret. Two gating conditions:
+  //   1. --own must be passed (otherwise we might unknowingly probe
+  //      someone else's credentials — hard-gate + warn).
+  //   2. --offline cannot also be passed. --offline is documented as
+  //      "skip network-dependent checks", so firing live verify HTTP
+  //      in offline mode violates that contract. Users on air-gapped
+  //      or firewalled networks reasonably expect zero outbound
+  //      calls when they pass --offline.
   let verifyEnabled = false;
   if (opts.verify) {
-    if (!opts.own) {
+    if (opts.offline) {
+      process.stderr.write(
+        pc.yellow(
+          'warning: --verify is incompatible with --offline.\n' +
+            '         --offline skips all network calls; verify requires them. skipping live check.\n',
+        ),
+      );
+    } else if (!opts.own) {
       process.stderr.write(
         pc.yellow(
           'warning: --verify requires --own to confirm the keys are yours.\n' +
