@@ -4,9 +4,17 @@ import pc from 'picocolors';
 import { walk } from '../core/walker.js';
 import { runScan } from '../core/scan.js';
 import type { Severity } from '../core/types.js';
+import { detectPlatform } from '../detectors/platform.js';
 import { renderConsole } from '../reporters/console.js';
 import { renderJson } from '../reporters/json.js';
 import { renderHtml } from '../reporters/html.js';
+import {
+  createPrelude,
+  preludeHeader,
+  milestone,
+  preludeFooter,
+  RULE_COUNT_LINE,
+} from '../reporters/scan-prelude.js';
 
 const VALID_FORMATS = new Set(['console', 'json', 'html']);
 const VALID_SEVERITIES: Severity[] = [
@@ -51,7 +59,21 @@ export async function runScanCommand(
   }
 
   const cwd = resolve(opts.cwd);
-  if (opts.format === 'console') {
+
+  // Live terminal animation: only when stdout is an interactive TTY
+  // AND we're writing the console format AND not redirecting to a
+  // file. Machine-parseable pipelines (JSON / HTML / pipe to file)
+  // get the silent fast path so their output stays clean.
+  const preludeEnabled =
+    opts.format === 'console' &&
+    !opts.output &&
+    process.stdout.isTTY === true;
+  const prelude = createPrelude({ enabled: preludeEnabled });
+  preludeHeader(prelude);
+
+  if (opts.format === 'console' && !preludeEnabled) {
+    // Non-TTY console output still gets a minimal "scanning" breadcrumb
+    // so piped/file output has something to grep for.
     process.stdout.write(
       `${pc.dim('scanning')} ${pc.cyan(cwd)} ${pc.dim('...')}\n`,
     );
@@ -76,6 +98,31 @@ export async function runScanCommand(
   }
 
   const files = await walk({ cwd, respectGitignore: opts.respectGitignore });
+  milestone(prelude, `indexed ${files.length} files`);
+
+  // Sneak-peek platform detection so the prelude can show the
+  // fingerprint line before the full scan runs. runScan will detect
+  // platform again internally — negligible cost, walk() already did
+  // the expensive I/O.
+  const platformPeek = detectPlatform(files);
+  if (platformPeek.platform !== 'unknown') {
+    const pct = Math.round(platformPeek.confidence * 100);
+    milestone(
+      prelude,
+      `fingerprint → ${platformPeek.platform} (${pct}% confidence)`,
+    );
+  }
+
+  milestone(prelude, RULE_COUNT_LINE);
+
+  if (!opts.offline) {
+    milestone(prelude, 'osv.dev + npm registry lookups');
+  }
+
+  if (verifyEnabled) {
+    milestone(prelude, '--verify live-checking leaked keys against providers');
+  }
+
   const report = await runScan({
     files,
     minSeverity: opts.severity,
@@ -90,6 +137,8 @@ export async function runScanCommand(
       process.stderr.write(`${pc.yellow('warning:')} ${msg}\n`);
     },
   });
+
+  preludeFooter(prelude, report.findings.length);
 
   // Create parent dir on demand so `--output foo/bar.html` works even
   // when `foo/` doesn't exist yet.
