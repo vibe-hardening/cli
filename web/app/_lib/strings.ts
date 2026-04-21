@@ -93,7 +93,7 @@ export const strings: Record<Locale, Strings> = {
       'vibe-hardening / one-command security scanner for AI-generated code',
     classbar: {
       unit: '▲ VH-001 · FOR THE VIBE CODER ·',
-      rev: 'REV 0.0.8 · CHAN 08',
+      rev: 'REV 0.0.11 · CHAN 11',
       geo: 'LAT 25.03°N · LNG 121.56°E',
       date: '▲ 2026-04-20 ▲',
     },
@@ -141,7 +141,7 @@ export const strings: Record<Locale, Strings> = {
     },
     features: {
       label1: 'What it checks —',
-      label2: '47 rules across 9 categories.',
+      label2: '48 rules across 9 categories.',
       items: [
         {
           code: 'SEC-01',
@@ -195,7 +195,7 @@ export const strings: Record<Locale, Strings> = {
       submit: 'SUBSCRIBE →',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.0.8',
+      brandCopy: '© 2026 · MIT · REV 0.0.11',
       colProductTitle: 'PRODUCT',
       colProductItems: ['CLI', 'Dashboard (soon)', 'GitHub App (soon)'],
       colSourceTitle: 'SOURCE',
@@ -215,7 +215,7 @@ export const strings: Record<Locale, Strings> = {
     title: 'vibe-hardening｜AI 生成程式碼的一鍵資安掃描工具',
     classbar: {
       unit: '▲ VH-001 · 獻給 VIBE CODER ·',
-      rev: 'REV 0.0.8 · CHAN 08',
+      rev: 'REV 0.0.11 · CHAN 11',
       geo: 'LAT 25.03°N · LNG 121.56°E',
       date: '▲ 2026-04-20 ▲',
     },
@@ -263,7 +263,7 @@ export const strings: Record<Locale, Strings> = {
     },
     features: {
       label1: '我們檢查什麼 —',
-      label2: '9 類別共 47 條規則。',
+      label2: '9 類別共 48 條規則。',
       items: [
         {
           code: 'SEC-01',
@@ -316,7 +316,7 @@ export const strings: Record<Locale, Strings> = {
       submit: '訂閱 →',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.0.8',
+      brandCopy: '© 2026 · MIT · REV 0.0.11',
       colProductTitle: '產品',
       colProductItems: ['CLI', '儀表板（即將推出）', 'GitHub App（即將推出）'],
       colSourceTitle: '原始碼',
