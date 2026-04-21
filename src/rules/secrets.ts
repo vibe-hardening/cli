@@ -277,11 +277,14 @@ export const SECRET_RULES: SecretRule[] = [
     ],
   },
   {
-    // Rule covers the ENTIRE Google API key surface (Gemini, AI
-    // Studio, Maps, YouTube, Cloud, Vertex AI) since they all share
-    // the `AIzaSy` prefix. The rule ID and category name reflect that
-    // — a user grepping for `vh-secret-gemini` would be surprised to
-    // see a Maps-only key in the finding, so we name it broadly.
+    // This rule covers the ENTIRE Google API key surface (Gemini, AI
+    // Studio, Maps, YouTube, Cloud, Vertex AI) because every Google
+    // service shares the `AIzaSy` prefix. The rule ID is intentionally
+    // broad — a user whose Maps key shows up in a finding should not
+    // see a misleadingly Gemini-specific ID. The verify dispatcher
+    // sends to Gemini's endpoint because that's our one viable
+    // verification path, but the rule name describes what the regex
+    // actually catches.
     id: 'vh-secret-google-api',
     severity: 'critical',
     category: 'secret',
