@@ -40,7 +40,7 @@ npx vibe-hardening scan
 
 | カテゴリー | 例 |
 |-----------|-----|
-| **シークレット漏洩** | OpenAI `sk-proj-`、Anthropic `sk-ant-`、Stripe `sk_live_`、GitHub PAT、AWSキー、Supabase `service_role` JWT、DB接続文字列、Slackトークン、SendGrid `SG.`、Notion `secret_`/`ntn_`、Twilio Account SID + Auth Token、JWT署名キー |
+| **シークレット漏洩** | OpenAI `sk-proj-`、Anthropic `sk-ant-`、Stripe `sk_live_`、GitHub PAT、AWSキー、Supabase `service_role` JWT、DB接続文字列、Slackトークン、SendGrid `SG.`、Notion `secret_`/`ntn_`、Twilio Account SID + Auth Token、**Google / Gemini `AIzaSy...`**、JWT署名キー |
 | **インジェクション攻撃** | SQLテンプレートリテラル、NoSQL `req.body`、文字列補間による `child_process.exec`、パストラバーサル、サニタイザーなしの `dangerouslySetInnerHTML` |
 | **ネットワーク** | CORS `*` + credentials、CORSオリジン反射、SSRF `fetch(req.body.url)`、オープンリダイレクト |
 | **認証** | Next.js API routeの認証チェック欠落 (AST解析)、JWT `alg: none`、`\|\| true` バイパス、`// TODO: add auth`、弱いクッキー |
@@ -84,7 +84,7 @@ npx vibe-hardening scan --roast
 
 ### `--verify` ライブキー検証
 
-verifier がある鍵 (OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion) について、`--verify --own` は検出した鍵ごとにプロバイダーの最小限の読み取り API (list models、auth test など — **絶対に**破壊的ではない) を1回呼び出し、以下に分類します：
+verifier がある鍵 (OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion、Gemini) について、`--verify --own` は検出した鍵ごとにプロバイダーの最小限の読み取り API (list models、auth test など — **絶対に**破壊的ではない) を1回呼び出し、以下に分類します：
 
 - **LIVE KEY** — 即座にローテーション
 - **revoked** — 安全、後で整理
@@ -186,7 +186,8 @@ platform  v0  (74% confidence)
 - 対応言語: JavaScript / TypeScript / Python (Django、Flask、FastAPI)
 - 6つのエンジン: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM幻覚
 - 48のルール、251のテスト、一般的なリポジトリを5秒以内にスキャン
-- 7 プロバイダーのライブキー検証 (OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion)
+- 8 プロバイダーのライブキー検証 (OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion、Gemini)
+- LIVE KEY ごとに推定被害額を併記 (9 プロバイダー、Twilio 含む)
 - 出力形式: カラーターミナル、CI用JSON、スタンドアロンHTMLレポート
 - 0-100セキュリティスコア + A-F グレード + SVG README バッジ
 - インライン抑制: `// vibe-hardening-disable-next-line vh-rule-id`

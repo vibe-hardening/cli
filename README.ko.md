@@ -40,7 +40,7 @@ npx vibe-hardening scan
 
 | 카테고리 | 예시 |
 |---------|------|
-| **시크릿 유출** | OpenAI `sk-proj-`、Anthropic `sk-ant-`、Stripe `sk_live_`、GitHub PAT、AWS 키、Supabase `service_role` JWT、DB 연결 문자열、Slack 토큰、SendGrid `SG.`、Notion `secret_`/`ntn_`、Twilio Account SID + Auth Token、JWT 서명 키 |
+| **시크릿 유출** | OpenAI `sk-proj-`、Anthropic `sk-ant-`、Stripe `sk_live_`、GitHub PAT、AWS 키、Supabase `service_role` JWT、DB 연결 문자열、Slack 토큰、SendGrid `SG.`、Notion `secret_`/`ntn_`、Twilio Account SID + Auth Token、**Google / Gemini `AIzaSy...`**、JWT 서명 키 |
 | **인젝션 공격** | SQL 템플릿 리터럴、NoSQL `req.body`、`child_process.exec` 문자열 조합、path traversal、새니타이저 없는 `dangerouslySetInnerHTML` |
 | **네트워크** | CORS `*` + credentials、CORS origin 반사、SSRF `fetch(req.body.url)`、오픈 리다이렉트 |
 | **인증** | Next.js API route 인증 누락 (AST 분석)、JWT `alg: none`、`\|\| true` 우회、`// TODO: add auth`、약한 쿠키 |
@@ -84,7 +84,7 @@ npx vibe-hardening scan --roast
 
 ### `--verify` 실시간 키 확인
 
-verifier가 있는 키 (OpenAI, Anthropic, Stripe, GitHub PAT, Slack, SendGrid, Notion)에 대해, `--verify --own`은 발견된 각 키마다 provider의 최소 읽기 API (list models, auth test 등 — **절대** 파괴적이지 않음)를 한 번 호출하여 다음으로 분류합니다:
+verifier가 있는 키 (OpenAI, Anthropic, Stripe, GitHub PAT, Slack, SendGrid, Notion, Gemini)에 대해, `--verify --own`은 발견된 각 키마다 provider의 최소 읽기 API (list models, auth test 등 — **절대** 파괴적이지 않음)를 한 번 호출하여 다음으로 분류합니다:
 
 - **LIVE KEY** — 즉시 교체
 - **revoked** — 안전, 여유 있을 때 정리
@@ -186,7 +186,8 @@ platform  v0  (74% confidence)
 - 지원 언어: JavaScript / TypeScript / Python (Django, Flask, FastAPI)
 - 6개 엔진: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 환각
 - 48개 규칙、251개 테스트、일반적인 repo를 5초 이내에 스캔
-- 7개 provider 실시간 키 확인 (OpenAI, Anthropic, Stripe, GitHub PAT, Slack, SendGrid, Notion)
+- 8개 provider 실시간 키 확인 (OpenAI, Anthropic, Stripe, GitHub PAT, Slack, SendGrid, Notion, Gemini)
+- LIVE KEY마다 예상 남용 비용 표시 (9개 provider, Twilio 포함)
 - 출력 형식: 컬러 터미널、CI용 JSON、독립형 HTML 보고서
 - 0-100 보안 점수 + A-F 등급 + SVG README 배지
 - 인라인 억제: `// vibe-hardening-disable-next-line vh-rule-id`

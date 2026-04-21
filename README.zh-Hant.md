@@ -40,7 +40,7 @@ npx vibe-hardening scan
 
 | 類別 | 例子 |
 |------|------|
-| **Secret 洩漏** | OpenAI `sk-proj-`、Anthropic `sk-ant-`、Stripe `sk_live_`、GitHub PAT、AWS 金鑰、Supabase `service_role` JWT、DB 連線字串、Slack token、SendGrid `SG.`、Notion `secret_`/`ntn_`、Twilio Account SID + Auth Token、JWT 簽章金鑰 |
+| **Secret 洩漏** | OpenAI `sk-proj-`、Anthropic `sk-ant-`、Stripe `sk_live_`、GitHub PAT、AWS 金鑰、Supabase `service_role` JWT、DB 連線字串、Slack token、SendGrid `SG.`、Notion `secret_`/`ntn_`、Twilio Account SID + Auth Token、**Google / Gemini `AIzaSy...`**、JWT 簽章金鑰 |
 | **注入攻擊** | SQL template literal、NoSQL `req.body`、`child_process.exec` 字串拼接、path traversal、`dangerouslySetInnerHTML` 未清洗 |
 | **網路層** | CORS `*` + credentials、CORS 反射 origin、SSRF `fetch(req.body.url)`、open redirect |
 | **Auth** | Next.js API route 沒 auth（AST 分析）、JWT `alg: none`、`\|\| true` bypass、`// TODO: add auth`、弱 cookie |
@@ -84,7 +84,7 @@ npx vibe-hardening scan --roast
 
 ### `--verify` 即時金鑰驗證
 
-對有 verifier 的金鑰（OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion），`--verify --own` 會對每個找到的金鑰打一次 provider 最輕量的讀取 API（list models、auth test 等，**絕不**破壞性），分類成：
+對有 verifier 的金鑰（OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion、Gemini），`--verify --own` 會對每個找到的金鑰打一次 provider 最輕量的讀取 API（list models、auth test 等，**絕不**破壞性），分類成：
 
 - **LIVE KEY** — 立刻輪換
 - **revoked** — 安全，有空再清
@@ -186,7 +186,8 @@ platform  v0  (74% confidence)
 - 支援語言：JavaScript / TypeScript / Python（Django、Flask、FastAPI）
 - 6 個引擎：RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 幻覺
 - 48 條規則、251 個測試、一般 repo 5 秒內掃完
-- 7 家 provider 即時金鑰驗證（OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion）
+- 8 家 provider 即時金鑰驗證（OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion、Gemini）
+- 每個 LIVE KEY 旁邊顯示預估濫用成本（9 家 provider，含 Twilio）
 - 輸出格式：彩色終端機、CI 用 JSON、獨立 HTML 報告
 - 0-100 資安分數 + A-F 等級 + SVG README badge
 - 行內抑制：`// vibe-hardening-disable-next-line vh-rule-id`
