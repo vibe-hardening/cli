@@ -43,6 +43,22 @@ describe('scan-prelude: enabled mode', () => {
     expect(out).toContain('indexed 412 files');
   });
 
+  it('milestone timestamp is zero-padded to 7 chars for scans < 1000 s', () => {
+    // Regression guard for the padStart width bug: previous version
+    // padded to 6, so `[60.000]` (6 chars) and `[600.000]` (7 chars)
+    // did not align with `[0.001]` padded as `[00.001]`. The new
+    // format is `[000.001]..[999.999]`.
+    const [write, getText] = captureBuffer();
+    const ctx = createPrelude({ enabled: true, writer: write });
+    milestone(ctx, 'x');
+    const out = stripAnsi(getText());
+    const m = /\[(\d+\.\d{3})\]/.exec(out);
+    expect(m, 'timestamp tag missing').toBeTruthy();
+    // For a fresh context, elapsed is <1s, so body is 5 chars ("0.000")
+    // and padding makes the total 7 chars.
+    expect(m![1]!.length).toBe(7);
+  });
+
   it('preludeFooter includes the findings count', () => {
     const [write, getText] = captureBuffer();
     const ctx = createPrelude({ enabled: true, writer: write });

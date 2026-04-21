@@ -182,10 +182,10 @@ platform  v0  (74% confidence)
 
 プレビューリリース — Phase 1 MVPは **2026-05-13** にProduct Huntでのローンチを目標としています。
 
-現在のカバレッジ (`v0.0.12-preview.0`):
+現在のカバレッジ (`v0.0.12-preview.1`):
 - 対応言語: JavaScript / TypeScript / Python (Django、Flask、FastAPI)
 - 6つのエンジン: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM幻覚
-- 48のルール、259のテスト、一般的なリポジトリを5秒以内にスキャン
+- 48のルール、260のテスト、一般的なリポジトリを5秒以内にスキャン
 - 8 プロバイダーのライブキー検証 (OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion、Gemini)
 - LIVE KEY ごとに推定被害額を併記 (9 プロバイダー、Twilio 含む)
 - 出力形式: カラーターミナル、CI用JSON、スタンドアロンHTMLレポート

@@ -41,7 +41,11 @@ export function createPrelude(opts: PreludeOptions): PreludeContext {
 
 function elapsedTag(ctx: PreludeContext): string {
   const seconds = (Date.now() - ctx.startMs) / 1000;
-  return seconds.toFixed(3).padStart(6, '0');
+  // padStart(7) keeps `[000.000]..[999.999]` aligned at 7 chars. Scans
+  // over 1000 s (> 16 min) naturally overflow by a digit — cosmetic
+  // only, no truncation. Practical scans target 3-5 seconds so the
+  // aligned format covers > 99% of real use.
+  return seconds.toFixed(3).padStart(7, '0');
 }
 
 /**
@@ -82,8 +86,17 @@ export function preludeFooter(
 
 /**
  * Total rule count + category count surfaced in the prelude.
- * Kept as a single constant so the number matches the landing page
- * and Current coverage bullet. When rules are added the CI tests
- * will fail if this drifts — see test/scan-prelude.test.ts.
+ *
+ * When you bump this, ALSO update:
+ *   - web/app/_lib/strings.ts    (label2 — both locales)
+ *   - web/app/_components/LiveTerminal.tsx (loading N rules)
+ *   - README.md Current coverage bullet + `N rules across M categories`
+ *   - All 4 locale READMEs (ja / ko / zh-Hans / zh-Hant)
+ *
+ * The test in test/scan-prelude.test.ts cross-checks this against the
+ * actual rule count in src/rules/*.ts — if a rule is added here but
+ * the RULE_COUNT_LINE number isn't bumped, tests fail. The landing
+ * page strings aren't currently cross-checked at test time (they live
+ * in a separate Next.js project); keep this checklist updated manually.
  */
 export const RULE_COUNT_LINE = 'loading 48 rules · 9 categories';

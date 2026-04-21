@@ -182,10 +182,10 @@ platform  v0  (74% confidence)
 
 预览版 —— Phase 1 MVP 目标 **2026-05-13** 上 Product Hunt。
 
-当前覆盖（`v0.0.12-preview.0`）：
+当前覆盖（`v0.0.12-preview.1`）：
 - 支持语言：JavaScript / TypeScript / Python（Django、Flask、FastAPI）
 - 6 个引擎：RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 幻觉
-- 48 条规则、259 个测试、一般仓库 5 秒内扫描完毕
+- 48 条规则、260 个测试、一般仓库 5 秒内扫描完毕
 - 8 家 provider 实时密钥验证（OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion、Gemini）
 - 每个 LIVE KEY 旁边显示预估滥用成本（9 家 provider，含 Twilio）
 - 输出格式：彩色终端、CI 用 JSON、独立 HTML 报告
