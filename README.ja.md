@@ -130,6 +130,8 @@ npx vibe-hardening scan --format html -o report.html
 
 ### CI 統合 (GitHub Actions)
 
+公開 action を直接使用 — `uses: vibe-hardening/cli@v1`:
+
 ```yaml
 name: vibe-hardening
 on: [pull_request, push]
@@ -138,10 +140,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - run: npx -y vibe-hardening scan --format html -o vh-report.html
+          fetch-depth: 0  # --changed-only PR モードに必須
+      - uses: vibe-hardening/cli@v1
+        with:
+          severity: high
+          format: html
+          output: vh-report.html
+          changed-only: origin/${{ github.base_ref }}  # PR モード 10× 高速化
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -149,9 +155,11 @@ jobs:
           path: vh-report.html
 ```
 
-critical または high の finding があると `scan` は exit 1 で終了するため、CI は回帰を即座に失敗扱いにできます。`upload-artifact` で HTML が PR ページから直接ダウンロード可能になります。
+利用可能な inputs: `cwd` · `severity` · `format` · `output` · `changed-only` · `verify` · `roast` · `version`。critical または high の finding があると exit 1 で終了します。
 
-ほとんどのチームは CI では `--verify --own` を**実行しません** — CI でプロバイダーに live API コールを投げるのはレート制限に引っかかりやすく、ローカル実行のみで十分です。
+Output: `exit-code`(`continue-on-error: true` と組み合わせれば、action を失敗させずにデプロイをゲート可能)。
+
+ほとんどのチームは CI では `verify: true` を**実行しません** — CI でプロバイダーに live API コールを投げるのはレート制限に引っかかりやすく、ローカル実行のみで十分です。
 
 ### README バッジ
 

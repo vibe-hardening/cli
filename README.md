@@ -164,6 +164,8 @@ never reads `process.env`, so the HTML is safe to share.
 
 ### CI integration (GitHub Actions)
 
+Use the published action — `uses: vibe-hardening/cli@v1`:
+
 ```yaml
 name: vibe-hardening
 on: [pull_request, push]
@@ -172,10 +174,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - run: npx -y vibe-hardening scan --format html -o vh-report.html
+          fetch-depth: 0  # required for --changed-only PR scans
+      - uses: vibe-hardening/cli@v1
+        with:
+          severity: high
+          format: html
+          output: vh-report.html
+          changed-only: origin/${{ github.base_ref }}  # PR-mode 10× faster
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -183,11 +189,14 @@ jobs:
           path: vh-report.html
 ```
 
-`scan` exits with code 1 when any critical or high finding is present, so
-CI fails fast on regressions. `upload-artifact` surfaces the HTML on the
-PR page for reviewers to click-through.
+Inputs: `cwd` · `severity` · `format` · `output` · `changed-only` ·
+`verify` · `roast` · `version`. Exits with code 1 on any critical /
+high finding so CI fails fast on regressions.
 
-Most teams skip `--verify --own` in CI and run it locally only — live
+Output: `exit-code` (use with `continue-on-error: true` to gate
+deployments without failing the action).
+
+Most teams skip `verify: true` in CI and run it locally only — live
 provider calls in CI are usually the wrong time to discover a rate limit.
 
 ### Badge for README

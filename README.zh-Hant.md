@@ -130,6 +130,8 @@ npx vibe-hardening scan --format html -o report.html
 
 ### CI 整合（GitHub Actions）
 
+直接用發布的 action — `uses: vibe-hardening/cli@v1`：
+
 ```yaml
 name: vibe-hardening
 on: [pull_request, push]
@@ -138,10 +140,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - run: npx -y vibe-hardening scan --format html -o vh-report.html
+          fetch-depth: 0  # --changed-only PR 模式必要
+      - uses: vibe-hardening/cli@v1
+        with:
+          severity: high
+          format: html
+          output: vh-report.html
+          changed-only: origin/${{ github.base_ref }}  # PR 模式快 10×
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -149,9 +155,11 @@ jobs:
           path: vh-report.html
 ```
 
-有任何 critical 或 high 時 `scan` 會 exit 1，CI 立刻失敗。`upload-artifact` 會在 PR 頁面產生下載連結讓 reviewer 點開 HTML 報告。
+可用 inputs：`cwd` · `severity` · `format` · `output` · `changed-only` · `verify` · `roast` · `version`。有任何 critical 或 high 時 exit 1，CI 立刻失敗。
 
-大部分團隊**不在 CI 跑** `--verify --own` — 對 provider 打 live API 在 CI 裡不是理想時機（容易撞 rate limit），本地跑就好。
+Output：`exit-code`（搭配 `continue-on-error: true` 可以 gate 部署但不讓 action 失敗）。
+
+大部分團隊**不在 CI 跑** `verify: true` — 對 provider 打 live API 在 CI 容易撞 rate limit，本地跑就好。
 
 ### README badge
 
