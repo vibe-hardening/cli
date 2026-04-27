@@ -5,6 +5,7 @@ import { walk } from '../core/walker.js';
 import { runScan } from '../core/scan.js';
 import type { Severity } from '../core/types.js';
 import { detectPlatform } from '../detectors/platform.js';
+import { getChangedFiles } from '../core/git-diff.js';
 import { renderConsole } from '../reporters/console.js';
 import { renderJson } from '../reporters/json.js';
 import { renderHtml } from '../reporters/html.js';
@@ -37,6 +38,14 @@ export interface ScanCommandOptions {
   verify: boolean;
   own: boolean;
   roast: boolean;
+  /**
+   * `false`     — full repo scan (default).
+   * `true`      — diff against HEAD (uncommitted + staged changes).
+   * `<string>`  — diff against ref, e.g. `main` or `origin/main` for
+   *               PR scans. Uses 3-dot syntax so it shows ONLY the
+   *               commits on this branch since the merge-base.
+   */
+  changedOnly: boolean | string;
   version: string;
 }
 
@@ -109,8 +118,44 @@ export async function runScanCommand(
     }
   }
 
-  const files = await walk({ cwd, respectGitignore: opts.respectGitignore });
+  let files = await walk({ cwd, respectGitignore: opts.respectGitignore });
   milestone(prelude, `indexed ${files.length} files`);
+
+  // --changed-only filters the walker output to only files that
+  // appear in `git diff`. Fast path for CI / pre-commit / PR review
+  // where re-scanning unchanged files is wasted work.
+  if (opts.changedOnly !== false) {
+    const base =
+      typeof opts.changedOnly === 'string' && opts.changedOnly.length > 0
+        ? opts.changedOnly
+        : undefined;
+    let changedResult;
+    try {
+      changedResult = await getChangedFiles({ cwd, base });
+    } catch (err) {
+      process.stderr.write(
+        pc.red(
+          `error: ${err instanceof Error ? err.message : 'git diff failed'}\n`,
+        ),
+      );
+      return 2;
+    }
+    const changedSet = new Set(changedResult.files);
+    const before = files.length;
+    files = files.filter((f) => changedSet.has(f.path));
+    milestone(
+      prelude,
+      `git diff vs ${changedResult.ref}: ${files.length} of ${before} files changed`,
+    );
+
+    // If the diff is empty, scan completes immediately. Don't error
+    // — a clean diff means "nothing to scan" which is a valid result
+    // (user just ran scan after a commit reset, or the only changes
+    // are in files we'd skip anyway).
+    if (files.length === 0) {
+      milestone(prelude, 'no changed files to scan');
+    }
+  }
 
   // Sneak-peek platform detection so the prelude can show the
   // fingerprint line before the full scan runs. runScan will detect

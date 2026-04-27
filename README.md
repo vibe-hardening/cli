@@ -68,6 +68,12 @@ npx vibe-hardening scan --severity high
 # Skip network calls (no OSV / no npm registry)
 npx vibe-hardening scan --offline
 
+# Only scan files changed in git (10× faster on large repos / CI).
+# Without a ref: diff vs HEAD (uncommitted + staged).
+# With a ref: 3-dot diff (PR mode) — show only this branch's changes.
+npx vibe-hardening scan --changed-only
+npx vibe-hardening scan --changed-only=main
+
 # Live-check every leaked key against the provider — tells you which
 # ones are still valid vs. already revoked (opt-in, requires --own).
 npx vibe-hardening scan --verify --own
@@ -214,10 +220,10 @@ Supported: `v0` / `lovable` / `bolt` / `cursor` / `claude-code` / `replit-agent`
 
 Preview release — Phase 1 MVP targeting **2026-05-13** on Product Hunt.
 
-Current coverage (`v0.0.12-preview.2`):
+Current coverage (`v0.0.13-preview.0`):
 - Languages: JavaScript / TypeScript / Python (Django, Flask, FastAPI)
 - 6 engines: RLS diff · JWT payload · auth AST · pattern-regex · OSV.dev · LLM hallucination
-- 48 rules · 260 tests · scans typical repo in under 5 seconds
+- 48 rules · 267 tests · scans typical repo in under 5 seconds
 - Live key verification for 8 providers (OpenAI / Anthropic / Stripe / GitHub PAT / Slack / SendGrid / Notion / Gemini)
 - Estimated abuse-cost figure next to every LIVE KEY (9 providers incl. Twilio)
 - Output: coloured console · JSON for CI · standalone HTML report

@@ -75,6 +75,11 @@ export function buildProgram(): Command {
       'dry brutalist one-liners instead of neutral rule messages (console output only — JSON / HTML remain professional for CI)',
       false,
     )
+    .option(
+      '--changed-only [ref]',
+      'only scan files changed in git. Without a ref, diffs against HEAD (uncommitted + staged). With a ref like `main` or `origin/main`, performs a 3-dot diff (PR / CI mode). 10× faster on large repos.',
+      false,
+    )
     .action(
       async (
         cwd: string,
@@ -89,6 +94,7 @@ export function buildProgram(): Command {
           verify: boolean;
           own: boolean;
           roast: boolean;
+          changedOnly: boolean | string;
         },
       ) => {
         const code = await runScanCommand({
@@ -104,6 +110,7 @@ export function buildProgram(): Command {
           verify: !!cmdOpts.verify,
           own: !!cmdOpts.own,
           roast: !!cmdOpts.roast,
+          changedOnly: cmdOpts.changedOnly ?? false,
           version,
         });
         process.exit(code);

@@ -1,6 +1,6 @@
 {
   "name": "vibe-hardening",
-  "version": "0.0.12-preview.2",
+  "version": "0.0.13-preview.0",
   "description": "One-command security scanner for AI-generated code. Vibe coded. Vibe hardened.",
   "type": "module",
   "bin": {

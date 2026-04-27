@@ -182,10 +182,10 @@ platform  v0  (74% confidence)
 
 프리뷰 릴리스 — Phase 1 MVP는 **2026-05-13** Product Hunt 출시가 목표입니다.
 
-현재 커버리지 (`v0.0.12-preview.2`):
+현재 커버리지 (`v0.0.13-preview.0`):
 - 지원 언어: JavaScript / TypeScript / Python (Django, Flask, FastAPI)
 - 6개 엔진: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 환각
-- 48개 규칙、260개 테스트、일반적인 repo를 5초 이내에 스캔
+- 48개 규칙、267개 테스트、일반적인 repo를 5초 이내에 스캔
 - 8개 provider 실시간 키 확인 (OpenAI, Anthropic, Stripe, GitHub PAT, Slack, SendGrid, Notion, Gemini)
 - LIVE KEY마다 예상 남용 비용 표시 (9개 provider, Twilio 포함)
 - 출력 형식: 컬러 터미널、CI용 JSON、독립형 HTML 보고서
