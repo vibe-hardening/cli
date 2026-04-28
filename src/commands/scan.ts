@@ -9,6 +9,8 @@ import { getChangedFiles } from '../core/git-diff.js';
 import { renderConsole } from '../reporters/console.js';
 import { renderJson } from '../reporters/json.js';
 import { renderHtml } from '../reporters/html.js';
+import { renderSuggestFix } from '../reporters/suggest-fix.js';
+import { generateSuggestions } from '../fix/suggestions.js';
 import {
   createPrelude,
   preludeHeader,
@@ -46,6 +48,13 @@ export interface ScanCommandOptions {
    *               commits on this branch since the merge-base.
    */
   changedOnly: boolean | string;
+  /**
+   * `--suggest-fix` — print copy-paste-able diffs for findings that
+   * match a fixable secret rule (inline literal → process.env.X).
+   * Never modifies files. Console-only; JSON / HTML output is
+   * unaffected so machine-parseable artifacts stay clean.
+   */
+  suggestFix: boolean;
   version: string;
 }
 
@@ -65,6 +74,18 @@ export async function runScanCommand(
       pc.red(`error: unknown severity "${opts.severity}".\n`),
     );
     return 2;
+  }
+
+  // --suggest-fix is console-only by design (it prints copy-paste
+  // diffs that don't belong in machine-parseable artifacts). Warn
+  // loudly if combined with json/html so the user doesn't think
+  // their flag silently worked.
+  if (opts.suggestFix && opts.format !== 'console') {
+    process.stderr.write(
+      pc.yellow(
+        `warning: --suggest-fix only applies to console output (got --format ${opts.format}). ignoring.\n`,
+      ),
+    );
   }
 
   const cwd = resolve(opts.cwd);
@@ -225,6 +246,16 @@ export async function runScanCommand(
       await writeTo(opts.output, out);
     } else {
       process.stdout.write(out);
+      // --suggest-fix appends after the regular report so the user
+      // sees the findings list first, then the actionable patches.
+      // Suppressed when output is redirected to a file (`-o foo.txt`)
+      // so the file content matches what would print to stdout.
+      if (opts.suggestFix) {
+        const suggestions = generateSuggestions(report.findings, files);
+        if (suggestions.length > 0) {
+          process.stdout.write(renderSuggestFix(suggestions));
+        }
+      }
     }
   }
 
