@@ -6,6 +6,10 @@
 
 **언어**: [English](./README.md) · [繁體中文](./README.zh-Hant.md) · [简体中文](./README.zh-Hans.md) · **한국어** · [日本語](./README.ja.md)
 
+[![npm](https://img.shields.io/npm/v/vibe-hardening?label=npm&color=blue)](https://www.npmjs.com/package/vibe-hardening)
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-vibe--hardening-blue?logo=github)](https://github.com/marketplace/actions/vibe-hardening)
+[![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+
 ```bash
 npx vibe-hardening scan
 ```
@@ -80,6 +84,13 @@ npx vibe-hardening badge -o .github/vibe-hardening.svg
 # --roast 모드: 중립 메시지를 신랄한 brutalist 한 줄로 교체.
 # 콘솔 전용 — JSON / HTML 출력은 CI용으로 전문적으로 유지.
 npx vibe-hardening scan --roast
+
+# --suggest-fix: 수정 가능한 시크릿 발견에 대해 복사-붙여넣기용 diff 출력
+# (리터럴 → process.env.X). 파일을 절대 수정하지 않습니다.
+npx vibe-hardening scan --suggest-fix
+
+# 임의의 rule ID 상세 정보 — 심각도, 탐지 대상, 중요한 이유, 수정 방법
+npx vibe-hardening explain vh-secret-openai
 ```
 
 ### `--verify` 실시간 키 확인
@@ -91,6 +102,26 @@ verifier가 있는 키 (OpenAI, Anthropic, Stripe, GitHub PAT, Slack, SendGrid, 
 - **unverified** — 속도 제한, 오프라인, 또는 해당 kind에 verifier 없음
 
 `--own`은 의도적인 안전벨트로, CLI는 소유를 주장하지 않은 키의 조사를 거부합니다. `--own` 없이 `--verify`를 실행하면 stderr 경고가 출력되고 탐지 전용 모드로 돌아갑니다.
+
+### `--suggest-fix` 복사-붙여넣기 diff
+
+수정 방향이 명확한 시크릿 발견("리터럴 → 환경 변수")에 대해 `--suggest-fix`는 그대로 복사할 수 있는 unified-diff 스타일 블록을 출력합니다:
+
+```
+▲ SUGGESTED FIXES  (2)
+
+app.ts
+  (1)  vh-secret-openai
+    - const k = "sk-proj-Tc8aNm3LKuWqVJ0HbDpZ4r6Y2fGsXh1nE5oI7yBkQv9MaCwSdRtPlNgUeFxOiHjZkLmNbCdEf";
+    + const k = process.env.OPENAI_API_KEY;
+
+Add to .env.example:
+    + OPENAI_API_KEY=
+```
+
+12개 provider 지원 (OpenAI, Anthropic, Stripe, GitHub, Slack, SendGrid, Notion, Twilio, Google, AWS, JWT, 일반 DB URL). env-var 교체로 끝나지 않는 발견(SQL injection, 인증 누락 등)은 건너뜁니다 — 템플릿화된 제안으로는 코드를 망가뜨릴 수 있기 때문입니다.
+
+**파일을 절대 수정하지 않습니다.** 출력은 검토 후 수동 적용하기 위한 텍스트입니다. 콘솔 전용 — JSON / HTML 출력에는 영향 없음. `--changed-only`와 조합하면 가장 빠른 pre-commit 체크가 됩니다.
 
 ### `--roast` 모드
 

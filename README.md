@@ -6,6 +6,10 @@
 
 **Language**: **English** · [繁體中文](./README.zh-Hant.md) · [简体中文](./README.zh-Hans.md) · [한국어](./README.ko.md) · [日本語](./README.ja.md)
 
+[![npm](https://img.shields.io/npm/v/vibe-hardening?label=npm&color=blue)](https://www.npmjs.com/package/vibe-hardening)
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-vibe--hardening-blue?logo=github)](https://github.com/marketplace/actions/vibe-hardening)
+[![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+
 ```bash
 npx vibe-hardening scan
 ```
@@ -87,6 +91,14 @@ npx vibe-hardening badge -o .github/vibe-hardening.svg
 # --roast mode: dry brutalist one-liners instead of neutral messages.
 # Console-only — JSON / HTML output stays professional for CI artifacts.
 npx vibe-hardening scan --roast
+
+# --suggest-fix: print copy-paste-able diffs for fixable secret findings
+# (inline literal → process.env.X). Never modifies your files.
+npx vibe-hardening scan --suggest-fix
+
+# Explain any rule ID you see in a finding — severity, what it detects,
+# why it matters, how to fix. Every shipped rule has an entry.
+npx vibe-hardening explain vh-secret-openai
 ```
 
 ### `--verify` live key check
@@ -113,6 +125,32 @@ bad could this get — roughly."
 `--own` is a deliberate seatbelt so the CLI refuses to probe keys you don't
 claim to own. Without it, `--verify` emits a stderr warning and falls back to
 detection-only.
+
+### `--suggest-fix` copy-paste diffs
+
+For secret findings where the fix is obvious ("move literal → env var"),
+`--suggest-fix` prints a unified-diff-style block you can copy directly:
+
+```
+▲ SUGGESTED FIXES  (2)
+
+app.ts
+  (1)  vh-secret-openai
+    - const k = "sk-proj-Tc8aNm3LKuWqVJ0HbDpZ4r6Y2fGsXh1nE5oI7yBkQv9MaCwSdRtPlNgUeFxOiHjZkLmNbCdEf";
+    + const k = process.env.OPENAI_API_KEY;
+
+Add to .env.example:
+    + OPENAI_API_KEY=
+```
+
+Covers 12 providers (OpenAI, Anthropic, Stripe, GitHub, Slack, SendGrid,
+Notion, Twilio, Google, AWS, JWT, generic DB URL). Findings without an
+obvious env-var fix (SQL injection, missing auth, etc.) are skipped — those
+need contextual code changes that templated suggestions would mangle.
+
+**Never modifies your files.** The output is text for you to review and
+apply manually. Console-only — JSON / HTML output is unaffected. Combine
+with `--changed-only` for the fastest pre-commit check.
 
 ### `--roast` mode
 

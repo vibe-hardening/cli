@@ -6,6 +6,10 @@
 
 **语言**：[English](./README.md) · [繁體中文](./README.zh-Hant.md) · **简体中文** · [한국어](./README.ko.md) · [日本語](./README.ja.md)
 
+[![npm](https://img.shields.io/npm/v/vibe-hardening?label=npm&color=blue)](https://www.npmjs.com/package/vibe-hardening)
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-vibe--hardening-blue?logo=github)](https://github.com/marketplace/actions/vibe-hardening)
+[![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+
 ```bash
 npx vibe-hardening scan
 ```
@@ -80,6 +84,13 @@ npx vibe-hardening badge -o .github/vibe-hardening.svg
 # --roast 模式：用毒舌 brutalist 一句话替换中性消息。
 # 只影响 console — JSON / HTML 输出保持专业供 CI 使用。
 npx vibe-hardening scan --roast
+
+# --suggest-fix：对可修复的 secret 发现，输出可直接复制贴上的 diff
+# (字面量 → process.env.X)。绝不修改你的文件。
+npx vibe-hardening scan --suggest-fix
+
+# 查任何 rule ID 的详细说明 — 严重度、抓什么、为什么重要、怎么修
+npx vibe-hardening explain vh-secret-openai
 ```
 
 ### `--verify` 实时密钥验证
@@ -91,6 +102,26 @@ npx vibe-hardening scan --roast
 - **unverified** — 被限流、离线，或该 kind 没 verifier
 
 `--own` 是故意加的安全带，CLI 会拒绝探测你没声明拥有的密钥。没加 `--own` 时，`--verify` 会输出 stderr 警告并退回只检测模式。
+
+### `--suggest-fix` 复制贴上 diff
+
+对修复方向明确的 secret 发现（"字面量 → 环境变量"），`--suggest-fix` 输出可直接复制的 unified-diff 风格区块：
+
+```
+▲ SUGGESTED FIXES  (2)
+
+app.ts
+  (1)  vh-secret-openai
+    - const k = "sk-proj-Tc8aNm3LKuWqVJ0HbDpZ4r6Y2fGsXh1nE5oI7yBkQv9MaCwSdRtPlNgUeFxOiHjZkLmNbCdEf";
+    + const k = process.env.OPENAI_API_KEY;
+
+Add to .env.example:
+    + OPENAI_API_KEY=
+```
+
+支持 12 家 provider（OpenAI、Anthropic、Stripe、GitHub、Slack、SendGrid、Notion、Twilio、Google、AWS、JWT、通用 DB URL）。换 env-var 解不掉的发现（SQL 注入、缺鉴权等）会跳过 — 模板化建议套上去只会把代码搞坏。
+
+**绝不修改你的文件。** 输出是给你审视后手动套用的文字。只影响 console — JSON / HTML 输出不受影响。配 `--changed-only` 用就是最快的 pre-commit 检查。
 
 ### `--roast` 模式
 

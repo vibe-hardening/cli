@@ -6,6 +6,10 @@
 
 **言語**: [English](./README.md) · [繁體中文](./README.zh-Hant.md) · [简体中文](./README.zh-Hans.md) · [한국어](./README.ko.md) · **日本語**
 
+[![npm](https://img.shields.io/npm/v/vibe-hardening?label=npm&color=blue)](https://www.npmjs.com/package/vibe-hardening)
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-vibe--hardening-blue?logo=github)](https://github.com/marketplace/actions/vibe-hardening)
+[![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+
 ```bash
 npx vibe-hardening scan
 ```
@@ -80,6 +84,13 @@ npx vibe-hardening badge -o .github/vibe-hardening.svg
 # --roast モード：中性メッセージを辛辣な brutalist ワンライナーに置換。
 # コンソール専用 — JSON / HTML は CI 用にプロフェッショナルなまま。
 npx vibe-hardening scan --roast
+
+# --suggest-fix: 修正可能なシークレット検出に対してコピペ可能な diff を出力
+# (リテラル → process.env.X)。ファイルは絶対に変更しません。
+npx vibe-hardening scan --suggest-fix
+
+# 任意の rule ID の詳細を表示 — 重大度、検出内容、影響、修正方法
+npx vibe-hardening explain vh-secret-openai
 ```
 
 ### `--verify` ライブキー検証
@@ -91,6 +102,26 @@ verifier がある鍵 (OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGr
 - **unverified** — レート制限、オフライン、または verifier がない
 
 `--own` は意図的な安全装置で、CLI は所有を宣言していない鍵の調査を拒否します。`--own` なしで `--verify` を実行すると stderr に警告が出て検出のみのモードに戻ります。
+
+### `--suggest-fix` コピペ用 diff
+
+修正方針が明確なシークレット検出（「リテラル → 環境変数」）について、`--suggest-fix` はそのままコピーできる unified-diff スタイルのブロックを出力します:
+
+```
+▲ SUGGESTED FIXES  (2)
+
+app.ts
+  (1)  vh-secret-openai
+    - const k = "sk-proj-Tc8aNm3LKuWqVJ0HbDpZ4r6Y2fGsXh1nE5oI7yBkQv9MaCwSdRtPlNgUeFxOiHjZkLmNbCdEf";
+    + const k = process.env.OPENAI_API_KEY;
+
+Add to .env.example:
+    + OPENAI_API_KEY=
+```
+
+12 プロバイダー対応 (OpenAI、Anthropic、Stripe、GitHub、Slack、SendGrid、Notion、Twilio、Google、AWS、JWT、汎用 DB URL)。env-var への置き換えで済まない検出（SQL インジェクション、認証欠落など）はスキップします — テンプレ的な提案では破壊的になるためです。
+
+**ファイルは絶対に変更しません。** 出力はレビューして手動適用するためのテキストです。コンソール専用 — JSON / HTML には影響なし。`--changed-only` と組み合わせると最速の pre-commit チェックになります。
 
 ### `--roast` モード
 

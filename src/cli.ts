@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { runScanCommand } from './commands/scan.js';
+import { runExplainCommand } from './commands/explain.js';
 import type { Severity } from './core/types.js';
 import { walk } from './core/walker.js';
 import { runScan } from './core/scan.js';
@@ -80,6 +81,11 @@ export function buildProgram(): Command {
       'only scan files changed in git. Without a ref, diffs against HEAD (uncommitted + staged). With a ref like `main` or `origin/main`, performs a 3-dot diff (PR / CI mode). 10× faster on large repos.',
       false,
     )
+    .option(
+      '--suggest-fix',
+      'print copy-paste-able diffs for fixable secret findings (inline literal → process.env.X). Never modifies files. Console-only.',
+      false,
+    )
     .action(
       async (
         cwd: string,
@@ -95,6 +101,7 @@ export function buildProgram(): Command {
           own: boolean;
           roast: boolean;
           changedOnly: boolean | string;
+          suggestFix: boolean;
         },
       ) => {
         const code = await runScanCommand({
@@ -111,11 +118,23 @@ export function buildProgram(): Command {
           own: !!cmdOpts.own,
           roast: !!cmdOpts.roast,
           changedOnly: cmdOpts.changedOnly ?? false,
+          suggestFix: !!cmdOpts.suggestFix,
           version,
         });
         process.exit(code);
       },
     );
+
+  program
+    .command('explain')
+    .description(
+      'Print detailed docs for a rule ID (severity, what it detects, why it matters, how to fix). Run `scan` first to see rule IDs in your findings.',
+    )
+    .argument('<rule-id>', 'rule ID, e.g. vh-secret-openai')
+    .action((ruleId: string) => {
+      const code = runExplainCommand(ruleId);
+      process.exit(code);
+    });
 
   program
     .command('badge')

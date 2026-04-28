@@ -202,6 +202,7 @@ export const strings: Record<Locale, Strings> = {
       colSourceItems: [
         { label: 'GitHub ↗', href: 'https://github.com/vibe-hardening/cli' },
         { label: 'npm ↗', href: 'https://www.npmjs.com/package/vibe-hardening' },
+        { label: 'Marketplace ↗', href: 'https://github.com/marketplace/actions/vibe-hardening' },
         { label: 'RSS ↗', href: '#' },
       ],
       colStatusTitle: 'STATUS',
@@ -323,6 +324,7 @@ export const strings: Record<Locale, Strings> = {
       colSourceItems: [
         { label: 'GitHub ↗', href: 'https://github.com/vibe-hardening/cli' },
         { label: 'npm ↗', href: 'https://www.npmjs.com/package/vibe-hardening' },
+        { label: 'Marketplace ↗', href: 'https://github.com/marketplace/actions/vibe-hardening' },
         { label: 'RSS ↗', href: '#' },
       ],
       colStatusTitle: '狀態',
