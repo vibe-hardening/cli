@@ -190,6 +190,28 @@ export function Landing({ locale }: { locale: Locale }) {
         </div>
       </section>
 
+      {/* COMMANDS */}
+      <section className="border-b border-[color:var(--color-line)]">
+        <div className="wrap px-6 md:px-10 py-20 md:py-24">
+          <div className="text-[13px] text-[color:var(--color-dim)] mb-14 tracking-[0.04em]">
+            {t.commands.label1}{' '}
+            <span className="text-[color:var(--color-fg)]">
+              {t.commands.label2}
+            </span>
+          </div>
+          {t.commands.items.map((c) => (
+            <div key={c.cmd} className="vh-feat">
+              <code className="font-[family-name:var(--font-mono)] text-[color:var(--color-green)] text-[15px] leading-[1.4] tracking-normal break-all">
+                {c.cmd}
+              </code>
+              <p className="font-[family-name:var(--font-mono)] text-[14px] leading-[1.75] tracking-[0.02em] text-[rgba(234,234,234,0.78)]">
+                {c.body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* FEATURES */}
       <section className="border-b border-[color:var(--color-line)]">
         <div className="wrap px-6 md:px-10 py-20 md:py-24">

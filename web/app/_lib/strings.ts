@@ -55,6 +55,11 @@ export interface Strings {
     label2: string;
     items: { code: string; title: string; body: string }[];
   };
+  commands: {
+    label1: string;
+    label2: string;
+    items: { cmd: string; body: string }[];
+  };
   quotes: { q: string; a: string }[];
   pricing: {
     freeTag: string;
@@ -93,7 +98,7 @@ export const strings: Record<Locale, Strings> = {
       'vibe-hardening / one-command security scanner for AI-generated code',
     classbar: {
       unit: '▲ VH-001 · FOR THE VIBE CODER ·',
-      rev: 'REV 0.0.12 · CHAN 12',
+      rev: 'REV 0.0.15 · CHAN 15',
       geo: 'LAT 25.03°N · LNG 121.56°E',
       date: '▲ 2026-04-20 ▲',
     },
@@ -141,7 +146,7 @@ export const strings: Record<Locale, Strings> = {
     },
     features: {
       label1: 'What it checks —',
-      label2: '48 rules across 9 categories.',
+      label2: '49 rules across 9 categories.',
       items: [
         {
           code: 'SEC-01',
@@ -157,6 +162,40 @@ export const strings: Record<Locale, Strings> = {
           code: 'KEY-03',
           title: 'Live secret verification',
           body: 'Finds candidate keys in your git history, probes their provider endpoints, and tells you which ones are still live. Not a grep — a phone call.',
+        },
+      ],
+    },
+    commands: {
+      label1: 'How you use it —',
+      label2: '7 commands, all console-first.',
+      items: [
+        {
+          cmd: 'vibe-hardening scan',
+          body: 'Main command. Scores your repo 0–100 with A–F grade. 49 rules covering hardcoded keys, SQL injection, missing auth on routes, CORS, Supabase RLS, and packages LLMs hallucinate.',
+        },
+        {
+          cmd: 'scan --changed-only [ref]',
+          body: 'Scan only files in git diff. Without a ref: vs HEAD. With a ref like origin/main: 3-dot diff for PR-mode CI scans. 10× faster on large repos.',
+        },
+        {
+          cmd: 'scan --verify --own',
+          body: 'Hits each leaked key against the real provider API. 9 providers. Tells you which are still live vs. revoked. --own is a seatbelt that refuses to probe keys you have not claimed.',
+        },
+        {
+          cmd: 'scan --suggest-fix',
+          body: 'Prints copy-paste-able diffs that swap inline keys for process.env.X plus an .env.example stub. Console-only. Never modifies your files.',
+        },
+        {
+          cmd: 'scan --roast',
+          body: 'Brutalist mode. Neutral rule messages become dry one-liners. Console only — JSON / HTML output stays professional for CI artifacts.',
+        },
+        {
+          cmd: 'vh explain <rule-id>',
+          body: 'Detailed docs for any rule: severity, what it detects, why it matters, how to fix. Covers all 49 rule IDs. Docs in your terminal — no browser needed.',
+        },
+        {
+          cmd: 'vh badge',
+          body: 'Outputs an SVG you can embed in your README to show the repo current security score. Live-updating when paired with a scheduled CI run.',
         },
       ],
     },
@@ -195,7 +234,7 @@ export const strings: Record<Locale, Strings> = {
       submit: 'SUBSCRIBE →',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.0.12',
+      brandCopy: '© 2026 · MIT · REV 0.0.15',
       colProductTitle: 'PRODUCT',
       colProductItems: ['CLI', 'Dashboard (soon)', 'GitHub App (soon)'],
       colSourceTitle: 'SOURCE',
@@ -216,7 +255,7 @@ export const strings: Record<Locale, Strings> = {
     title: 'vibe-hardening｜AI 生成程式碼的一鍵資安掃描工具',
     classbar: {
       unit: '▲ VH-001 · 獻給 VIBE CODER ·',
-      rev: 'REV 0.0.12 · CHAN 12',
+      rev: 'REV 0.0.15 · CHAN 15',
       geo: 'LAT 25.03°N · LNG 121.56°E',
       date: '▲ 2026-04-20 ▲',
     },
@@ -264,7 +303,7 @@ export const strings: Record<Locale, Strings> = {
     },
     features: {
       label1: '我們檢查什麼 —',
-      label2: '9 類別共 48 條規則。',
+      label2: '9 類別共 49 條規則。',
       items: [
         {
           code: 'SEC-01',
@@ -280,6 +319,40 @@ export const strings: Record<Locale, Strings> = {
           code: 'KEY-03',
           title: '密鑰即時驗證',
           body: '在 git 歷史裡找出候選密鑰，打去上游 provider 驗證，告訴你哪些還活著。不是 grep — 是一通電話。',
+        },
+      ],
+    },
+    commands: {
+      label1: '怎麼用 —',
+      label2: '七個指令，全部 terminal first。',
+      items: [
+        {
+          cmd: 'vibe-hardening scan',
+          body: '主指令。掃完給 0–100 分配 A–F 等級。49 條規則涵蓋硬寫的金鑰、SQL injection、缺驗證的路由、CORS、Supabase RLS、被 LLM 幻想出來的 npm 套件。',
+        },
+        {
+          cmd: 'scan --changed-only [ref]',
+          body: '只掃 git diff 變動的檔案。不加 ref 是跟 HEAD 比；加 origin/main 這種 ref 走 3-dot diff，PR 模式 CI 用。大 repo 快 10 倍。',
+        },
+        {
+          cmd: 'scan --verify --own',
+          body: '掃到的金鑰真的拿去打對應 provider API。9 家支援。告訴你還活著還是已撤銷。--own 是安全帶，沒加就拒絕去探不是你的金鑰。',
+        },
+        {
+          cmd: 'scan --suggest-fix',
+          body: '印複製貼上的 diff，把硬寫的 key 換成 process.env.X，附 .env.example 範本。只影響 console，絕對不會改你的檔案。',
+        },
+        {
+          cmd: 'scan --roast',
+          body: '毒舌模式。中性訊息換成一句話。只影響 console，JSON / HTML 產出維持專業給 CI 用。',
+        },
+        {
+          cmd: 'vh explain <rule-id>',
+          body: '每條規則的詳細說明：嚴重度、抓什麼、為什麼重要、怎麼修。49 條全覆蓋。把文件塞回 terminal，不用開瀏覽器。',
+        },
+        {
+          cmd: 'vh badge',
+          body: '吐一個 SVG 出來。貼在 README 顯示這個 repo 的安全分數。配定期 CI 跑就會自動更新。',
         },
       ],
     },
@@ -317,7 +390,7 @@ export const strings: Record<Locale, Strings> = {
       submit: '訂閱 →',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.0.12',
+      brandCopy: '© 2026 · MIT · REV 0.0.15',
       colProductTitle: '產品',
       colProductItems: ['CLI', '儀表板（即將推出）', 'GitHub App（即將推出）'],
       colSourceTitle: '原始碼',
