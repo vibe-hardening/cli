@@ -99,7 +99,7 @@ export const strings: Record<Locale, Strings> = {
       'vibe-hardening / one-command security scanner for AI-generated code',
     classbar: {
       unit: '▲ VH-001 · FOR THE VIBE CODER ·',
-      rev: 'REV 0.0.17 · CHAN 17',
+      rev: 'REV 0.0.18 · CHAN 18',
       geo: 'LAT 25.03°N · LNG 121.56°E',
       date: '▲ 2026-04-20 ▲',
     },
@@ -237,7 +237,7 @@ export const strings: Record<Locale, Strings> = {
         'Optional — what do you want this scanner to catch? what AI tool burned you last? (we read every reply)',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.0.17',
+      brandCopy: '© 2026 · MIT · REV 0.0.18',
       colProductTitle: 'PRODUCT',
       colProductItems: ['CLI', 'Dashboard (soon)', 'GitHub App (soon)'],
       colSourceTitle: 'SOURCE',
@@ -258,7 +258,7 @@ export const strings: Record<Locale, Strings> = {
     title: 'vibe-hardening｜AI 生成程式碼的一鍵資安掃描工具',
     classbar: {
       unit: '▲ VH-001 · 獻給 VIBE CODER ·',
-      rev: 'REV 0.0.17 · CHAN 17',
+      rev: 'REV 0.0.18 · CHAN 18',
       geo: 'LAT 25.03°N · LNG 121.56°E',
       date: '▲ 2026-04-20 ▲',
     },
@@ -395,7 +395,7 @@ export const strings: Record<Locale, Strings> = {
         '想說什麼都可以（選填）—— 你希望這個工具能抓到什麼？哪個 AI 工具最近坑過你？我們會看每一封。',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.0.17',
+      brandCopy: '© 2026 · MIT · REV 0.0.18',
       colProductTitle: '產品',
       colProductItems: ['CLI', '儀表板（即將推出）', 'GitHub App（即將推出）'],
       colSourceTitle: '原始碼',
