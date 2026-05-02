@@ -1,6 +1,36 @@
 import pc from 'picocolors';
 
 /**
+ * Optional pause between prelude milestones, configurable via the
+ * `VIBE_DEMO_DELAY` env var (milliseconds, clamped to 0–5000).
+ *
+ * On modern hardware a small fixture scans in well under 200 ms,
+ * which means the brutalist telemetry milestones print as a single
+ * burst and the animation effect collapses. For screencasts /
+ * Product Hunt demos / social-media GIFs, set
+ * `VIBE_DEMO_DELAY=250` (a quarter-second per milestone) and each
+ * line surfaces with visible cadence.
+ *
+ * Implemented with `Atomics.wait` on a SharedArrayBuffer — the
+ * conventional Node trick for synchronous sleep that doesn't
+ * require making the entire prelude API async. Default 0 means
+ * no-op for normal CI / interactive runs.
+ */
+const DEMO_DELAY_MS = (() => {
+  const raw = process.env.VIBE_DEMO_DELAY;
+  if (!raw) return 0;
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) && n > 0 && n < 5000 ? n : 0;
+})();
+
+function demoPause(): void {
+  if (DEMO_DELAY_MS <= 0) return;
+  const sab = new SharedArrayBuffer(4);
+  const view = new Int32Array(sab);
+  Atomics.wait(view, 0, 0, DEMO_DELAY_MS);
+}
+
+/**
  * Brutalist telemetry-style milestones printed while the scan is
  * running. Matches the LiveTerminal animation on the landing page so
  * the CLI ↔ marketing site tell the same visual story.
@@ -57,6 +87,7 @@ export function preludeHeader(ctx: PreludeContext): void {
   ctx.write(
     `${pc.red(pc.bold('▲ VH-001'))} ${pc.dim('· INITIATING SCAN')}\n`,
   );
+  demoPause();
 }
 
 /**
@@ -67,6 +98,7 @@ export function preludeHeader(ctx: PreludeContext): void {
 export function milestone(ctx: PreludeContext, msg: string): void {
   if (!ctx.enabled) return;
   ctx.write(`  ${pc.dim(`[${elapsedTag(ctx)}]`)} ${pc.dim(msg)}\n`);
+  demoPause();
 }
 
 /**

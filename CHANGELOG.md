@@ -6,6 +6,17 @@ keeps each entry tight enough to read in one breath.
 
 The PH launch is targeted for **2026-05-13 14:00 UTC**.
 
+## [0.1.1] — 2026-05-02
+
+### Added
+- `VIBE_DEMO_DELAY=<ms>` env var (clamped to 0–5000) inserts a sync
+  pause between brutalist scan-prelude milestones. Modern hardware
+  finishes a small-fixture scan in well under 200 ms, which means
+  all telemetry lines flush as a single burst and the animation
+  effect collapses. Setting `VIBE_DEMO_DELAY=250` for screencast /
+  Product Hunt demo / GIF recording surfaces each milestone with
+  visible cadence. No-op (default 0) for normal interactive / CI use.
+
 ## [0.1.0] — 2026-05-02
 
 First non-preview release. Drops the `-preview.0` suffix that the
