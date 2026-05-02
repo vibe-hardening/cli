@@ -86,6 +86,10 @@ npx vibe-hardening scan --format html -o report.html
 # Markdown 报告 — 直接贴 PR comment / Slack / Issue
 npx vibe-hardening scan --format markdown -o report.md
 
+# 和 baseline 比 — PR 模式，只显示这个 PR 新增的 finding
+npx vibe-hardening scan --format json -o baseline.json   # 先在 main 跑
+npx vibe-hardening scan --compare baseline.json          # 切到 PR 跑
+
 # 生成显示当前分数和等级的 SVG badge，可贴进 README
 npx vibe-hardening badge -o .github/vibe-hardening.svg
 

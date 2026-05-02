@@ -95,6 +95,35 @@ describe('explain: explainRule output', () => {
     expect(out).toContain('OSV.dev');
   });
 
+  it('renders ADVISORY DETAILS block when OSV details are passed', () => {
+    const osvDetails = {
+      id: 'CVE-2021-44228',
+      summary: 'Remote code execution in Apache log4j2',
+      severity: [{ type: 'CVSS_V3', score: 'CVSS:3.1/AV:N/AC:L' }],
+      database_specific: { severity: 'CRITICAL' },
+      references: [
+        { type: 'ADVISORY', url: 'https://nvd.nist.gov/vuln/detail/CVE-2021-44228' },
+        { type: 'FIX', url: 'https://github.com/apache/logging-log4j2/pull/608' },
+      ],
+    };
+    const out = stripAnsi(
+      explainRule('vh-dep-cve-CVE-2021-44228', { osvDetails })!,
+    );
+    expect(out).toContain('ADVISORY DETAILS');
+    expect(out).toContain('Remote code execution');
+    expect(out).toContain('CRITICAL');
+    expect(out).toContain('https://nvd.nist.gov/vuln/detail/CVE-2021-44228');
+  });
+
+  it('omits ADVISORY DETAILS when no OSV record is provided', () => {
+    const out = stripAnsi(
+      explainRule('vh-dep-cve-CVE-2021-44228', { osvDetails: null })!,
+    );
+    expect(out).not.toContain('ADVISORY DETAILS');
+    // Static doc text and link still present.
+    expect(out).toContain('osv.dev/vulnerability/CVE-2021-44228');
+  });
+
   it('uses author-written `what` field for special engine rules', () => {
     const out = stripAnsi(explainRule('vh-auth-missing-middleware')!);
     expect(out).toContain('AST scan');
@@ -103,24 +132,30 @@ describe('explain: explainRule output', () => {
 });
 
 describe('explain: runExplainCommand', () => {
-  it('returns 0 and writes to stdout for known id', () => {
+  it('returns 0 and writes to stdout for known id', async () => {
     const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(
       () => true,
     );
-    const code = runExplainCommand('vh-secret-openai');
+    // offline:true skips the osv.dev fetch — keeps the test
+    // hermetic and fast.
+    const code = await runExplainCommand('vh-secret-openai', {
+      offline: true,
+    });
     expect(code).toBe(0);
     expect(stdoutSpy).toHaveBeenCalled();
     stdoutSpy.mockRestore();
   });
 
-  it('returns 1 and writes error to stderr for unknown id', () => {
+  it('returns 1 and writes error to stderr for unknown id', async () => {
     const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(
       () => true,
     );
     const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(
       () => true,
     );
-    const code = runExplainCommand('vh-not-a-real-rule');
+    const code = await runExplainCommand('vh-not-a-real-rule', {
+      offline: true,
+    });
     expect(code).toBe(1);
     expect(stderrSpy).toHaveBeenCalled();
     expect(stdoutSpy).not.toHaveBeenCalled();

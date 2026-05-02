@@ -120,6 +120,10 @@ export function buildProgram(): Command {
       'print copy-paste-able diffs for fixable secret findings (inline literal → process.env.X). Never modifies files. Console-only.',
       false,
     )
+    .option(
+      '--compare <path>',
+      'path to a previous scan JSON output. The report will only show NEW findings since that baseline (added) plus a delta line (`+5 new · -2 fixed · 22 unchanged`). Useful for PR review and onboarding existing repos.',
+    )
     .action(
       async (
         cwd: string,
@@ -136,11 +140,12 @@ export function buildProgram(): Command {
           roast: boolean;
           changedOnly: boolean | string;
           suggestFix: boolean;
+          compare?: string;
         },
       ) => {
         const code = await runScanCommand({
           cwd: resolve(cwd),
-          format: cmdOpts.format as 'console' | 'json' | 'html',
+          format: cmdOpts.format as 'console' | 'json' | 'html' | 'markdown',
           output: cmdOpts.output,
           severity: cmdOpts.severity as Severity,
           offline: !!cmdOpts.offline,
@@ -153,6 +158,7 @@ export function buildProgram(): Command {
           roast: !!cmdOpts.roast,
           changedOnly: cmdOpts.changedOnly ?? false,
           suggestFix: !!cmdOpts.suggestFix,
+          compare: cmdOpts.compare,
           version,
         });
         process.exit(code);
@@ -162,12 +168,22 @@ export function buildProgram(): Command {
   program
     .command('explain')
     .description(
-      'Print detailed docs for a rule ID (severity, what it detects, why it matters, how to fix). Run `scan` first to see rule IDs in your findings.',
+      'Print detailed docs for a rule ID (severity, what it detects, why it matters, how to fix). Run `scan` first to see rule IDs in your findings. CVE rules are enriched with live osv.dev advisory metadata when online.',
     )
     .argument('<rule-id>', 'rule ID, e.g. vh-secret-openai')
-    .action((ruleId: string) => {
-      const code = runExplainCommand(ruleId);
-      process.exit(code);
+    .option(
+      '--offline',
+      'skip the live osv.dev advisory fetch (CVE rules only)',
+      false,
+    )
+    .action(async (ruleId: string, cmdOpts: { offline: boolean }) => {
+      const code = await runExplainCommand(ruleId, {
+        offline: !!cmdOpts.offline,
+      });
+      // Use process.exitCode rather than process.exit() so Node has
+      // a chance to drain any pending fetch sockets — calling exit()
+      // mid-cleanup triggers a libuv assertion on Windows.
+      process.exitCode = code;
     });
 
   program

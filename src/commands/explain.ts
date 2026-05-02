@@ -7,7 +7,9 @@ import { PYTHON_AUTH_RULES } from '../rules/python-auth.js';
 import { PYTHON_INJECTION_RULES } from '../rules/python-injection.js';
 import { ABUSE_COSTS } from '../reporters/abuse-costs.js';
 import { ENV_VAR_FOR_RULE } from '../fix/suggestions.js';
+import { fetchOsvAdvisory, severityLabel } from '../engines/osv-fetch.js';
 import type { SecretRule } from '../engines/secret-regex.js';
+import type { OsvVulnerability } from '../engines/osv-scanner.js';
 import type { Category, Severity } from '../core/types.js';
 import type { VerifierKind } from '../verifiers/index.js';
 
@@ -152,7 +154,22 @@ function severityColor(s: Severity): (text: string) => string {
   }
 }
 
-export function explainRule(ruleId: string): string | null {
+export interface ExplainOptions {
+  /**
+   * Optional pre-fetched OSV advisory record. When set and the rule
+   * is a `vh-dep-cve-*`, the explain block includes a live
+   * "ADVISORY DETAILS" section with the OSV summary, severity, and
+   * affected versions. Callers that have already done the fetch
+   * (e.g. `runExplainCommand` after awaiting `fetchOsvAdvisory`)
+   * pass this in; tests and offline use omit it.
+   */
+  osvDetails?: OsvVulnerability | null;
+}
+
+export function explainRule(
+  ruleId: string,
+  opts: ExplainOptions = {},
+): string | null {
   // Dynamic CVE rules collapse to the wildcard entry. The advisory
   // ID itself is preserved here so we can deep-link to OSV.dev.
   const isCve = ruleId.startsWith('vh-dep-cve-') && ruleId.length > 'vh-dep-cve-'.length;
@@ -199,6 +216,47 @@ export function explainRule(ruleId: string): string | null {
     lines.push('');
   }
 
+  // Live OSV advisory details (only when caller pre-fetched). Slot
+  // before HOW TO FIX so the user reads the actual vulnerability
+  // before the generic remediation. Falls back to nothing if the
+  // network call failed or the caller passed no details — the
+  // static block below is always present.
+  if (advisoryId && opts.osvDetails) {
+    const v = opts.osvDetails;
+    lines.push(pc.bold('ADVISORY DETAILS') + pc.dim('  (live from osv.dev)'));
+    // Prefer the short `summary` field; fall back to `details`
+    // (Markdown body, often long) with a single-line truncation
+    // because terminal real estate is precious.
+    const text = v.summary ?? v.details;
+    if (text) {
+      const oneLine = text.replace(/\s+/g, ' ').trim();
+      const truncated =
+        oneLine.length > 200 ? oneLine.slice(0, 200) + '…' : oneLine;
+      lines.push(`  ${pc.dim('Summary:')} ${truncated}`);
+    }
+    const sev = severityLabel(v);
+    if (sev) {
+      lines.push(`  ${pc.dim('Severity:')} ${pc.yellow(sev)}`);
+    }
+    if (v.references && v.references.length > 0) {
+      // Prefer ADVISORY / FIX, fall back to anything else. Cap at
+      // 2 to keep the explain block scannable.
+      const ranked = [...v.references].sort((a, b) => {
+        const rank: Record<string, number> = {
+          ADVISORY: 0,
+          FIX: 1,
+          REPORT: 2,
+          WEB: 3,
+        };
+        return (rank[a.type] ?? 9) - (rank[b.type] ?? 9);
+      });
+      for (const ref of ranked.slice(0, 2)) {
+        lines.push(`  ${pc.dim('→')} ${pc.cyan(ref.url)}`);
+      }
+    }
+    lines.push('');
+  }
+
   lines.push(pc.bold('HOW TO FIX'));
   lines.push(`  ${r.remediation}`);
   if (advisoryId) {
@@ -235,8 +293,32 @@ export function explainRule(ruleId: string): string | null {
   return lines.join('\n');
 }
 
-export function runExplainCommand(ruleId: string): number {
-  const out = explainRule(ruleId);
+export interface RunExplainOptions {
+  /**
+   * Skip the OSV.dev network call. Used by CI / restricted
+   * environments and by tests. The static doc block still prints.
+   */
+  offline?: boolean;
+}
+
+export async function runExplainCommand(
+  ruleId: string,
+  opts: RunExplainOptions = {},
+): Promise<number> {
+  // Best-effort fetch live advisory details for CVE rules. Failures
+  // (offline, timeout, 4xx) silently fall back to the static block,
+  // so the command still works on a plane.
+  let osvDetails: OsvVulnerability | null = null;
+  if (
+    !opts.offline &&
+    ruleId.startsWith('vh-dep-cve-') &&
+    ruleId.length > 'vh-dep-cve-'.length
+  ) {
+    const advisoryId = ruleId.slice('vh-dep-cve-'.length);
+    osvDetails = await fetchOsvAdvisory(advisoryId);
+  }
+
+  const out = explainRule(ruleId, { osvDetails });
   if (out === null) {
     process.stderr.write(
       pc.red(`error: unknown rule id "${ruleId}".\n`) +

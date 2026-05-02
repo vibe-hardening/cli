@@ -88,6 +88,10 @@ npx vibe-hardening scan --format html -o report.html
 # Markdown report — paste into a PR comment / Slack / Issue.
 npx vibe-hardening scan --format markdown -o report.md
 
+# Diff against a baseline — PR-mode, only show what's NEW since main.
+npx vibe-hardening scan --format json -o baseline.json   # on main first
+npx vibe-hardening scan --compare baseline.json          # then on PR
+
 # SVG badge showing current score + grade. Embed in your README.
 npx vibe-hardening badge -o .github/vibe-hardening.svg
 

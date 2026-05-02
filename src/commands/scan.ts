@@ -1,11 +1,12 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import pc from 'picocolors';
 import { walk } from '../core/walker.js';
 import { runScan } from '../core/scan.js';
-import type { Severity } from '../core/types.js';
+import type { Finding, Severity } from '../core/types.js';
 import { detectPlatform } from '../detectors/platform.js';
 import { getChangedFiles } from '../core/git-diff.js';
+import { diffFindings } from '../core/compare.js';
 import { renderConsole } from '../reporters/console.js';
 import { renderJson } from '../reporters/json.js';
 import { renderHtml } from '../reporters/html.js';
@@ -56,6 +57,15 @@ export interface ScanCommandOptions {
    * unaffected so machine-parseable artifacts stay clean.
    */
   suggestFix: boolean;
+  /**
+   * `--compare <path>` — path to a previous scan's JSON output.
+   * When set, the report shows ONLY findings new since that
+   * baseline (added) and reports counts for fixed / unchanged.
+   * Use case: PR review (compare PR scan vs main-branch baseline)
+   * and onboarding old repos (snapshot today's findings, only fail
+   * CI on regressions). Empty string / undefined = full report.
+   */
+  compare?: string;
   version: string;
 }
 
@@ -217,7 +227,60 @@ export async function runScanCommand(
     },
   });
 
+  // --compare baseline.json — filter the report's findings down to
+  // only those that are NEW vs the baseline. The summary delta line
+  // ("+5 new · 2 fixed · 22 unchanged") is appended to console
+  // output via prelude footer; JSON / HTML / markdown then render
+  // the filtered report (which is what CI / PR comments want).
+  let compareDelta: { added: number; removed: number; unchanged: number } | null =
+    null;
+  if (opts.compare) {
+    try {
+      const raw = await readFile(resolve(opts.compare), 'utf8');
+      const parsed = JSON.parse(raw) as { findings?: Finding[] };
+      const baseline: Finding[] = Array.isArray(parsed.findings)
+        ? parsed.findings
+        : [];
+      const diff = diffFindings(report.findings, baseline);
+      compareDelta = {
+        added: diff.added.length,
+        removed: diff.removed.length,
+        unchanged: diff.unchanged.length,
+      };
+      // Mutate report in-place so all downstream reporters see the
+      // filtered list. Keep the score / summary as-is (those still
+      // reflect the absolute state of the codebase). The point of
+      // --compare is "what changed in THIS PR" — not "rescore from
+      // scratch ignoring known issues".
+      report.findings = diff.added;
+      // Recompute summary counts from the filtered findings so the
+      // header doesn't lie about the displayed list.
+      const sev = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
+      for (const f of diff.added) sev[f.severity]++;
+      report.summary = sev;
+    } catch (err) {
+      process.stderr.write(
+        pc.yellow(
+          `warning: --compare baseline could not be loaded (${err instanceof Error ? err.message : 'unknown'}). showing full report.\n`,
+        ),
+      );
+    }
+  }
+
   preludeFooter(prelude, report.findings.length);
+
+  if (compareDelta && opts.format === 'console') {
+    process.stdout.write(
+      pc.dim('\n  Δ vs baseline ') +
+        pc.cyan(opts.compare!) +
+        pc.dim(': ') +
+        pc.bold(pc.red(`+${compareDelta.added} new`)) +
+        pc.dim(' · ') +
+        pc.bold(pc.green(`-${compareDelta.removed} fixed`)) +
+        pc.dim(` · ${compareDelta.unchanged} unchanged`) +
+        '\n',
+    );
+  }
 
   // Create parent dir on demand so `--output foo/bar.html` works even
   // when `foo/` doesn't exist yet.

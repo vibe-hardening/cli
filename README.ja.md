@@ -86,6 +86,10 @@ npx vibe-hardening scan --format html -o report.html
 # Markdown レポート — PR コメント / Slack / Issue にそのまま貼り付け
 npx vibe-hardening scan --format markdown -o report.md
 
+# baseline と比較 — PR モード、この PR で新しく出た finding だけ表示
+npx vibe-hardening scan --format json -o baseline.json   # main で先に実行
+npx vibe-hardening scan --compare baseline.json          # PR で実行
+
 # 現在のスコアとグレードを表示する SVG バッジ、README に埋め込める
 npx vibe-hardening badge -o .github/vibe-hardening.svg
 

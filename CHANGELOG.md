@@ -7,6 +7,32 @@ pre-1.0; everything is currently shipped under the npm `preview` tag.
 
 The PH launch is targeted for **2026-05-13 14:00 UTC**.
 
+## [0.0.19-preview.0] — 2026-05-02
+
+### Added
+- **`vh explain` lives off osv.dev** for `vh-dep-cve-*` rules. When
+  online, the explain block now includes an `ADVISORY DETAILS`
+  section with the OSV summary (or details, single-line truncated
+  to 200 chars), severity label, and top 2 advisory / fix
+  references. Falls back silently to the static block when offline,
+  on 404, or after a 5s timeout. New `--offline` flag on `explain`
+  forces local-only mode.
+- **`scan --compare <baseline.json>`** — point at a previous scan's
+  JSON output; the report is filtered to ONLY findings that are new
+  since that baseline. Console output appends a delta line
+  (`Δ vs baseline: +5 new · -2 fixed · 22 unchanged`). JSON / HTML /
+  markdown output respects the same filter so CI artifacts and PR
+  comments stay focused on what changed. Score remains computed on
+  the absolute state (the point of `--compare` is to surface
+  regressions, not pretend known issues don't exist).
+- 16 new tests (`compare.test.ts` + new explain advisory tests).
+
+### Fixed
+- `runExplainCommand` no longer triggers a Windows libuv assertion
+  on exit when the OSV fetch socket is still cleaning up. Switched
+  from `process.exit()` to `process.exitCode` so Node drains
+  pending I/O naturally.
+
 ## [0.0.18-preview.0] — 2026-04-28
 
 ### Added
