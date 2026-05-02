@@ -2,10 +2,32 @@
 
 All notable changes to **vibe-hardening** are documented here. Format
 loosely follows [Keep a Changelog](https://keepachangelog.com/) but
-keeps each entry tight enough to read in one breath. The CLI is
-pre-1.0; everything is currently shipped under the npm `preview` tag.
+keeps each entry tight enough to read in one breath.
 
 The PH launch is targeted for **2026-05-13 14:00 UTC**.
+
+## [0.1.0] — 2026-05-02
+
+First non-preview release. Drops the `-preview.0` suffix that the
+previous 0.0.x line carried. No code changes vs 0.0.20-preview.0 —
+this is a label-only bump signalling "the surface area is stable
+enough to commit to". `npx vibe-hardening` now resolves to this
+version by default; older 0.0.13-preview.0 was anchoring the
+`latest` dist-tag, which meant no organic traffic actually got to
+try the features shipped in 0.0.14 → 0.0.20.
+
+Cumulative state at 0.1.0:
+- 3 commands: `scan` / `explain` / `badge`
+- 12 scan flags incl. `--suggest-fix`, `--changed-only`,
+  `--verify --own`, `--roast`, `--compare <baseline>`
+- 4 output formats: console / json / html / markdown
+- 51 rules across 9 categories
+- 9 live-key verifiers (OpenAI / Anthropic / Stripe / GitHub PAT /
+  Slack / SendGrid / Twilio / Notion / Google)
+- `vh explain` enriched with live osv.dev advisory metadata for
+  CVE rules
+- 309 unit tests
+- GitHub Marketplace listing (`vibe-hardening/cli@v1`)
 
 ## [0.0.20-preview.0] — 2026-05-02
 

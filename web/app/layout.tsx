@@ -36,14 +36,22 @@ const serif = EB_Garamond({
   display: 'swap',
 });
 
+// Social-preview metadata (FB / X / LinkedIn / Slack unfurls).
+// Lengths tuned per opengraph.xyz audit: title 55-60 chars,
+// description 110-160 chars. The browser-tab `<title>` (first
+// `title` field below) stays longer for SEO; OG/Twitter overrides
+// keep the social preview tight and benefit-driven.
+const OG_TITLE = 'vibe-hardening — security scanner for AI-generated code';
+const OG_DESCRIPTION =
+  'Vibe coded. Vibe hardened. One npx command, 51 rules, 9 live secret verifiers. Built for output from Cursor, Lovable, Bolt, v0, Claude Code. MIT.';
+
 export const metadata: Metadata = {
   title: 'vibe-hardening / one-command security scanner for AI-generated code',
-  description:
-    'Vibe coded. Vibe hardened. Security scanner built for v0, Lovable, Bolt, Cursor and Claude Code output. 0 config, 5 seconds.',
+  description: OG_DESCRIPTION,
   metadataBase: new URL('https://vibe-hardening.io'),
   openGraph: {
-    title: 'vibe-hardening',
-    description: 'One-command security scanner for AI-generated code.',
+    title: OG_TITLE,
+    description: OG_DESCRIPTION,
     url: 'https://vibe-hardening.io',
     siteName: 'vibe-hardening',
     type: 'website',
@@ -58,8 +66,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'vibe-hardening',
-    description: 'One-command security scanner for AI-generated code.',
+    title: OG_TITLE,
+    description: OG_DESCRIPTION,
     images: ['/og.png'],
   },
   robots: { index: true, follow: true },
