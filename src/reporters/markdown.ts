@@ -21,15 +21,30 @@ const SEVERITY_RANK: Record<Severity, number> = {
   info: 4,
 };
 
-// GitHub markdown renders inline code via backticks, but the snippet
-// itself may contain backticks (rare but observed in JS template
-// literals). Escape by switching to triple-backtick fences when the
-// snippet contains a single backtick.
+// Render inline code that survives a Markdown table cell. Plain
+// backtick wrapping breaks when the snippet itself contains a
+// backtick (common in JS template literals). The dance with double-
+// or triple-backtick fences that GFM specifies for inline code is
+// unreliable inside table cells, so we fall back to an HTML <code>
+// element with backticks (and HTML-meaningful chars) entity-escaped.
+// GFM tables happily render <code> tags.
 function inlineCode(s: string): string {
-  if (s.includes('`')) {
-    return '``' + s.replace(/``/g, '` `') + '``';
+  if (
+    !s.includes('`') &&
+    !s.includes('<') &&
+    !s.includes('>') &&
+    !s.includes('&')
+  ) {
+    return '`' + s + '`';
   }
-  return '`' + s + '`';
+  // Order matters: escape `&` first so the entity escapes we add
+  // afterward don't get re-encoded.
+  const escaped = s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/`/g, '&#96;');
+  return `<code>${escaped}</code>`;
 }
 
 function escapePipes(s: string): string {

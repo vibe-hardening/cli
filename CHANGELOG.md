@@ -7,16 +7,20 @@ pre-1.0; everything is currently shipped under the npm `preview` tag.
 
 The PH launch is targeted for **2026-05-13 14:00 UTC**.
 
-## [Unreleased]
+## [0.0.17-preview.0] — 2026-04-28
 
 ### Fixed
-- `--changed-only` now also includes untracked files (via
-  `git ls-files --others --exclude-standard`). Previously a vibe coder
-  could write a brand-new file with a hardcoded key, run `vh scan
-  --changed-only` before staging, and see a clean report — the secret
-  was silently missed because plain `git diff HEAD` skips untracked
-  paths. Local mode is now union(diff, untracked); PR-mode (`--changed-only origin/main`) is unchanged so CI runner working-tree
-  garbage cannot bleed into PR diffs.
+- `vh-auth-bcrypt-low-rounds` no longer misses `bcrypt.genSalt(4, cb)`.
+  The rule was originally written for the `bcrypt.hash(data, rounds)`
+  signature where rounds is the second argument; for `genSalt` /
+  `genSaltSync`, rounds is the **first** argument. Split into two
+  patterns so both shapes are caught.
+- Markdown reporter now correctly handles backticks, `<`, `>`, and
+  `&` in rule IDs / messages. Previously `inlineCode()` only handled
+  the rare double-backtick case and silently produced malformed
+  table rows when a snippet contained a single backtick. Fallback
+  now uses an HTML `<code>` element with entities escaped — safe
+  inside GFM tables.
 
 ## [0.0.15-preview.0] — 2026-04-28
 

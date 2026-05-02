@@ -141,14 +141,21 @@ export const AUTH_PATTERN_RULES: SecretRule[] = [
       'Use at least 10 rounds (industry baseline) or 12 for new applications. Higher rounds slow attackers exponentially without hurting login latency.',
     patterns: [
       {
-        // Single-digit literal argument matches rounds 0..9. The trailing
-        // [,)] anchor distinguishes "5)" from "5X)" so two-digit values
-        // like 12 don't false-positive. Variable arguments (e.g.
-        // `bcrypt.hash(p, saltRounds)`) are invisible to regex — covered
-        // separately if/when AST scan is added for crypto config.
-        name: 'bcrypt-low',
+        // bcrypt.hash(data, ROUNDS) — rounds is 2nd arg.
+        // hashSync has the same signature.
+        name: 'bcrypt-hash-low',
         regex:
-          /\bbcrypt\.(?:hash|hashSync|genSalt|genSaltSync)\s*\(\s*[^,)]+,\s*['"]?[0-9]['"]?\s*[,)]/g,
+          /\bbcrypt\.(?:hash|hashSync)\s*\(\s*[^,)]+,\s*['"]?[0-9]['"]?\s*[,)]/g,
+      },
+      {
+        // bcrypt.genSalt(ROUNDS, cb) — rounds is 1st arg.
+        // genSaltSync has the same signature. Keeping these in a
+        // separate pattern (vs trying to one-regex both shapes) is
+        // strictly clearer; the engine OR-merges patterns within a
+        // rule.
+        name: 'bcrypt-gensalt-low',
+        regex:
+          /\bbcrypt\.(?:genSalt|genSaltSync)\s*\(\s*['"]?[0-9]['"]?\s*[,)]/g,
       },
     ],
   },
