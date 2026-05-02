@@ -78,6 +78,7 @@ export interface Strings {
     subtitleB: string;
     placeholder: string;
     submit: string;
+    thoughtsPlaceholder: string;
   };
   footer: {
     brandCopy: string;
@@ -232,6 +233,8 @@ export const strings: Record<Locale, Strings> = {
       subtitleB: '. No marketing.',
       placeholder: 'you@domain.com',
       submit: 'SUBSCRIBE →',
+      thoughtsPlaceholder:
+        'Optional — what do you want this scanner to catch? what AI tool burned you last? (we read every reply)',
     },
     footer: {
       brandCopy: '© 2026 · MIT · REV 0.0.15',
@@ -388,6 +391,8 @@ export const strings: Record<Locale, Strings> = {
       subtitleB: '。沒有行銷。',
       placeholder: 'you@domain.com',
       submit: '訂閱 →',
+      thoughtsPlaceholder:
+        '想說什麼都可以（選填）—— 你希望這個工具能抓到什麼？哪個 AI 工具最近坑過你？我們會看每一封。',
     },
     footer: {
       brandCopy: '© 2026 · MIT · REV 0.0.15',

@@ -311,7 +311,7 @@ export function Landing({ locale }: { locale: Locale }) {
           <form
             action="https://formspree.io/f/mojywydj"
             method="POST"
-            className="mt-9 flex flex-col sm:flex-row gap-3"
+            className="mt-9 flex flex-col gap-3"
           >
             {/* Honeypot: real users never see or fill this; bots
                 submitting the form by replaying the POST will populate
@@ -332,19 +332,28 @@ export function Landing({ locale }: { locale: Locale }) {
                 pointerEvents: 'none',
               }}
             />
-            <input
-              type="email"
-              name="email"
-              required
-              placeholder={t.waitlist.placeholder}
-              className="flex-1 min-w-[280px] bg-transparent border border-[color:var(--color-line)] px-4 py-3.5 text-[14px] tracking-[0.04em] placeholder:text-[color:var(--color-dim)] focus:outline-none focus:border-[color:var(--color-fg)] transition-colors"
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="email"
+                name="email"
+                required
+                placeholder={t.waitlist.placeholder}
+                className="flex-1 min-w-[280px] bg-transparent border border-[color:var(--color-line)] px-4 py-3.5 text-[14px] tracking-[0.04em] placeholder:text-[color:var(--color-dim)] focus:outline-none focus:border-[color:var(--color-fg)] transition-colors"
+              />
+              <button
+                type="submit"
+                className="vh-btn vh-btn-primary tracking-[0.06em] w-full sm:w-auto justify-center"
+              >
+                {t.waitlist.submit}
+              </button>
+            </div>
+            <textarea
+              name="message"
+              rows={3}
+              placeholder={t.waitlist.thoughtsPlaceholder}
+              maxLength={2000}
+              className="bg-transparent border border-[color:var(--color-line)] px-4 py-3.5 text-[14px] leading-[1.6] tracking-[0.02em] placeholder:text-[color:var(--color-dim)] focus:outline-none focus:border-[color:var(--color-fg)] transition-colors resize-y font-[family-name:var(--font-mono)]"
             />
-            <button
-              type="submit"
-              className="vh-btn vh-btn-primary tracking-[0.06em] w-full sm:w-auto justify-center"
-            >
-              {t.waitlist.submit}
-            </button>
           </form>
         </div>
       </section>
