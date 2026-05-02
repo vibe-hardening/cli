@@ -351,7 +351,9 @@
 :root[data-theme='light'] {
   --color-bg: #fafafa;
   --color-fg: #1a1a1a;
-  --color-dim: #6e6e6e;
+  /* Mid-gray on near-black bg reads as muted; on near-white the same
+     value collapses below WCAG AA. Darken to ~5.5:1 contrast vs bg. */
+  --color-dim: #525252;
   --color-line: #d4d4d4;
   --color-red: #d62828;
   --color-red-deep: #b51d1d;
@@ -359,7 +361,9 @@
   --color-amber: #c47b00;
 
   --color-bg-elevated: rgba(0, 0, 0, 0.04);
-  --color-fg-soft: rgba(26, 26, 26, 0.74);
+  /* Bumped opacity from 0.74 → 0.82: keeps the slight muting versus
+     full fg, but stays comfortably above AA contrast (~4.6:1). */
+  --color-fg-soft: rgba(26, 26, 26, 0.82);
   --color-fg-shadow: rgba(26, 26, 26, 0.45);
 }
 

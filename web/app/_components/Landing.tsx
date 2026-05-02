@@ -66,7 +66,7 @@ export function Landing({ locale }: { locale: Locale }) {
                 ®
               </span>
             </h1>
-            <p className="font-[family-name:var(--font-mono)] text-[14px] leading-[1.7] mt-7 max-w-[44ch] tracking-[0.02em] text-[rgba(234,234,234,0.78)]">
+            <p className="font-[family-name:var(--font-mono)] text-[14px] leading-[1.7] mt-7 max-w-[44ch] tracking-[0.02em] text-[color:var(--color-fg-soft)]">
               {t.hero.copy}
             </p>
 
@@ -206,7 +206,7 @@ export function Landing({ locale }: { locale: Locale }) {
               <code className="font-[family-name:var(--font-mono)] text-[color:var(--color-green)] text-[15px] leading-[1.4] tracking-normal break-all">
                 {c.cmd}
               </code>
-              <p className="font-[family-name:var(--font-mono)] text-[14px] leading-[1.75] tracking-[0.02em] text-[rgba(234,234,234,0.78)]">
+              <p className="font-[family-name:var(--font-mono)] text-[14px] leading-[1.75] tracking-[0.02em] text-[color:var(--color-fg-soft)]">
                 {c.body}
               </p>
             </div>
@@ -231,7 +231,7 @@ export function Landing({ locale }: { locale: Locale }) {
                   {f.title}
                 </h3>
               </div>
-              <p className="font-[family-name:var(--font-mono)] text-[14px] leading-[1.75] tracking-[0.02em] text-[rgba(234,234,234,0.78)]">
+              <p className="font-[family-name:var(--font-mono)] text-[14px] leading-[1.75] tracking-[0.02em] text-[color:var(--color-fg-soft)]">
                 {f.body}
               </p>
             </div>
@@ -244,7 +244,7 @@ export function Landing({ locale }: { locale: Locale }) {
         <div className="wrap px-6 md:px-10 py-20 md:py-24 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
           {t.quotes.map((q, i) => (
             <div key={i}>
-              <p className="font-[family-name:var(--font-mono)] text-[14px] leading-[1.75] text-[rgba(234,234,234,0.85)] mb-3.5">
+              <p className="font-[family-name:var(--font-mono)] text-[14px] leading-[1.75] text-[color:var(--color-fg)] mb-3.5">
                 {q.q}
               </p>
               <div className="text-[11px] text-[color:var(--color-dim)] tracking-[0.12em]">
@@ -265,7 +265,7 @@ export function Landing({ locale }: { locale: Locale }) {
             <h3 className="text-[2rem] normal-case mb-2.5">
               {t.pricing.freeTitle}
             </h3>
-            <p className="text-[13px] text-[rgba(234,234,234,0.72)] leading-[1.7] mb-6 tracking-normal">
+            <p className="text-[13px] text-[color:var(--color-fg-soft)] leading-[1.7] mb-6 tracking-normal">
               {t.pricing.freeBody}
             </p>
             <code className="inline-block bg-[#141414] border border-[color:var(--color-line)] px-4 py-3 text-[13px]">
@@ -279,7 +279,7 @@ export function Landing({ locale }: { locale: Locale }) {
             <h3 className="text-[2rem] normal-case mb-2.5">
               {t.pricing.proTitle}
             </h3>
-            <p className="text-[13px] text-[rgba(234,234,234,0.72)] leading-[1.7] mb-6 tracking-normal">
+            <p className="text-[13px] text-[color:var(--color-fg-soft)] leading-[1.7] mb-6 tracking-normal">
               {t.pricing.proBody}
             </p>
             <a
@@ -407,7 +407,7 @@ export function Landing({ locale }: { locale: Locale }) {
             className="border-t border-[color:var(--color-line)] pt-10 font-[family-name:var(--font-serif)] italic leading-[1.05] tracking-[-0.01em] select-none"
             style={{
               fontSize: 'clamp(2.2rem, 6vw, 5rem)',
-              color: 'rgba(234,234,234,0.78)',
+              color: 'var(--color-fg-soft)',
             }}
           >
             {t.footer.tagline}
