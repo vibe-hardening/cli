@@ -75,6 +75,11 @@ npx vibe-hardening scan --offline
 # 漏洩した鍵がプロバイダーでまだ有効かをライブ検証 (--own が必要)
 npx vibe-hardening scan --verify --own
 
+# git diff の変更ファイルだけスキャン（CI / pre-commit 用、大規模 repo で 10 倍速）
+# ref なし: HEAD と比較; ref 付き: 3-dot diff (PR モード)
+npx vibe-hardening scan --changed-only
+npx vibe-hardening scan --changed-only=main
+
 # スタンドアロン HTML レポート — 共有可能、保存後はオフラインでも閲覧可
 npx vibe-hardening scan --format html -o report.html
 

@@ -239,7 +239,7 @@ export const strings: Record<Locale, Strings> = {
     footer: {
       brandCopy: '© 2026 · MIT · REV 0.0.18',
       colProductTitle: 'PRODUCT',
-      colProductItems: ['CLI', 'Dashboard (soon)', 'GitHub App (soon)'],
+      colProductItems: ['CLI', 'GitHub Action', 'Score Badge'],
       colSourceTitle: 'SOURCE',
       colSourceItems: [
         { label: 'GitHub ↗', href: 'https://github.com/vibe-hardening/cli' },
@@ -397,7 +397,7 @@ export const strings: Record<Locale, Strings> = {
     footer: {
       brandCopy: '© 2026 · MIT · REV 0.0.18',
       colProductTitle: '產品',
-      colProductItems: ['CLI', '儀表板（即將推出）', 'GitHub App（即將推出）'],
+      colProductItems: ['CLI', 'GitHub Action', '分數徽章'],
       colSourceTitle: '原始碼',
       colSourceItems: [
         { label: 'GitHub ↗', href: 'https://github.com/vibe-hardening/cli' },

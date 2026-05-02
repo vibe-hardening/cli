@@ -75,6 +75,11 @@ npx vibe-hardening scan --offline
 # 即時驗證找到的金鑰在 provider 上是否還活著（需 --own）
 npx vibe-hardening scan --verify --own
 
+# 只掃 git diff 變動的檔案（CI / pre-commit 用，大 repo 快 10 倍）
+# 不加 ref 跟 HEAD 比；加 ref 走 3-dot diff（PR 模式）
+npx vibe-hardening scan --changed-only
+npx vibe-hardening scan --changed-only=main
+
 # 獨立 HTML 報告 — 可分享、存檔後離線也能看
 npx vibe-hardening scan --format html -o report.html
 
