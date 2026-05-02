@@ -22,6 +22,36 @@ The PH launch is targeted for **2026-05-13 14:00 UTC**.
   now uses an HTML `<code>` element with entities escaped — safe
   inside GFM tables.
 
+## [0.0.16-preview.0] — 2026-04-28
+
+### Added
+- **`--format markdown`** — pasteable into PR comments, Slack, GitHub
+  Issues. Same severity-ordered findings as the console reporter, but
+  with no ANSI escapes and proper Markdown structure (heading, summary
+  table, per-file finding tables, remediation list).
+- 3 new rules (49 → 51):
+  - `vh-inj-eval-user-input` (CRITICAL): `eval(req.body.X)` /
+    `(new) Function(...req.body.X)` — arbitrary code execution.
+  - `vh-auth-token-in-localstorage` (MEDIUM): JWT / auth tokens
+    persisted to localStorage / sessionStorage — XSS-readable.
+  - `vh-auth-bcrypt-low-rounds` (HIGH): `bcrypt.hash(p, 4)` /
+    `bcrypt.genSalt(4, cb)` — rounds < 10 are GPU-brute-forceable.
+    (See 0.0.17 for the genSalt signature follow-up fix.)
+- `vh explain vh-dep-cve-<ID>` now appends an OSV.dev advisory link.
+  Works for both CVE and GHSA prefixes.
+- `CHANGELOG.md` lands in the repo root (this file). Marketplace
+  listing renders it inline.
+
+### Fixed
+- `--changed-only` now also includes untracked files (via
+  `git ls-files --others --exclude-standard`). Previously a vibe coder
+  could write a brand-new file with a hardcoded key, run `vh scan
+  --changed-only` before staging, and see a clean report — the secret
+  was silently missed because plain `git diff HEAD` skips untracked
+  paths. Local mode is now `union(diff, untracked)`; PR-mode
+  (`--changed-only origin/main`) is unchanged so a CI runner's
+  working-tree garbage cannot bleed into PR diffs.
+
 ## [0.0.15-preview.0] — 2026-04-28
 
 ### Added
