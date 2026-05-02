@@ -47,11 +47,20 @@ export const metadata: Metadata = {
     url: 'https://vibe-hardening.io',
     siteName: 'vibe-hardening',
     type: 'website',
+    images: [
+      {
+        url: '/og.png',
+        width: 1200,
+        height: 630,
+        alt: 'vibe-hardening — one-command security scanner for AI-generated code',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'vibe-hardening',
     description: 'One-command security scanner for AI-generated code.',
+    images: ['/og.png'],
   },
   robots: { index: true, follow: true },
 };
