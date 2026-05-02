@@ -99,7 +99,7 @@ export const strings: Record<Locale, Strings> = {
       'vibe-hardening / one-command security scanner for AI-generated code',
     classbar: {
       unit: '▲ VH-001 · FOR THE VIBE CODER ·',
-      rev: 'REV 0.0.15 · CHAN 15',
+      rev: 'REV 0.0.16 · CHAN 16',
       geo: 'LAT 25.03°N · LNG 121.56°E',
       date: '▲ 2026-04-20 ▲',
     },
@@ -147,7 +147,7 @@ export const strings: Record<Locale, Strings> = {
     },
     features: {
       label1: 'What it checks —',
-      label2: '49 rules across 9 categories.',
+      label2: '51 rules across 9 categories.',
       items: [
         {
           code: 'SEC-01',
@@ -172,7 +172,7 @@ export const strings: Record<Locale, Strings> = {
       items: [
         {
           cmd: 'vibe-hardening scan',
-          body: 'Main command. Scores your repo 0–100 with A–F grade. 49 rules covering hardcoded keys, SQL injection, missing auth on routes, CORS, Supabase RLS, and packages LLMs hallucinate.',
+          body: 'Main command. Scores your repo 0–100 with A–F grade. 51 rules covering hardcoded keys, SQL injection, missing auth on routes, CORS, Supabase RLS, eval(req.body), localStorage tokens, weak bcrypt rounds, and packages LLMs hallucinate.',
         },
         {
           cmd: 'scan --changed-only [ref]',
@@ -237,7 +237,7 @@ export const strings: Record<Locale, Strings> = {
         'Optional — what do you want this scanner to catch? what AI tool burned you last? (we read every reply)',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.0.15',
+      brandCopy: '© 2026 · MIT · REV 0.0.16',
       colProductTitle: 'PRODUCT',
       colProductItems: ['CLI', 'Dashboard (soon)', 'GitHub App (soon)'],
       colSourceTitle: 'SOURCE',
@@ -258,7 +258,7 @@ export const strings: Record<Locale, Strings> = {
     title: 'vibe-hardening｜AI 生成程式碼的一鍵資安掃描工具',
     classbar: {
       unit: '▲ VH-001 · 獻給 VIBE CODER ·',
-      rev: 'REV 0.0.15 · CHAN 15',
+      rev: 'REV 0.0.16 · CHAN 16',
       geo: 'LAT 25.03°N · LNG 121.56°E',
       date: '▲ 2026-04-20 ▲',
     },
@@ -306,7 +306,7 @@ export const strings: Record<Locale, Strings> = {
     },
     features: {
       label1: '我們檢查什麼 —',
-      label2: '9 類別共 49 條規則。',
+      label2: '9 類別共 51 條規則。',
       items: [
         {
           code: 'SEC-01',
@@ -331,7 +331,7 @@ export const strings: Record<Locale, Strings> = {
       items: [
         {
           cmd: 'vibe-hardening scan',
-          body: '主指令。掃完給 0–100 分配 A–F 等級。49 條規則涵蓋硬寫的金鑰、SQL injection、缺驗證的路由、CORS、Supabase RLS、被 LLM 幻想出來的 npm 套件。',
+          body: '主指令。掃完給 0–100 分配 A–F 等級。51 條規則涵蓋硬寫的金鑰、SQL injection、缺驗證的路由、CORS、Supabase RLS、eval(req.body)、localStorage 存 token、bcrypt 弱 rounds、被 LLM 幻想出來的 npm 套件。',
         },
         {
           cmd: 'scan --changed-only [ref]',
@@ -395,7 +395,7 @@ export const strings: Record<Locale, Strings> = {
         '想說什麼都可以（選填）—— 你希望這個工具能抓到什麼？哪個 AI 工具最近坑過你？我們會看每一封。',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.0.15',
+      brandCopy: '© 2026 · MIT · REV 0.0.16',
       colProductTitle: '產品',
       colProductItems: ['CLI', '儀表板（即將推出）', 'GitHub App（即將推出）'],
       colSourceTitle: '原始碼',

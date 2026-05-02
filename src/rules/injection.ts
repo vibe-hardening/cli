@@ -64,6 +64,28 @@ export const INJECTION_RULES: SecretRule[] = [
     ],
   },
   {
+    id: 'vh-inj-eval-user-input',
+    severity: 'critical',
+    category: 'injection',
+    message:
+      'eval / Function constructor receives request data — arbitrary code execution',
+    remediation:
+      'Never eval user input. If you need a tiny expression evaluator, use a safe library like `mathjs` or a hand-written parser. There is no safe configuration of eval() with untrusted input.',
+    patterns: [
+      {
+        // eval(req.body.X) / eval(req.query.X) / eval(req.params.X)
+        name: 'eval-req',
+        regex: /\beval\s*\(\s*req\.(?:body|query|params)\./g,
+      },
+      {
+        // new Function(req.body.X) and Function(req.body.X). Both
+        // forms compile a string into executable code at runtime.
+        name: 'function-req',
+        regex: /\b(?:new\s+)?Function\s*\(\s*[^)]*req\.(?:body|query|params)\./g,
+      },
+    ],
+  },
+  {
     id: 'vh-inj-xss-dangerous-html',
     severity: 'high',
     category: 'injection',

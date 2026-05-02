@@ -70,6 +70,10 @@ export const ROAST_MESSAGES: Record<string, string> = {
     "RLS policy: USING (true). That's... technically a policy.",
   'vh-supabase-service-role-in-client':
     "service_role referenced from a 'use client' file. You're shipping the backdoor to every visitor.",
+  'vh-auth-token-in-localstorage':
+    'JWT in localStorage. One XSS later, every session is portable. Welcome to share-economy auth.',
+  'vh-auth-bcrypt-low-rounds':
+    'bcrypt with rounds < 10. A used GPU on eBay cracks this over lunch.',
 
   // ── Auth (engine: auth-missing-ast) ──
   'vh-auth-missing-middleware':
@@ -90,6 +94,8 @@ export const ROAST_MESSAGES: Record<string, string> = {
     'Path traversal: user input concatenated into a file path. Your /etc/passwd is waving.',
   'vh-inj-xss-dangerous-html':
     "dangerouslySetInnerHTML with user content. The 'dangerously' was not a suggestion.",
+  'vh-inj-eval-user-input':
+    'eval(req.body). You wrote a command interpreter and gave the keys to anyone with curl.',
 
   // ── Network (src/rules/network.ts) ──
   'vh-cors-wildcard-credentials':

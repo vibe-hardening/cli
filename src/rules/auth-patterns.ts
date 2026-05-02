@@ -111,4 +111,45 @@ export const AUTH_PATTERN_RULES: SecretRule[] = [
       },
     ],
   },
+  {
+    id: 'vh-auth-token-in-localstorage',
+    severity: 'medium',
+    category: 'auth',
+    message:
+      'Auth token / JWT stored in localStorage (or sessionStorage) — readable by any XSS payload',
+    remediation:
+      'Use an httpOnly, secure, sameSite cookie set by the server. localStorage values are accessible from any script that runs on the page.',
+    patterns: [
+      {
+        // Match localStorage.setItem('token', ...) or sessionStorage.setItem('jwt', ...)
+        // with a key name that strongly implies an auth artefact. Avoids
+        // false-positives on generic storage usage like
+        // `localStorage.setItem('theme', 'dark')`.
+        name: 'storage-setitem',
+        regex:
+          /(?:local|session)Storage\.setItem\s*\(\s*['"`](?:token|jwt|auth[_-]?token|access[_-]?token|refresh[_-]?token|bearer|id[_-]?token|session[_-]?token|api[_-]?key)[^'"`]*['"`]/gi,
+      },
+    ],
+  },
+  {
+    id: 'vh-auth-bcrypt-low-rounds',
+    severity: 'high',
+    category: 'auth',
+    message:
+      'bcrypt hash / salt rounds < 10 — easily brute-forceable on modern GPUs',
+    remediation:
+      'Use at least 10 rounds (industry baseline) or 12 for new applications. Higher rounds slow attackers exponentially without hurting login latency.',
+    patterns: [
+      {
+        // Single-digit literal argument matches rounds 0..9. The trailing
+        // [,)] anchor distinguishes "5)" from "5X)" so two-digit values
+        // like 12 don't false-positive. Variable arguments (e.g.
+        // `bcrypt.hash(p, saltRounds)`) are invisible to regex — covered
+        // separately if/when AST scan is added for crypto config.
+        name: 'bcrypt-low',
+        regex:
+          /\bbcrypt\.(?:hash|hashSync|genSalt|genSaltSync)\s*\(\s*[^,)]+,\s*['"]?[0-9]['"]?\s*[,)]/g,
+      },
+    ],
+  },
 ];

@@ -85,6 +85,9 @@ npx vibe-hardening scan --verify --own
 # Standalone HTML report — sharable, works offline once saved.
 npx vibe-hardening scan --format html -o report.html
 
+# Markdown report — paste into a PR comment / Slack / Issue.
+npx vibe-hardening scan --format markdown -o report.md
+
 # SVG badge showing current score + grade. Embed in your README.
 npx vibe-hardening badge -o .github/vibe-hardening.svg
 

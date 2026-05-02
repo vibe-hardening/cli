@@ -78,6 +78,9 @@ npx vibe-hardening scan --verify --own
 # 독립 HTML 리포트 — 공유 가능, 저장 후 오프라인에서도 열람 가능
 npx vibe-hardening scan --format html -o report.html
 
+# Markdown 리포트 — PR 댓글 / Slack / Issue에 바로 붙여넣기
+npx vibe-hardening scan --format markdown -o report.md
+
 # 현재 점수와 등급을 표시하는 SVG 배지, README에 삽입 가능
 npx vibe-hardening badge -o .github/vibe-hardening.svg
 

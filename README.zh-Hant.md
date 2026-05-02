@@ -78,6 +78,9 @@ npx vibe-hardening scan --verify --own
 # 獨立 HTML 報告 — 可分享、存檔後離線也能看
 npx vibe-hardening scan --format html -o report.html
 
+# Markdown 報告 — 直接貼 PR comment / Slack / Issue
+npx vibe-hardening scan --format markdown -o report.md
+
 # 產生顯示目前分數跟等級的 SVG badge，可貼進 README
 npx vibe-hardening badge -o .github/vibe-hardening.svg
 

@@ -99,4 +99,4 @@ export function preludeFooter(
  * page strings aren't currently cross-checked at test time (they live
  * in a separate Next.js project); keep this checklist updated manually.
  */
-export const RULE_COUNT_LINE = 'loading 48 rules · 9 categories';
+export const RULE_COUNT_LINE = 'loading 51 rules · 9 categories';

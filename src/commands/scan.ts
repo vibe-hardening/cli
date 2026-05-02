@@ -9,6 +9,7 @@ import { getChangedFiles } from '../core/git-diff.js';
 import { renderConsole } from '../reporters/console.js';
 import { renderJson } from '../reporters/json.js';
 import { renderHtml } from '../reporters/html.js';
+import { renderMarkdown } from '../reporters/markdown.js';
 import { renderSuggestFix } from '../reporters/suggest-fix.js';
 import { generateSuggestions } from '../fix/suggestions.js';
 import {
@@ -19,7 +20,7 @@ import {
   RULE_COUNT_LINE,
 } from '../reporters/scan-prelude.js';
 
-const VALID_FORMATS = new Set(['console', 'json', 'html']);
+const VALID_FORMATS = new Set(['console', 'json', 'html', 'markdown']);
 const VALID_SEVERITIES: Severity[] = [
   'critical',
   'high',
@@ -30,7 +31,7 @@ const VALID_SEVERITIES: Severity[] = [
 
 export interface ScanCommandOptions {
   cwd: string;
-  format: 'console' | 'json' | 'html';
+  format: 'console' | 'json' | 'html' | 'markdown';
   output?: string;
   severity: Severity;
   offline: boolean;
@@ -64,7 +65,7 @@ export async function runScanCommand(
   if (!VALID_FORMATS.has(opts.format)) {
     process.stderr.write(
       pc.red(
-        `error: unknown format "${opts.format}". use console | json | html.\n`,
+        `error: unknown format "${opts.format}". use console | json | html | markdown.\n`,
       ),
     );
     return 2;
@@ -240,6 +241,13 @@ export async function runScanCommand(
     process.stdout.write(
       `${pc.green('✓')} HTML report written to ${pc.cyan(target)}\n`,
     );
+  } else if (opts.format === 'markdown') {
+    const md = renderMarkdown(report, opts.version);
+    if (opts.output) {
+      await writeTo(opts.output, md);
+    } else {
+      process.stdout.write(md.endsWith('\n') ? md : `${md}\n`);
+    }
   } else {
     const out = renderConsole(report, { roast: opts.roast });
     if (opts.output) {

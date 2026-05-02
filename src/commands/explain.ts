@@ -153,8 +153,11 @@ function severityColor(s: Severity): (text: string) => string {
 }
 
 export function explainRule(ruleId: string): string | null {
-  // Dynamic CVE rules collapse to the wildcard entry.
-  const lookupKey = ruleId.startsWith('vh-dep-cve-') ? 'vh-dep-cve-*' : ruleId;
+  // Dynamic CVE rules collapse to the wildcard entry. The advisory
+  // ID itself is preserved here so we can deep-link to OSV.dev.
+  const isCve = ruleId.startsWith('vh-dep-cve-') && ruleId.length > 'vh-dep-cve-'.length;
+  const advisoryId = isCve ? ruleId.slice('vh-dep-cve-'.length) : null;
+  const lookupKey = isCve ? 'vh-dep-cve-*' : ruleId;
   const r = RULE_LOOKUP.get(lookupKey);
   if (!r) return null;
 
@@ -198,6 +201,16 @@ export function explainRule(ruleId: string): string | null {
 
   lines.push(pc.bold('HOW TO FIX'));
   lines.push(`  ${r.remediation}`);
+  if (advisoryId) {
+    // Deep-link to OSV.dev so the user can read the original
+    // advisory text without leaving the terminal context for long.
+    // Path-encoding the ID guards against unusual advisory naming
+    // (e.g. GHSA-xxxx-yyyy-zzzz) that could otherwise produce a
+    // malformed URL.
+    const url = `https://osv.dev/vulnerability/${encodeURIComponent(advisoryId)}`;
+    lines.push('');
+    lines.push(`  ${pc.dim('Full advisory:')} ${pc.cyan(url)}`);
+  }
   const envVar = ENV_VAR_FOR_RULE[r.id];
   if (envVar) {
     lines.push('');

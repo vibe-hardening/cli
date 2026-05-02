@@ -78,6 +78,9 @@ npx vibe-hardening scan --verify --own
 # スタンドアロン HTML レポート — 共有可能、保存後はオフラインでも閲覧可
 npx vibe-hardening scan --format html -o report.html
 
+# Markdown レポート — PR コメント / Slack / Issue にそのまま貼り付け
+npx vibe-hardening scan --format markdown -o report.md
+
 # 現在のスコアとグレードを表示する SVG バッジ、README に埋め込める
 npx vibe-hardening badge -o .github/vibe-hardening.svg
 

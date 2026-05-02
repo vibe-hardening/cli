@@ -35,7 +35,7 @@ export function buildProgram(): Command {
     .command('scan', { isDefault: true })
     .description('Scan a directory for AI-coded security issues')
     .argument('[cwd]', 'directory to scan', '.')
-    .option('-f, --format <format>', 'output format: console | json | html', 'console')
+    .option('-f, --format <format>', 'output format: console | json | html | markdown', 'console')
     .option('-o, --output <file>', 'write output to file instead of stdout')
     .option(
       '-s, --severity <level>',

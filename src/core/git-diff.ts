@@ -72,11 +72,45 @@ export async function getChangedFiles(
 
   // Normalise paths to forward slashes so they match FileContext.path
   // which the walker emits with `/` separators on every platform.
-  const files = stdout
+  const fromDiff = stdout
     .split('\n')
     .map((s) => s.trim())
     .filter(Boolean)
     .map((s) => s.replace(/\\/g, '/'));
+
+  // Local-mode (no base ref) also includes untracked files. A vibe
+  // coder writes a new file with a hardcoded key and runs `vh scan
+  // --changed-only` BEFORE staging — `git diff HEAD` misses the file
+  // and the secret slips through. `git ls-files --others
+  // --exclude-standard` lists untracked files honouring .gitignore,
+  // .git/info/exclude, and the user's global gitignore so we don't
+  // blast through node_modules / build artefacts.
+  //
+  // PR-mode (base ref set) deliberately skips this — that mode is
+  // "what's committed on this branch since merge-base" and untracked
+  // working-tree state on a CI runner must not leak into the diff.
+  let untracked: string[] = [];
+  if (!base) {
+    try {
+      const result = await execFileAsync(
+        gitBin,
+        ['ls-files', '--others', '--exclude-standard'],
+        { cwd },
+      );
+      untracked = result.stdout
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((s) => s.replace(/\\/g, '/'));
+    } catch {
+      // Same fallback as the diff path — empty list rather than
+      // crashing the whole scan if ls-files happens to fail.
+    }
+  }
+
+  // Set-union deduplicates the rare race where a path shows up in
+  // both lists (e.g. a partial-stage edge case).
+  const files = Array.from(new Set([...fromDiff, ...untracked]));
 
   return { files, ref };
 }
