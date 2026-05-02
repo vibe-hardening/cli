@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import { mkdir, writeFile } from 'node:fs/promises';
+import pc from 'picocolors';
 import { runScanCommand } from './commands/scan.js';
 import { runExplainCommand } from './commands/explain.js';
 import type { Severity } from './core/types.js';
@@ -30,6 +31,39 @@ export function buildProgram(): Command {
     .name('vibe-hardening')
     .description('One-command security scanner for AI-generated code.')
     .version(version);
+
+  // Branded header + examples block on `--help`. picocolors auto-
+  // disables when stdout isn't a TTY, so CI logs / piped output stay
+  // plain. Kept tight on purpose — the help screen is for someone
+  // who already typed --help and just needs orientation, not a
+  // marketing pitch.
+  program
+    .addHelpText(
+      'beforeAll',
+      [
+        '',
+        `  ${pc.bold(pc.red('▲'))} ${pc.bold('vibe-hardening')}  ${pc.dim(`v${version}`)}`,
+        `  ${pc.dim('Vibe coded. Vibe hardened.')}  ${pc.dim('·')}  ${pc.cyan('https://vibe-hardening.io')}`,
+        '',
+      ].join('\n'),
+    )
+    .addHelpText(
+      'after',
+      [
+        '',
+        pc.bold('Examples:'),
+        `  ${pc.dim('$')} npx vibe-hardening scan`,
+        `  ${pc.dim('$')} npx vibe-hardening scan --suggest-fix`,
+        `  ${pc.dim('$')} npx vibe-hardening scan --changed-only`,
+        `  ${pc.dim('$')} npx vibe-hardening scan --format markdown -o report.md`,
+        `  ${pc.dim('$')} npx vibe-hardening explain vh-secret-openai`,
+        `  ${pc.dim('$')} npx vibe-hardening badge -o badge.svg`,
+        '',
+        `${pc.dim('Docs:')}  ${pc.cyan('https://github.com/vibe-hardening/cli')}`,
+        `${pc.dim('Marketplace:')}  ${pc.cyan('https://github.com/marketplace/actions/vibe-hardening')}`,
+        '',
+      ].join('\n'),
+    );
 
   program
     .command('scan', { isDefault: true })

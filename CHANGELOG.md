@@ -7,6 +7,16 @@ pre-1.0; everything is currently shipped under the npm `preview` tag.
 
 The PH launch is targeted for **2026-05-13 14:00 UTC**.
 
+## [0.0.18-preview.0] — 2026-04-28
+
+### Added
+- Branded help screen on `--help`. Top: red ▲ + name + version +
+  tagline + landing URL. Bottom: Examples block with the 6 most
+  common invocations + Docs / Marketplace links. picocolors auto-
+  disables colors in non-TTY contexts so CI logs stay plain. Bare
+  `vibe-hardening` (no args) still runs `scan .` — zero-config UX
+  preserved.
+
 ## [0.0.17-preview.0] — 2026-04-28
 
 ### Fixed
