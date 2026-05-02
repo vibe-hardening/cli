@@ -228,19 +228,47 @@ export async function runScanCommand(
   });
 
   // --compare baseline.json — filter the report's findings down to
-  // only those that are NEW vs the baseline. The summary delta line
-  // ("+5 new · 2 fixed · 22 unchanged") is appended to console
-  // output via prelude footer; JSON / HTML / markdown then render
-  // the filtered report (which is what CI / PR comments want).
+  // only those that are NEW vs the baseline. Marks the report with
+  // `compare` metadata so JSON / HTML / markdown consumers can tell
+  // they are looking at a delta view, not a full snapshot.
   let compareDelta: { added: number; removed: number; unchanged: number } | null =
     null;
   if (opts.compare) {
     try {
       const raw = await readFile(resolve(opts.compare), 'utf8');
-      const parsed = JSON.parse(raw) as { findings?: Finding[] };
-      const baseline: Finding[] = Array.isArray(parsed.findings)
-        ? parsed.findings
-        : [];
+      const parsed = JSON.parse(raw) as { findings?: unknown };
+      // Validate baseline shape — older versions or mis-saved files
+      // may ship Finding objects missing fields (e.g. `column`),
+      // which would silently produce wrong fingerprints (undefined
+      // serialises to `null` in JSON.stringify, classifying every
+      // current finding as "added"). Drop malformed entries early
+      // and warn the user.
+      const baseline: Finding[] = [];
+      let dropped = 0;
+      if (Array.isArray(parsed.findings)) {
+        for (const f of parsed.findings as unknown[]) {
+          if (
+            f !== null &&
+            typeof f === 'object' &&
+            typeof (f as Finding).ruleId === 'string' &&
+            typeof (f as Finding).file === 'string' &&
+            typeof (f as Finding).line === 'number' &&
+            typeof (f as Finding).column === 'number' &&
+            typeof (f as Finding).snippet === 'string'
+          ) {
+            baseline.push(f as Finding);
+          } else {
+            dropped++;
+          }
+        }
+      }
+      if (dropped > 0) {
+        process.stderr.write(
+          pc.yellow(
+            `warning: --compare baseline had ${dropped} malformed finding(s) (missing ruleId/file/line/column/snippet). Re-generate the baseline with the current vibe-hardening version.\n`,
+          ),
+        );
+      }
       const diff = diffFindings(report.findings, baseline);
       compareDelta = {
         added: diff.added.length,
@@ -248,16 +276,25 @@ export async function runScanCommand(
         unchanged: diff.unchanged.length,
       };
       // Mutate report in-place so all downstream reporters see the
-      // filtered list. Keep the score / summary as-is (those still
-      // reflect the absolute state of the codebase). The point of
-      // --compare is "what changed in THIS PR" — not "rescore from
-      // scratch ignoring known issues".
+      // filtered list. Keep the score as-is — `score` reflects the
+      // absolute state of the codebase, not "score-of-this-delta".
+      // The point of --compare is "what changed in THIS PR" — not
+      // "pretend known issues don't exist".
       report.findings = diff.added;
-      // Recompute summary counts from the filtered findings so the
-      // header doesn't lie about the displayed list.
       const sev = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
       for (const f of diff.added) sev[f.severity]++;
       report.summary = sev;
+      // Surface the delta in the report metadata so JSON / HTML /
+      // markdown consumers can detect compare-mode without parsing
+      // console output. Without this a CI pipeline reading the JSON
+      // sees `summary.critical = 0` next to `score = 42` and has no
+      // way to tell whether that's "clean repo" or "no regressions".
+      report.compare = {
+        baselinePath: opts.compare,
+        added: diff.added.length,
+        removed: diff.removed.length,
+        unchanged: diff.unchanged.length,
+      };
     } catch (err) {
       process.stderr.write(
         pc.yellow(

@@ -40,6 +40,16 @@ describe('compare: fingerprint', () => {
     ]);
     expect(fps.size).toBe(6);
   });
+
+  it('snippets with separator-like chars do not collide', () => {
+    // A naive delimiter-joined fingerprint would collide these:
+    // `vh-x::a.ts::1::1::b::c` (snippet "b::c") vs.
+    // `vh-x::a.ts::1::1::b::c` (snippet "b" with ::c straddled).
+    // JSON.stringify makes the field boundaries unambiguous.
+    const a = fingerprint(f('vh-x', 'a.ts', 1, 1, 'b::c'));
+    const b = fingerprint(f('vh-x', 'a.ts', 1, 1, 'b'));
+    expect(a).not.toBe(b);
+  });
 });
 
 describe('compare: diffFindings', () => {

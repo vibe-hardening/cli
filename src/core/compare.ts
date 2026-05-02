@@ -14,9 +14,16 @@ import type { Finding } from './types.js';
  * "removed + added", which over-counts. Acceptable trade-off vs.
  * the alternative of fingerprinting only by content (which would
  * mis-merge two different findings of the same kind).
+ *
+ * Uses `JSON.stringify` over a tuple (rather than a delimiter-
+ * joined string) so that any `::`, `\n`, or quote characters that
+ * naturally appear in snippets / file paths can't collide between
+ * fields. The string `["x","y"]` and `["x","y"]` collide iff the
+ * arrays were equal. The string `["x","y::z"]` and `["x::y","z"]`
+ * never collide.
  */
 export function fingerprint(f: Finding): string {
-  return `${f.ruleId}::${f.file}::${f.line}::${f.column}::${f.snippet}`;
+  return JSON.stringify([f.ruleId, f.file, f.line, f.column, f.snippet]);
 }
 
 export interface FindingsDiff {

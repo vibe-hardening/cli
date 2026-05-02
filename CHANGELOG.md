@@ -7,6 +7,26 @@ pre-1.0; everything is currently shipped under the npm `preview` tag.
 
 The PH launch is targeted for **2026-05-13 14:00 UTC**.
 
+## [0.0.20-preview.0] — 2026-05-02
+
+### Fixed (post-review)
+- `fingerprint()` switched from `::`-joined string to
+  `JSON.stringify` of the field tuple, eliminating a HIGH-severity
+  collision class where snippets containing `::` (common in TS
+  generic types) could match findings with different field
+  boundaries. Test added.
+- `--compare` mode now writes `report.compare` metadata
+  (`baselinePath`, `added`, `removed`, `unchanged`) to JSON output
+  so CI consumers can detect delta-mode without parsing console
+  output. Markdown reporter also emits a `Δ vs baseline` marker at
+  the top of the report. Previously `summary.critical = 0` next to
+  a non-zero `score` looked contradictory in JSON without context.
+- `--compare` validates baseline shape — drops malformed Finding
+  objects that lack `ruleId` / `file` / `line` / `column` /
+  `snippet`, with a stderr warning. Prevents silent
+  classify-everything-as-added when an old baseline file shape
+  drifts from the current Finding schema.
+
 ## [0.0.19-preview.0] — 2026-05-02
 
 ### Added

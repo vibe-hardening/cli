@@ -73,6 +73,20 @@ export function renderMarkdown(report: ScanReport, version: string): string {
   );
   lines.push('');
 
+  // Delta marker — when compare-mode, prepend an explicit notice so
+  // a reader pasting the report into a PR comment sees immediately
+  // that findings/summary are filtered.
+  if (report.compare) {
+    lines.push(
+      `> **Δ vs baseline** \`${report.compare.baselinePath}\` — ` +
+        `**+${report.compare.added} new** · ` +
+        `**-${report.compare.removed} fixed** · ` +
+        `${report.compare.unchanged} unchanged. ` +
+        `Findings below show only what changed; score reflects absolute state.`,
+    );
+    lines.push('');
+  }
+
   if (report.platform.platform !== 'unknown') {
     const pct = Math.round(report.platform.confidence * 100);
     lines.push(

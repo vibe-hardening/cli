@@ -49,6 +49,19 @@ export interface ScanReport {
   durationMs: number;
   platform: PlatformFingerprint;
   score: ScoreBreakdown;
+  /**
+   * Set when `--compare <baseline>` was used. Marks the report as a
+   * delta view rather than a full snapshot. Without this, downstream
+   * consumers couldn't tell that `findings` / `summary` reflect only
+   * NEW issues since the baseline while `score` still reflects the
+   * absolute state of the codebase. Absent on full scans.
+   */
+  compare?: {
+    baselinePath: string;
+    added: number;
+    removed: number;
+    unchanged: number;
+  };
 }
 
 export interface ScanOptions {
