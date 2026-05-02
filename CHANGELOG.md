@@ -6,6 +6,16 @@ keeps each entry tight enough to read in one breath.
 
 The PH launch is targeted for **2026-05-13 14:00 UTC**.
 
+## [0.1.2] — 2026-05-02
+
+### Added
+- `VIBE_DEMO_DELAY` now also paces the **console body** (findings
+  list, suggest-fix block) line-by-line, not just the prelude
+  milestones. With `VIBE_DEMO_DELAY=300` the per-line delay scales
+  to 75 ms (1/4 of the milestone delay) so findings scroll out
+  with a visible reveal cadence instead of a single-frame burst.
+  Clamped 20–200 ms. TTY-only (CI / piped output unaffected).
+
 ## [0.1.1] — 2026-05-02
 
 ### Added

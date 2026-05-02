@@ -22,6 +22,39 @@ import {
 } from '../reporters/scan-prelude.js';
 
 const VALID_FORMATS = new Set(['console', 'json', 'html', 'markdown']);
+
+/**
+ * Demo-mode line pacing for the console body (findings list,
+ * suggest-fix block). Reuses the same `VIBE_DEMO_DELAY` env var that
+ * scan-prelude reads. Scales the per-milestone delay down by 4× so
+ * a 300 ms prelude cadence gives a 75 ms per-line scroll — fast
+ * enough to read but with visible reveal animation suitable for
+ * screencasts.
+ */
+const BODY_LINE_DELAY_MS = (() => {
+  const raw = process.env.VIBE_DEMO_DELAY;
+  if (!raw) return 0;
+  const n = parseInt(raw, 10);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.max(20, Math.min(200, Math.round(n / 4)));
+})();
+
+function writeStdoutPaced(out: string): void {
+  if (BODY_LINE_DELAY_MS <= 0 || !process.stdout.isTTY) {
+    process.stdout.write(out);
+    return;
+  }
+  const sab = new SharedArrayBuffer(4);
+  const view = new Int32Array(sab);
+  const lines = out.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i] ?? '';
+    process.stdout.write(i < lines.length - 1 ? line + '\n' : line);
+    if (i < lines.length - 1) {
+      Atomics.wait(view, 0, 0, BODY_LINE_DELAY_MS);
+    }
+  }
+}
 const VALID_SEVERITIES: Severity[] = [
   'critical',
   'high',
@@ -353,7 +386,7 @@ export async function runScanCommand(
     if (opts.output) {
       await writeTo(opts.output, out);
     } else {
-      process.stdout.write(out);
+      writeStdoutPaced(out);
       // --suggest-fix appends after the regular report so the user
       // sees the findings list first, then the actionable patches.
       // Suppressed when output is redirected to a file (`-o foo.txt`)
@@ -361,7 +394,7 @@ export async function runScanCommand(
       if (opts.suggestFix) {
         const suggestions = generateSuggestions(report.findings, files);
         if (suggestions.length > 0) {
-          process.stdout.write(renderSuggestFix(suggestions));
+          writeStdoutPaced(renderSuggestFix(suggestions));
         }
       }
     }
