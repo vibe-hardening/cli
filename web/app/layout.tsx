@@ -61,11 +61,28 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Pre-paint theme script. Reads localStorage synchronously before
+  // first paint and applies `data-theme="light"` to the root if the
+  // user toggled to light on a prior visit. Without this, returning
+  // light-mode visitors see a dark flash before hydration runs.
+  // Wrapped in a try/catch so private-mode browsers (where
+  // localStorage throws on access) never block rendering.
+  const prePaintTheme = `
+    try {
+      var t = localStorage.getItem('vh-theme');
+      if (t === 'light') document.documentElement.dataset.theme = 'light';
+    } catch (e) {}
+  `;
+
   return (
     <html
       lang="en"
       className={`${mono.variable} ${display.variable} ${displayZh.variable} ${serif.variable}`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: prePaintTheme }} />
+      </head>
       <body className="scanlines noise">{children}</body>
     </html>
   );

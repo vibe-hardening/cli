@@ -10,6 +10,14 @@
   --color-green: #4af626;
   --color-amber: #e9a23b;
 
+  /* Theme-aware background for elevated surfaces (terminals, panels).
+     Default value is the dark-mode rgba over a near-black bg; light
+     theme overrides this to a faint gray so terminal blocks still
+     read as "panels" without a black box on white. */
+  --color-bg-elevated: rgba(0, 0, 0, 0.55);
+  --color-fg-soft: rgba(234, 234, 234, 0.78);
+  --color-fg-shadow: rgba(234, 234, 234, 0.4);
+
   --font-display: var(--font-display-loaded), 'Archivo Black', ui-sans-serif,
     system-ui, sans-serif;
   --font-display-zh: var(--font-display-zh-loaded), 'Noto Sans TC',
@@ -194,7 +202,7 @@
     box-shadow:
       14px -22px 0 var(--color-green),
       -30px 16px 0 var(--color-red),
-      40px 8px 0 rgba(234, 234, 234, 0.4);
+      40px 8px 0 var(--color-fg-shadow);
   }
   @keyframes sweep {
     to {
@@ -226,7 +234,7 @@
   /* ─── Terminal window ────────────────────────────────── */
   .vh-term {
     border: 1px solid var(--color-line);
-    background: rgba(0, 0, 0, 0.55);
+    background: var(--color-bg-elevated);
     font-family: var(--font-mono);
   }
   .vh-term-head {
@@ -265,7 +273,7 @@
     color: var(--color-dim);
   }
   .vh-term-body .info {
-    color: rgba(234, 234, 234, 0.78);
+    color: var(--color-fg-soft);
   }
   .vh-term-body .score-f {
     background: var(--color-fg);
@@ -328,4 +336,45 @@
   .vh-hot:hover {
     color: var(--color-fg);
   }
+}
+
+/* ─── Light theme override ────────────────────────────────────────
+   Activated when the root element has `data-theme="light"`. The
+   inline pre-paint script in layout.tsx reads localStorage and sets
+   the attribute before first paint, so users who toggled to light
+   on a previous visit don't see a flash of dark.
+
+   Colour choices: not pure white / pure black for legibility.
+   Red shifts slightly darker to keep contrast against the off-white
+   background. Greens / ambers also shift toward a more saturated
+   shade that reads correctly on light. */
+:root[data-theme='light'] {
+  --color-bg: #fafafa;
+  --color-fg: #1a1a1a;
+  --color-dim: #6e6e6e;
+  --color-line: #d4d4d4;
+  --color-red: #d62828;
+  --color-red-deep: #b51d1d;
+  --color-green: #16a34a;
+  --color-amber: #c47b00;
+
+  --color-bg-elevated: rgba(0, 0, 0, 0.04);
+  --color-fg-soft: rgba(26, 26, 26, 0.74);
+  --color-fg-shadow: rgba(26, 26, 26, 0.45);
+}
+
+/* The white-noise scanline overlay (`rgba(255,255,255,...)` mix-blend
+   `overlay`) over a dark canvas reads as a faint highlight; over a
+   light canvas it darkens random pixels and creates a dirty-screen
+   effect. Disable in light mode — the editorial feel is cleaner
+   without it. */
+:root[data-theme='light'] .scanlines::before {
+  display: none;
+}
+
+/* Selection on light bg: keep red highlight, but text stays bg
+   colour so it doesn't disappear into the highlight. */
+:root[data-theme='light'] ::selection {
+  background: var(--color-red);
+  color: var(--color-bg);
 }

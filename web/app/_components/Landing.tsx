@@ -1,6 +1,7 @@
 import type { Locale } from '../_lib/strings';
 import { strings } from '../_lib/strings';
 import { LiveTerminal } from './LiveTerminal';
+import { ThemeToggle } from './ThemeToggle';
 
 const TIME_TICKS = ['0000', '0100', '0200', '0300', '0400', '0500'];
 
@@ -45,6 +46,7 @@ export function Landing({ locale }: { locale: Locale }) {
             >
               {t.nav.langOther}
             </a>
+            <ThemeToggle />
           </div>
         </div>
       </nav>
