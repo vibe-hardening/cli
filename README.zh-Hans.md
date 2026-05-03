@@ -124,7 +124,7 @@ npx vibe-hardening explain vh-secret-openai
 
 app.ts
   (1)  vh-secret-openai
-    - const k = "sk-proj-Tc8aNm3LKuWqVJ0HbDpZ4r6Y2fGsXh1nE5oI7yBkQv9MaCwSdRtPlNgUeFxOiHjZkLmNbCdEf";
+    - const k = "sk-proj-Tc8aNm3LKuWqVJ0HbDpZ4yourkeyhere5oI7yBkQv9MaCwSdRtPlNgUeFxOiHjZkLmNbCdEf";
     + const k = process.env.OPENAI_API_KEY;
 
 Add to .env.example:

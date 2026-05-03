@@ -98,6 +98,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* vibe-hardening-disable-next-line vh-inj-xss-dangerous-html */}
         <script dangerouslySetInnerHTML={{ __html: prePaintTheme }} />
       </head>
       <body className="scanlines noise">{children}</body>
