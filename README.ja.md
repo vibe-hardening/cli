@@ -38,9 +38,9 @@ npx vibe-hardening scan
 
 ## 何を検出するか
 
-**対応言語**: JavaScript / TypeScript / **Python** (Django / Flask / FastAPI).
+**対応言語**: JavaScript / TypeScript / **Python** (Django / Flask / FastAPI) / **Go** / **Rust**.
 
-48のルール、9カテゴリー。**v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** が生成したリポジトリ向けに調整されています。
+74のルール、4言語、9カテゴリー。**v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** が生成したリポジトリ向けに調整されています。
 
 | カテゴリー | 例 |
 |-----------|-----|
@@ -218,6 +218,35 @@ npx vibe-hardening badge -o .github/vibe-hardening.svg
 
 main ブランチマージ後に再生成して最新状態を保ちます。SVG は約 500 バイト、ランタイム不要、GitHub でネイティブ描画されます。
 
+## テレメトリ（opt-in）
+
+vibe-hardening はあなたのマシン上で動作します。コード、シークレット、ファイルパスはノートPCから出ません。最初の対話的スキャン後、CLI が**一度だけ**匿名統計の共有を尋ねます。これによりどのルールに改善が必要かを判断できます：
+
+```
+▲ vibe-hardening · first run — help us harden the rules
+
+  We collect: rule IDs that fired, AI platform fingerprint,
+              CLI version, scan duration, file count, score, anon UUID.
+  We never  : your code, secrets, file names, paths, IP, email.
+
+  Opt in later:    vibe-hardening config set telemetry on
+  Privacy:         https://vibe-hardening.io/privacy
+
+  Share anonymous scan stats? [y/N]
+```
+
+デフォルトは **No** —— 明示的に `y` / `yes` を入力した場合のみ opt-in されます。いつでも変更可能：
+
+```bash
+vibe-hardening config show              # 現在の設定と保存場所
+vibe-hardening config set telemetry on  # opt-in（永続化）
+vibe-hardening config set telemetry off # opt-out（永続化）
+```
+
+**ユニバーサル opt-out が常に優先**（local 設定が on でも）：`DO_NOT_TRACK=1`、`CI=1`、`VH_TELEMETRY_DISABLED=1`、`VH_TELEMETRY=off`。
+
+完全なスキーマ、保持期間、ソースコードの根拠：<https://vibe-hardening.io/privacy>。
+
 ## プラットフォーム指紋検出
 
 スキャン開始時にリポジトリがどのAIで生成されたかを識別します：
@@ -233,10 +262,11 @@ platform  v0  (74% confidence)
 
 プレビューリリース — Phase 1 MVPは **2026-05-13** にProduct Huntでのローンチを目標としています。
 
-現在のカバレッジ (`v0.0.13-preview.0`):
-- 対応言語: JavaScript / TypeScript / Python (Django、Flask、FastAPI)
+現在のカバレッジ (`v0.3.0`):
+- 対応言語: JavaScript / TypeScript / Python (Django、Flask、FastAPI) / **Go** / **Rust**
 - 6つのエンジン: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM幻覚
-- 48のルール、267のテスト、一般的なリポジトリを5秒以内にスキャン
+- **74のルール、342のテスト**、一般的なリポジトリを5秒以内にスキャン
+- **opt-in 匿名テレメトリ**（デフォルト無効、環境変数で永久無効化可能）
 - 8 プロバイダーのライブキー検証 (OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion、Gemini)
 - LIVE KEY ごとに推定被害額を併記 (9 プロバイダー、Twilio 含む)
 - 出力形式: カラーターミナル、CI用JSON、スタンドアロンHTMLレポート

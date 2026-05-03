@@ -20,6 +20,11 @@ import {
   preludeFooter,
   RULE_COUNT_LINE,
 } from '../reporters/scan-prelude.js';
+import {
+  ensureConfig,
+  buildEvent,
+  postEvent,
+} from '../core/telemetry.js';
 
 const VALID_FORMATS = new Set(['console', 'json', 'html', 'markdown']);
 
@@ -142,6 +147,15 @@ export async function runScanCommand(
     opts.format === 'console' &&
     !opts.output &&
     process.stdout.isTTY === true;
+
+  // Telemetry first-run prompt fires here, BEFORE the prelude header,
+  // so the disclosure copy isn't visually competing with the brutalist
+  // scan banner. `interactive` matches `preludeEnabled` — non-TTY /
+  // piped / JSON output runs return null and skip the prompt entirely
+  // (next interactive run will prompt fresh). DO_NOT_TRACK / CI /
+  // VH_TELEMETRY=off short-circuit too — see telemetry.ts.
+  const telemetryConfig = await ensureConfig({ interactive: preludeEnabled });
+
   const prelude = createPrelude({ enabled: preludeEnabled });
   preludeHeader(prelude);
 
@@ -259,6 +273,31 @@ export async function runScanCommand(
       process.stderr.write(`${pc.yellow('warning:')} ${msg}\n`);
     },
   });
+
+  // Kick off telemetry POST in parallel with the report rendering
+  // below — the 1.5 s timeout inside postEvent then mostly hides
+  // behind the time spent rendering / writing files. Snapshot is
+  // taken from the un-mutated report (before any --compare delta
+  // shrinks `report.findings`), so rules_fired reflects the full
+  // codebase state, not just a PR delta.
+  const telemetryPromise =
+    telemetryConfig?.enabled
+      ? postEvent(
+          buildEvent({
+            config: telemetryConfig,
+            report,
+            vhVersion: opts.version,
+          }),
+        )
+      : Promise.resolve();
+
+  // ---------------------------------------------------------------
+  // ⚠ TELEMETRY ORDERING: the --compare block below mutates
+  // `report.findings` and `report.summary` in place. The
+  // `telemetryPromise` above MUST be assigned before this point so
+  // the snapshotted `rules_fired` reflects the full scan, not a
+  // PR delta. If you reorder, the buildEvent call must move with it.
+  // ---------------------------------------------------------------
 
   // --compare baseline.json — filter the report's findings down to
   // only those that are NEW vs the baseline. Marks the report with
@@ -399,6 +438,11 @@ export async function runScanCommand(
       }
     }
   }
+
+  // Wait for the in-flight telemetry POST (fired in parallel above) to
+  // complete or hit its 1.5 s abort. Without this, cli.ts's
+  // process.exit would kill the fetch before the body flushes.
+  await telemetryPromise;
 
   return report.summary.critical + report.summary.high > 0 ? 1 : 0;
 }

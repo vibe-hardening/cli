@@ -6,6 +6,52 @@ keeps each entry tight enough to read in one breath.
 
 The PH launch is targeted for **2026-05-13 14:00 UTC**.
 
+## [0.3.0] — 2026-05-03
+
+### Added
+- **Telemetry — opt-in, anonymous, kill-switchable.** Indie tools have
+  no sales reps and no support tickets — logs are the only ear into
+  what users actually run. This release adds a tightly-scoped
+  telemetry layer that:
+  - Defaults to **OFF** for fresh installs. Asks once on the first
+    interactive scan with explicit `[y/N]` (default-no, requires
+    affirmative `y` / `yes` to opt in).
+  - Honours `DO_NOT_TRACK`, `CI`, `VH_TELEMETRY_DISABLED`, and the
+    explicit `VH_TELEMETRY=off` form — privacy/CI signals beat the
+    per-tool config every time.
+  - Sends only: rule-IDs that fired (counts), AI platform fingerprint
+    (`cursor` / `lovable` / etc. — public labels), CLI version, scan
+    duration, file count, score/grade, anonymous UUID, OS, Node
+    version. **Never:** code, secrets, file names, paths, IP, email.
+- `vibe-hardening config show / get telemetry / set telemetry on|off`
+  subcommand for managing the local config (`$XDG_CONFIG_HOME/vibe-hardening/config.json`
+  or `%APPDATA%\vibe-hardening\config.json` on Windows).
+- Atomic config write via tmp-file + rename so a crash mid-write
+  cannot leave a torn `config.json`. Config file is written with
+  mode `0o600`.
+
+### Security hardening
+- `VH_TELEMETRY_ENDPOINT` env var override (for self-hosted runs)
+  is now URL-validated: must be `https://`, hostname must match a
+  domain pattern (rejects IP literals, `localhost`, IPv6 `[::1]`,
+  any URL with userinfo). Anything malformed silently falls back to
+  the default endpoint. Closes a theoretical SSRF surface where a
+  malicious wrapper could redirect telemetry to `169.254.169.254/`
+  or an internal corp service.
+- Empty stdin in the first-run prompt now resolves to **opt-out**
+  rather than the historical readline default-yes — if a future bug
+  ever calls the prompt with closed stdin, the user is never
+  silently opted in.
+- 30 dedicated tests including a strict PII guard (`signals[].source`
+  paths, finding file/snippet/message strings, secrets) and an SSRF
+  battery (http://, IP literals, localhost, IPv6, userinfo, malformed).
+
+This is the **only feature shipping in the D-10 → D+13 launch
+window**. No new rules, no agent / MCP / scorecard / `--fix` /
+`--watch` / VS Code extension. The launch decision is "ship the 74
+rules + 4 languages, then learn from real usage." Without telemetry
+the first 1,500 installs are a black box.
+
 ## [0.2.1] — 2026-05-03
 
 ### Fixed (post-review)

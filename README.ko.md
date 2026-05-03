@@ -38,9 +38,9 @@ npx vibe-hardening scan
 
 ## 무엇을 탐지하나요
 
-**지원 언어**: JavaScript / TypeScript / **Python** (Django / Flask / FastAPI).
+**지원 언어**: JavaScript / TypeScript / **Python** (Django / Flask / FastAPI) / **Go** / **Rust**.
 
-48개 규칙, 9개 카테고리. **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 로 생성된 저장소에 최적화되어 있습니다.
+74개 규칙, 4개 언어, 9개 카테고리. **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 로 생성된 저장소에 최적화되어 있습니다.
 
 | 카테고리 | 예시 |
 |---------|------|
@@ -218,6 +218,35 @@ npx vibe-hardening badge -o .github/vibe-hardening.svg
 
 main 브랜치 머지 후 재생성하여 최신 상태 유지. SVG는 약 500 바이트, 런타임 불필요, GitHub에서 네이티브 렌더링.
 
+## 텔레메트리 (opt-in)
+
+vibe-hardening은 사용자 머신에서 실행됩니다. 코드, 시크릿, 파일 경로 모두 노트북을 떠나지 않습니다. 첫 대화형 스캔 후 CLI는 어떤 규칙이 개선이 필요한지 파악하기 위해 익명 통계 공유 여부를 **한 번만** 묻습니다:
+
+```
+▲ vibe-hardening · first run — help us harden the rules
+
+  We collect: rule IDs that fired, AI platform fingerprint,
+              CLI version, scan duration, file count, score, anon UUID.
+  We never  : your code, secrets, file names, paths, IP, email.
+
+  Opt in later:    vibe-hardening config set telemetry on
+  Privacy:         https://vibe-hardening.io/privacy
+
+  Share anonymous scan stats? [y/N]
+```
+
+기본값은 **아니오** —— `y` / `yes`를 명시적으로 입력해야만 opt-in됩니다. 언제든 변경 가능:
+
+```bash
+vibe-hardening config show              # 현재 설정과 저장 위치
+vibe-hardening config set telemetry on  # opt-in (영구 저장)
+vibe-hardening config set telemetry off # opt-out (영구 저장)
+```
+
+**범용 opt-out이 항상 우선** (로컬 설정이 on이어도): `DO_NOT_TRACK=1`, `CI=1`, `VH_TELEMETRY_DISABLED=1`, `VH_TELEMETRY=off`.
+
+전체 스키마, 보존 기간, 소스 코드 검증: <https://vibe-hardening.io/privacy>.
+
 ## 플랫폼 지문 탐지
 
 스캔 시작 시 repo가 어떤 AI로 생성되었는지 식별합니다:
@@ -233,10 +262,11 @@ platform  v0  (74% confidence)
 
 프리뷰 릴리스 — Phase 1 MVP는 **2026-05-13** Product Hunt 출시가 목표입니다.
 
-현재 커버리지 (`v0.0.13-preview.0`):
-- 지원 언어: JavaScript / TypeScript / Python (Django, Flask, FastAPI)
+현재 커버리지 (`v0.3.0`):
+- 지원 언어: JavaScript / TypeScript / Python (Django, Flask, FastAPI) / **Go** / **Rust**
 - 6개 엔진: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 환각
-- 48개 규칙、267개 테스트、일반적인 repo를 5초 이내에 스캔
+- **74개 규칙、342개 테스트**、일반적인 repo를 5초 이내에 스캔
+- **opt-in 익명 텔레메트리** (기본 비활성화, 환경 변수로 영구 비활성화 가능)
 - 8개 provider 실시간 키 확인 (OpenAI, Anthropic, Stripe, GitHub PAT, Slack, SendGrid, Notion, Gemini)
 - LIVE KEY마다 예상 남용 비용 표시 (9개 provider, Twilio 포함)
 - 출력 형식: 컬러 터미널、CI용 JSON、독립형 HTML 보고서

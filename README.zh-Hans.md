@@ -38,9 +38,9 @@ npx vibe-hardening scan
 
 ## 能检测什么
 
-**支持语言**：JavaScript / TypeScript / **Python**（Django / Flask / FastAPI）。
+**支持语言**：JavaScript / TypeScript / **Python**（Django / Flask / FastAPI）/ **Go** / **Rust**。
 
-48 条规则、9 大类别。针对 **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 生成的仓库做了专门调优。
+74 条规则、4 种语言、9 大类别。针对 **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 生成的仓库做了专门调优。
 
 | 类别 | 示例 |
 |------|------|
@@ -218,6 +218,35 @@ npx vibe-hardening badge -o .github/vibe-hardening.svg
 
 main 分支 merge 后重跑一次保持最新。SVG 约 500 bytes，无 runtime，GitHub 直接原生渲染。
 
+## 遥测（opt-in）
+
+vibe-hardening 在你机器上运行。代码、密钥、文件路径都不会离开你的笔记本。第一次交互式 scan 完成后，CLI 会问你**一次**要不要分享匿名统计，这样我们才能知道哪些规则需要加强：
+
+```
+▲ vibe-hardening · first run — help us harden the rules
+
+  We collect: rule IDs that fired, AI platform fingerprint,
+              CLI version, scan duration, file count, score, anon UUID.
+  We never  : your code, secrets, file names, paths, IP, email.
+
+  Opt in later:    vibe-hardening config set telemetry on
+  Privacy:         https://vibe-hardening.io/privacy
+
+  Share anonymous scan stats? [y/N]
+```
+
+默认是**否** —— 必须明确输入 `y` / `yes` 才会 opt in。可随时修改：
+
+```bash
+vibe-hardening config show              # 查看当前配置和存放位置
+vibe-hardening config set telemetry on  # opt in（持久化）
+vibe-hardening config set telemetry off # opt out（持久化）
+```
+
+**通用 opt-out 永远优先**（即使 local 设为 on 也一样）：`DO_NOT_TRACK=1`、`CI=1`、`VH_TELEMETRY_DISABLED=1`、`VH_TELEMETRY=off`。
+
+完整字段、保留期限、源代码可验证：<https://vibe-hardening.io/privacy>。
+
 ## 平台指纹检测
 
 扫描开始时会先识别仓库由哪家 AI 生成：
@@ -233,10 +262,11 @@ platform  v0  (74% confidence)
 
 预览版 —— Phase 1 MVP 目标 **2026-05-13** 上 Product Hunt。
 
-当前覆盖（`v0.0.13-preview.0`）：
-- 支持语言：JavaScript / TypeScript / Python（Django、Flask、FastAPI）
+当前覆盖（`v0.3.0`）：
+- 支持语言：JavaScript / TypeScript / Python（Django、Flask、FastAPI）/ **Go** / **Rust**
 - 6 个引擎：RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 幻觉
-- 48 条规则、267 个测试、一般仓库 5 秒内扫描完毕
+- **74 条规则、342 个测试**、一般仓库 5 秒内扫描完毕
+- **opt-in 匿名 telemetry**（默认关闭，环境变量可永久禁用）
 - 8 家 provider 实时密钥验证（OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion、Gemini）
 - 每个 LIVE KEY 旁边显示预估滥用成本（9 家 provider，含 Twilio）
 - 输出格式：彩色终端、CI 用 JSON、独立 HTML 报告

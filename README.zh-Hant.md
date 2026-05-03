@@ -38,9 +38,9 @@ npx vibe-hardening scan
 
 ## 能抓到什麼
 
-**支援語言**：JavaScript / TypeScript / **Python**（Django / Flask / FastAPI）。
+**支援語言**：JavaScript / TypeScript / **Python**（Django / Flask / FastAPI）/ **Go** / **Rust**。
 
-48 條規則、9 大類別。針對 **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 這些工具生出來的 repo 調校。
+74 條規則、4 種語言、9 大類別。針對 **v0 / Lovable / Bolt / Cursor / Claude Code / Replit Agent / Windsurf / Devin** 這些工具生出來的 repo 調校。
 
 | 類別 | 例子 |
 |------|------|
@@ -218,6 +218,35 @@ npx vibe-hardening badge -o .github/vibe-hardening.svg
 
 main branch merge 後重跑一次保持最新。SVG 約 500 bytes，無 runtime，GitHub 直接原生 render。
 
+## Telemetry（opt-in）
+
+vibe-hardening 在你機器上跑。程式碼、密鑰、檔案路徑通通不會離開你的筆電。第一次互動式 scan 完，CLI 會問你**一次**要不要分享匿名統計，這樣我們才能知道哪些規則該強化：
+
+```
+▲ vibe-hardening · first run — help us harden the rules
+
+  We collect: rule IDs that fired, AI platform fingerprint,
+              CLI version, scan duration, file count, score, anon UUID.
+  We never  : your code, secrets, file names, paths, IP, email.
+
+  Opt in later:    vibe-hardening config set telemetry on
+  Privacy:         https://vibe-hardening.io/privacy
+
+  Share anonymous scan stats? [y/N]
+```
+
+預設是**否**——只有明確輸入 `y` / `yes` 才會 opt in。隨時可改：
+
+```bash
+vibe-hardening config show              # 看現在的設定跟存放位置
+vibe-hardening config set telemetry on  # opt in（持久）
+vibe-hardening config set telemetry off # opt out（持久）
+```
+
+**通用 opt-out 一律先過**（即使你 local 設 on 也一樣）：`DO_NOT_TRACK=1`、`CI=1`、`VH_TELEMETRY_DISABLED=1`、`VH_TELEMETRY=off`。
+
+完整收集欄位、保存期間、原始碼可驗：<https://vibe-hardening.io/zh/privacy>。
+
 ## 平台指紋偵測
 
 掃描開始時會先認出 repo 是哪家 AI 產的：
@@ -233,10 +262,11 @@ platform  v0  (74% confidence)
 
 預覽版 —— Phase 1 MVP 目標 **2026-05-13** 上 Product Hunt。
 
-目前覆蓋（`v0.0.13-preview.0`）：
-- 支援語言：JavaScript / TypeScript / Python（Django、Flask、FastAPI）
+目前覆蓋（`v0.3.0`）：
+- 支援語言：JavaScript / TypeScript / Python（Django、Flask、FastAPI）/ **Go** / **Rust**
 - 6 個引擎：RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 幻覺
-- 48 條規則、267 個測試、一般 repo 5 秒內掃完
+- **74 條規則、342 個測試**、一般 repo 5 秒內掃完
+- **opt-in 匿名 telemetry**（預設 off，環境變數可永久關）
 - 8 家 provider 即時金鑰驗證（OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion、Gemini）
 - 每個 LIVE KEY 旁邊顯示預估濫用成本（9 家 provider，含 Twilio）
 - 輸出格式：彩色終端機、CI 用 JSON、獨立 HTML 報告

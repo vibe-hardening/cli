@@ -6,6 +6,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import pc from 'picocolors';
 import { runScanCommand } from './commands/scan.js';
 import { runExplainCommand } from './commands/explain.js';
+import { runConfigCommand } from './commands/config.js';
 import type { Severity } from './core/types.js';
 import { walk } from './core/walker.js';
 import { runScan } from './core/scan.js';
@@ -58,6 +59,7 @@ export function buildProgram(): Command {
         `  ${pc.dim('$')} npx vibe-hardening scan --format markdown -o report.md`,
         `  ${pc.dim('$')} npx vibe-hardening explain vh-secret-openai`,
         `  ${pc.dim('$')} npx vibe-hardening badge -o badge.svg`,
+        `  ${pc.dim('$')} npx vibe-hardening config set telemetry off`,
         '',
         `${pc.dim('Docs:')}  ${pc.cyan('https://github.com/vibe-hardening/cli')}`,
         `${pc.dim('Marketplace:')}  ${pc.cyan('https://github.com/marketplace/actions/vibe-hardening')}`,
@@ -183,6 +185,39 @@ export function buildProgram(): Command {
       // Use process.exitCode rather than process.exit() so Node has
       // a chance to drain any pending fetch sockets — calling exit()
       // mid-cleanup triggers a libuv assertion on Windows.
+      process.exitCode = code;
+    });
+
+  // `config` is a tiny subcommand group — only telemetry is configurable
+  // today. Everything else stays as flags so configuration drift between
+  // runs is impossible to introduce by accident.
+  const configCmd = program
+    .command('config')
+    .description(
+      'Manage local config (telemetry opt-in). Stored in $XDG_CONFIG_HOME/vibe-hardening/config.json (or %APPDATA% on Windows).',
+    );
+
+  configCmd
+    .command('show')
+    .description('Show current config and where it lives')
+    .action(async () => {
+      const code = await runConfigCommand({ kind: 'show' });
+      process.exitCode = code;
+    });
+
+  configCmd
+    .command('get <key>')
+    .description('Print a config value (e.g. `get telemetry`)')
+    .action(async (key: string) => {
+      const code = await runConfigCommand({ kind: 'get', key });
+      process.exitCode = code;
+    });
+
+  configCmd
+    .command('set <key> <value>')
+    .description('Set a config value (e.g. `set telemetry off`)')
+    .action(async (key: string, value: string) => {
+      const code = await runConfigCommand({ kind: 'set', key, value });
       process.exitCode = code;
     });
 

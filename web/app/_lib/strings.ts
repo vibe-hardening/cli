@@ -99,7 +99,7 @@ export const strings: Record<Locale, Strings> = {
       'vibe-hardening / one-command security scanner for AI-generated code',
     classbar: {
       unit: '▲ VH-001 · FOR THE VIBE CODER ·',
-      rev: 'REV 0.2.1 · CHAN 25',
+      rev: 'REV 0.3.0 · CHAN 25',
       geo: 'LAT 25.03°N · LNG 121.56°E',
       date: '▲ 2026-04-20 ▲',
     },
@@ -218,7 +218,7 @@ export const strings: Record<Locale, Strings> = {
       freeTag: 'CLI · MIT',
       freeTitle: 'Free, forever.',
       freeBody:
-        'Scan any repo. Unlimited runs. Runs locally, data never leaves your machine.',
+        'Scan any repo. Unlimited runs. Your code stays on your machine — only opt-in anonymous stats (rule-IDs that fired, never paths or content).',
       proTag: 'PRO · TEAM SAAS',
       proTitle: 'Per-commit, per-deploy.',
       proBody:
@@ -237,7 +237,7 @@ export const strings: Record<Locale, Strings> = {
         'Optional — what do you want this scanner to catch? what AI tool burned you last? (we read every reply)',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.2.1',
+      brandCopy: '© 2026 · MIT · REV 0.3.0',
       colProductTitle: 'PRODUCT',
       colProductItems: ['CLI', 'GitHub Action', 'Score Badge'],
       colSourceTitle: 'SOURCE',
@@ -245,7 +245,7 @@ export const strings: Record<Locale, Strings> = {
         { label: 'GitHub ↗', href: 'https://github.com/vibe-hardening/cli' },
         { label: 'npm ↗', href: 'https://www.npmjs.com/package/vibe-hardening' },
         { label: 'Marketplace ↗', href: 'https://github.com/marketplace/actions/vibe-hardening' },
-        { label: 'RSS ↗', href: '#' },
+        { label: 'Privacy', href: '/privacy' },
       ],
       colStatusTitle: 'STATUS',
       colStatusItems: ['EXPERIMENTAL', 'EN · 中文', 'VIBE-HARDENING.IO'],
@@ -258,7 +258,7 @@ export const strings: Record<Locale, Strings> = {
     title: 'vibe-hardening｜AI 生成程式碼的一鍵資安掃描工具',
     classbar: {
       unit: '▲ VH-001 · 獻給 VIBE CODER ·',
-      rev: 'REV 0.2.1 · CHAN 25',
+      rev: 'REV 0.3.0 · CHAN 25',
       geo: 'LAT 25.03°N · LNG 121.56°E',
       date: '▲ 2026-04-20 ▲',
     },
@@ -376,7 +376,8 @@ export const strings: Record<Locale, Strings> = {
     pricing: {
       freeTag: 'CLI · MIT',
       freeTitle: '永久免費。',
-      freeBody: '任何 repo 都可掃，不限次數，全程在本機執行，資料不外流。',
+      freeBody:
+        '任何 repo 都可掃、不限次數，程式碼絕不離開你的機器；只有 opt-in 匿名統計（哪些規則觸發、絕不送路徑或內容）。',
       proTag: 'PRO · 團隊版',
       proTitle: '每次 commit，每次 deploy。',
       proBody:
@@ -395,7 +396,7 @@ export const strings: Record<Locale, Strings> = {
         '想說什麼都可以（選填）—— 你希望這個工具能抓到什麼？哪個 AI 工具最近坑過你？我們會看每一封。',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.2.1',
+      brandCopy: '© 2026 · MIT · REV 0.3.0',
       colProductTitle: '產品',
       colProductItems: ['CLI', 'GitHub Action', '分數徽章'],
       colSourceTitle: '原始碼',
@@ -403,7 +404,7 @@ export const strings: Record<Locale, Strings> = {
         { label: 'GitHub ↗', href: 'https://github.com/vibe-hardening/cli' },
         { label: 'npm ↗', href: 'https://www.npmjs.com/package/vibe-hardening' },
         { label: 'Marketplace ↗', href: 'https://github.com/marketplace/actions/vibe-hardening' },
-        { label: 'RSS ↗', href: '#' },
+        { label: '隱私政策', href: '/zh/privacy' },
       ],
       colStatusTitle: '狀態',
       colStatusItems: ['實驗性', 'EN · 中文', 'VIBE-HARDENING.IO'],
