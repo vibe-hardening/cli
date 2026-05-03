@@ -5,6 +5,10 @@ import { NETWORK_RULES } from '../rules/network.js';
 import { AUTH_PATTERN_RULES } from '../rules/auth-patterns.js';
 import { PYTHON_AUTH_RULES } from '../rules/python-auth.js';
 import { PYTHON_INJECTION_RULES } from '../rules/python-injection.js';
+import { GO_INJECTION_RULES } from '../rules/go-injection.js';
+import { GO_AUTH_RULES } from '../rules/go-auth.js';
+import { RUST_INJECTION_RULES } from '../rules/rust-injection.js';
+import { RUST_AUTH_RULES } from '../rules/rust-auth.js';
 import { ABUSE_COSTS } from '../reporters/abuse-costs.js';
 import { ENV_VAR_FOR_RULE } from '../fix/suggestions.js';
 import { fetchOsvAdvisory, severityLabel } from '../engines/osv-fetch.js';
@@ -102,6 +106,10 @@ function buildLookup(): Map<string, RuleEntry> {
     ...AUTH_PATTERN_RULES,
     ...PYTHON_AUTH_RULES,
     ...PYTHON_INJECTION_RULES,
+    ...GO_INJECTION_RULES,
+    ...GO_AUTH_RULES,
+    ...RUST_INJECTION_RULES,
+    ...RUST_AUTH_RULES,
   ];
   for (const r of allSecretRules) {
     map.set(r.id, {

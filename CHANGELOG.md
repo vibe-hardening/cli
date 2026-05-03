@@ -6,6 +6,40 @@ keeps each entry tight enough to read in one breath.
 
 The PH launch is targeted for **2026-05-13 14:00 UTC**.
 
+## [0.2.1] — 2026-05-03
+
+### Fixed (post-review)
+- `vh-go-cookie-no-secure` was using `disallowSubstrings: ['Secure: true', 'HttpOnly: true']` which the engine evaluates with `.some()`, suppressing the finding when EITHER flag was present. Result: a cookie set with only `Secure: true` (missing `HttpOnly`) was silently passed — exactly the partially-hardened case the rule should catch. Split into **`vh-go-cookie-missing-secure`** + **`vh-go-cookie-missing-httponly`** so each missing flag is reported independently. Total rule count → 74.
+- `vh-rs-inj-cmd-format` regex used `[^;]*` between `Command::new(...)` and `.arg(...)` calls, which spans newlines. On a file with multiple `Command` instantiations the regex could match across unrelated statements (false positive). Tightened to require the chain be directly chained (only whitespace between calls).
+- `vh-rs-inj-unwrap-user-input` had unbounded `[^;{}\n]*` between `req.` and `.unwrap()`, allowing a stray match to span long expressions. Bounded to 1–120 characters so a `req.something` and an unrelated `.unwrap()` later in the same line cannot collide.
+
+## [0.2.0] — 2026-05-03
+
+### Added
+- **Go** support — 12 new rules across injection (SQL concat / Sprintf,
+  `exec.Command sh -c` shell injection, path traversal, `template.HTML`
+  user input cast) and auth/config (`InsecureSkipVerify: true`,
+  `jwt.Parse` callback without alg check, bcrypt cost < 10, `bytes.Equal`
+  on HMAC, `math/rand` for tokens, `http.ListenAndServe` no timeouts,
+  cookie without Secure/HttpOnly).
+- **Rust** support — 10 new rules across injection (SQL via `format!()`,
+  `Command::new("sh").arg("-c").arg(format!())`, `.unwrap()` on
+  request-derived input → DoS, fs operations on user paths, reqwest
+  with user-controlled URL → SSRF) and auth/crypto
+  (`danger_accept_invalid_certs(true)`, `jsonwebtoken::decode` with
+  `Validation::default()`, bcrypt cost < 10, `==` on byte slices for
+  HMAC, `rand::random` for security tokens).
+- 22 new roast lines so `--roast` mode covers Go / Rust findings too.
+- `vh explain vh-go-X` / `vh explain vh-rs-X` works for every new rule.
+- Walker `DEFAULT_INCLUDE` extended to `.go` and `.rs` files.
+- `RULE_COUNT_LINE` bumped 51 → **73 rules across 4 languages**.
+
+This is the largest single shipment of detection coverage so far. The
+positioning shift: from "TS/JS scanner with Python on the side" to
+"4-language deterministic linter for AI-generated code". Aligns with
+launch demographics — Cursor / Claude Code users frequently write
+Go (backend / CLI) and Rust (Tauri / blockchain / systems).
+
 ## [0.1.2] — 2026-05-02
 
 ### Added

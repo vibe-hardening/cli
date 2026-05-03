@@ -12,6 +12,10 @@ import { NETWORK_RULES } from '../src/rules/network.js';
 import { AUTH_PATTERN_RULES } from '../src/rules/auth-patterns.js';
 import { PYTHON_INJECTION_RULES } from '../src/rules/python-injection.js';
 import { PYTHON_AUTH_RULES } from '../src/rules/python-auth.js';
+import { GO_INJECTION_RULES } from '../src/rules/go-injection.js';
+import { GO_AUTH_RULES } from '../src/rules/go-auth.js';
+import { RUST_INJECTION_RULES } from '../src/rules/rust-injection.js';
+import { RUST_AUTH_RULES } from '../src/rules/rust-auth.js';
 
 function captureBuffer(): [(s: string) => void, () => string] {
   const chunks: string[] = [];
@@ -113,6 +117,10 @@ describe('scan-prelude: RULE_COUNT_LINE accuracy', () => {
       AUTH_PATTERN_RULES.length +
       PYTHON_INJECTION_RULES.length +
       PYTHON_AUTH_RULES.length +
+      GO_INJECTION_RULES.length +
+      GO_AUTH_RULES.length +
+      RUST_INJECTION_RULES.length +
+      RUST_AUTH_RULES.length +
       ENGINE_RULES;
 
     // Extract the number from `loading N rules · M categories`

@@ -144,6 +144,60 @@ export const ROAST_MESSAGES: Record<string, string> = {
     'Hardcoded password in Python. Someday, someone will grep for this.',
   'vh-py-django-csrf-exempt':
     '@csrf_exempt on a state-changing route. CSRF protection politely excused itself.',
+
+  // ── Go (src/rules/go-injection.ts) ──
+  'vh-go-inj-sql-concat':
+    'SQL built with `+ userInput`. Welcome back to PHP 2003.',
+  'vh-go-inj-sql-sprintf':
+    'fmt.Sprintf into a SQL query. The driver had ONE job.',
+  'vh-go-inj-cmd-exec':
+    'exec.Command("sh","-c", + userInput). You wrote a remote shell with extra steps.',
+  'vh-go-inj-path-traversal':
+    'os.Open with concatenated user path. /etc/passwd is one `..` away.',
+  'vh-go-inj-template-html-user':
+    'template.HTML(userInput). The "dangerously" was ALSO not a suggestion in Go.',
+
+  // ── Go (src/rules/go-auth.ts) ──
+  'vh-go-tls-skip-verify':
+    'InsecureSkipVerify: true. Now every coffee shop wifi is your CA.',
+  'vh-go-jwt-alg-none':
+    "jwt.Parse callback returns the key without checking token.Method. alg='none' tokens walk right in.",
+  'vh-go-bcrypt-low-cost':
+    'bcrypt cost < 10 in Go. A used GPU on eBay cracks this over lunch — same as the JS version.',
+  'vh-go-hmac-not-timing-safe':
+    'bytes.Equal on HMAC. Timing attack speed-runners thank you.',
+  'vh-go-insecure-random-token':
+    'math/rand for tokens. Predictable session IDs, ship it.',
+  'vh-go-http-no-timeout':
+    'http.ListenAndServe with no timeouts. Slowloris is a feature now.',
+  'vh-go-cookie-missing-secure':
+    'Session cookie without Secure: true. Welcome back to plain HTTP credential leakage.',
+  'vh-go-cookie-missing-httponly':
+    'Session cookie without HttpOnly: true. Every XSS is a session hijack.',
+
+  // ── Rust (src/rules/rust-injection.ts) ──
+  'vh-rs-inj-sql-format':
+    'format!() into sqlx::query. The compile-time check was the WHOLE point of sqlx.',
+  'vh-rs-inj-cmd-format':
+    'Command::new("sh").arg("-c").arg(format!(...)). Even Rust can\'t save you from yourself.',
+  'vh-rs-inj-unwrap-user-input':
+    '.unwrap() on req body. One malformed POST and the whole service panics. You wrote a DoS.',
+  'vh-rs-inj-path-user':
+    'std::fs path with user input. The borrow checker is fine, your filesystem is not.',
+  'vh-rs-inj-ssrf-fetch-user':
+    'reqwest::get(req.body). 169.254.169.254 is calling, it wants your AWS credentials.',
+
+  // ── Rust (src/rules/rust-auth.ts) ──
+  'vh-rs-tls-no-verify':
+    'danger_accept_invalid_certs(true). The function name LITERALLY warned you.',
+  'vh-rs-jwt-alg-none':
+    'jsonwebtoken::decode with Validation::default(). alg=none speedrun any%.',
+  'vh-rs-bcrypt-low-cost':
+    'bcrypt::hash(pwd, 4). Same brain damage in three languages now.',
+  'vh-rs-hmac-not-timing-safe':
+    '== on byte slices for HMAC. subtle::ConstantTimeEq is right there.',
+  'vh-rs-insecure-random-token':
+    'rand::random() for a session token. Mersenne Twister: the password manager you didn\'t want.',
 };
 
 export const ROAST_GRADE_LINES: Record<Grade, string> = {

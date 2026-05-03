@@ -99,7 +99,7 @@ export const strings: Record<Locale, Strings> = {
       'vibe-hardening / one-command security scanner for AI-generated code',
     classbar: {
       unit: '▲ VH-001 · FOR THE VIBE CODER ·',
-      rev: 'REV 0.1.2 · CHAN 23',
+      rev: 'REV 0.2.1 · CHAN 25',
       geo: 'LAT 25.03°N · LNG 121.56°E',
       date: '▲ 2026-04-20 ▲',
     },
@@ -147,7 +147,7 @@ export const strings: Record<Locale, Strings> = {
     },
     features: {
       label1: 'What it checks —',
-      label2: '51 rules across 9 categories.',
+      label2: '74 rules across 4 languages (TS/JS, Python, Go, Rust).',
       items: [
         {
           code: 'SEC-01',
@@ -237,7 +237,7 @@ export const strings: Record<Locale, Strings> = {
         'Optional — what do you want this scanner to catch? what AI tool burned you last? (we read every reply)',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.1.2',
+      brandCopy: '© 2026 · MIT · REV 0.2.1',
       colProductTitle: 'PRODUCT',
       colProductItems: ['CLI', 'GitHub Action', 'Score Badge'],
       colSourceTitle: 'SOURCE',
@@ -258,7 +258,7 @@ export const strings: Record<Locale, Strings> = {
     title: 'vibe-hardening｜AI 生成程式碼的一鍵資安掃描工具',
     classbar: {
       unit: '▲ VH-001 · 獻給 VIBE CODER ·',
-      rev: 'REV 0.1.2 · CHAN 23',
+      rev: 'REV 0.2.1 · CHAN 25',
       geo: 'LAT 25.03°N · LNG 121.56°E',
       date: '▲ 2026-04-20 ▲',
     },
@@ -306,7 +306,7 @@ export const strings: Record<Locale, Strings> = {
     },
     features: {
       label1: '我們檢查什麼 —',
-      label2: '9 類別共 51 條規則。',
+      label2: '4 種語言共 74 條規則（TS/JS、Python、Go、Rust）。',
       items: [
         {
           code: 'SEC-01',
@@ -395,7 +395,7 @@ export const strings: Record<Locale, Strings> = {
         '想說什麼都可以（選填）—— 你希望這個工具能抓到什麼？哪個 AI 工具最近坑過你？我們會看每一封。',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.1.2',
+      brandCopy: '© 2026 · MIT · REV 0.2.1',
       colProductTitle: '產品',
       colProductItems: ['CLI', 'GitHub Action', '分數徽章'],
       colSourceTitle: '原始碼',

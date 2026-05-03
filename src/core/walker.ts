@@ -56,6 +56,8 @@ export const DEFAULT_IGNORES: string[] = [
 export const DEFAULT_INCLUDE: string[] = [
   '**/*.{ts,tsx,js,jsx,mjs,cjs}',
   '**/*.py',
+  '**/*.go',
+  '**/*.rs',
   '**/*.{sql,prisma}',
   '**/*.{json,env,env.local,env.production,env.development}',
   '**/.env*',

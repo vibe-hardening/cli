@@ -18,6 +18,10 @@ import { NETWORK_RULES } from '../rules/network.js';
 import { AUTH_PATTERN_RULES } from '../rules/auth-patterns.js';
 import { PYTHON_INJECTION_RULES } from '../rules/python-injection.js';
 import { PYTHON_AUTH_RULES } from '../rules/python-auth.js';
+import { GO_INJECTION_RULES } from '../rules/go-injection.js';
+import { GO_AUTH_RULES } from '../rules/go-auth.js';
+import { RUST_INJECTION_RULES } from '../rules/rust-injection.js';
+import { RUST_AUTH_RULES } from '../rules/rust-auth.js';
 
 /**
  * Rules are partitioned so we can run them on the right files:
@@ -33,6 +37,8 @@ const NON_SECRET_RULES = [
 ];
 
 const PYTHON_RULES = [...PYTHON_INJECTION_RULES, ...PYTHON_AUTH_RULES];
+const GO_RULES = [...GO_INJECTION_RULES, ...GO_AUTH_RULES];
+const RUST_RULES = [...RUST_INJECTION_RULES, ...RUST_AUTH_RULES];
 
 const SEVERITY_RANK: Record<Severity, number> = {
   critical: 4,
@@ -211,6 +217,8 @@ function runEnginesOnFile(
     'cjs',
   ]);
   const isPython = hasExt(file.path, ['py', 'pyi']);
+  const isGo = hasExt(file.path, ['go']);
+  const isRust = hasExt(file.path, ['rs']);
   const isText =
     hasExt(file.path, ['env', 'yml', 'yaml', 'toml', 'json']) ||
     isEnvFile(file.path) ||
@@ -234,6 +242,20 @@ function runEnginesOnFile(
     // into .py files — re-run those plus the Python-specific set.
     out.push(...scanSecrets(file, SECRET_RULES));
     out.push(...scanSecrets(file, PYTHON_RULES));
+  }
+
+  if (isGo) {
+    // Secrets get pasted into .go files too (env-var defaults,
+    // hardcoded API keys in struct fields). Re-run secret detection
+    // plus the Go-specific injection / auth ruleset.
+    out.push(...scanSecrets(file, SECRET_RULES));
+    out.push(...scanSecrets(file, GO_RULES));
+  }
+
+  if (isRust) {
+    // Same shape as Go — secrets + Rust-specific rules.
+    out.push(...scanSecrets(file, SECRET_RULES));
+    out.push(...scanSecrets(file, RUST_RULES));
   }
 
   if (isText) {

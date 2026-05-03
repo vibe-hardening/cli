@@ -10,6 +10,10 @@ import { NETWORK_RULES } from '../src/rules/network.js';
 import { AUTH_PATTERN_RULES } from '../src/rules/auth-patterns.js';
 import { PYTHON_AUTH_RULES } from '../src/rules/python-auth.js';
 import { PYTHON_INJECTION_RULES } from '../src/rules/python-injection.js';
+import { GO_INJECTION_RULES } from '../src/rules/go-injection.js';
+import { GO_AUTH_RULES } from '../src/rules/go-auth.js';
+import { RUST_INJECTION_RULES } from '../src/rules/rust-injection.js';
+import { RUST_AUTH_RULES } from '../src/rules/rust-auth.js';
 
 function stripAnsi(s: string): string {
   // eslint-disable-next-line no-control-regex
@@ -25,6 +29,10 @@ describe('explain: rule coverage', () => {
       ...AUTH_PATTERN_RULES,
       ...PYTHON_AUTH_RULES,
       ...PYTHON_INJECTION_RULES,
+      ...GO_INJECTION_RULES,
+      ...GO_AUTH_RULES,
+      ...RUST_INJECTION_RULES,
+      ...RUST_AUTH_RULES,
     ].map((r) => r.id);
     const known = new Set(listKnownRuleIds());
     const missing = allShipped.filter((id) => !known.has(id));
