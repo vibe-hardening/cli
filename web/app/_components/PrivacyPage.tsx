@@ -253,8 +253,9 @@ export function PrivacyPage({ locale }: { locale: Locale }) {
                   <p
                     key={j}
                     className="font-[family-name:var(--font-mono)] text-[13.5px] leading-[1.75] tracking-[0.01em] text-[color:var(--color-fg-soft)] max-w-[68ch]"
-                    dangerouslySetInnerHTML={{ __html: renderInlineCode(p) }}
-                  />
+                  >
+                    {renderInlineCode(p)}
+                  </p>
                 ))}
                 {'list' in s && s.list && (
                   <ul className="space-y-2 max-w-[68ch] mt-3 ml-4 list-disc text-[color:var(--color-fg-soft)]">
@@ -262,8 +263,9 @@ export function PrivacyPage({ locale }: { locale: Locale }) {
                       <li
                         key={k}
                         className="font-[family-name:var(--font-mono)] text-[13.5px] leading-[1.7] tracking-[0.01em]"
-                        dangerouslySetInnerHTML={{ __html: renderInlineCode(li) }}
-                      />
+                      >
+                        {renderInlineCode(li)}
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -287,18 +289,28 @@ export function PrivacyPage({ locale }: { locale: Locale }) {
 }
 
 /**
- * Tiny inline-code renderer — turns `\`code\`` into `<code>code</code>`.
- * Privacy copy is authored by us (the strings above are static), so
- * there's no untrusted input. Still, escape `<`/`>`/`&` defensively
- * to prevent any future content from accidentally rendering as markup.
+ * Inline-code renderer — turns `\`code\`` segments into `<code>` JSX
+ * elements. Returns a ReactNode array so it can be rendered as
+ * children of a `<p>` / `<li>`. Avoiding `dangerouslySetInnerHTML`
+ * here is deliberate: vibe-hardening's whole pitch is "don't ship
+ * dangerous APIs in AI-generated code" — the Privacy page can't be
+ * the place we eat it ourselves. React handles all escaping when the
+ * content is rendered as children.
  */
-function renderInlineCode(s: string): string {
-  const escaped = s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-  return escaped.replace(
-    /`([^`]+)`/g,
-    '<code class="font-[family-name:var(--font-mono)] text-[color:var(--color-fg)] bg-[color:var(--color-line)] px-1.5 py-0.5 text-[12px]">$1</code>',
+function renderInlineCode(s: string): React.ReactNode {
+  // String.split with a capture group keeps the matched delimiters in
+  // the output array. Even indices = plain text, odd = code-fenced.
+  const parts = s.split(/`([^`]+)`/g);
+  return parts.map((part, i) =>
+    i % 2 === 0 ? (
+      part
+    ) : (
+      <code
+        key={i}
+        className="font-[family-name:var(--font-mono)] text-[color:var(--color-fg)] bg-[color:var(--color-line)] px-1.5 py-0.5 text-[12px]"
+      >
+        {part}
+      </code>
+    ),
   );
 }
