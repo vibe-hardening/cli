@@ -3,6 +3,8 @@ import { join } from 'node:path';
 import { existsSync, statSync } from 'node:fs';
 import type { AgentDetected, AgentId, AgentScanResult } from './types.js';
 import { applyRuleA } from './rules/a-secrets.js';
+import { applyRuleB } from './rules/b-prompt-injection.js';
+import { applyRuleC } from './rules/c-shell.js';
 
 /**
  * Known-platform shortlist. Each entry is one filesystem check. Most
@@ -114,14 +116,19 @@ export interface RunAgentScanOptions {
  * Orchestrator: detect agents, apply rule packs, aggregate findings.
  *
  * Active rule packs:
- *   - A (secrets) — D2, reuses v1 SECRET_RULES across SKILL.md /
- *     configs / .env / OpenClaw comms
+ *   - A (secrets) — reuses v1 SECRET_RULES across SKILL.md / configs /
+ *     .env / OpenClaw comms
+ *   - B (prompt injection) — scans SKILL.md body + description
+ *   - C (dangerous shell) — scans SKILL.md body + scripts/
  *
- * Pending (D3+):
- *   - B (prompt injection patterns)
- *   - C (dangerous shell)
+ * Pending (D4):
  *   - D (skill schema + body checks)
  *   - G (MCP server config)
+ *
+ * `filesScanned` is the union count across rule packs — when the same
+ * file is read by multiple packs (e.g. SKILL.md by A/B/C), each pack
+ * adds it to its own counter. To avoid inflated numbers we max-over
+ * rather than sum: scanning N skill files reports N, not 3N.
  */
 export async function runAgentScan(
   opts: RunAgentScanOptions,
@@ -138,12 +145,24 @@ export async function runAgentScan(
     };
   }
 
-  const ruleA = await applyRuleA(agentsDetected);
+  // Run rule packs in parallel — they don't share state and each
+  // does its own filesystem walk. Two file reads per SKILL.md
+  // (one by A, one by B+C combined) is acceptable; OS page cache
+  // makes the second read free.
+  const [ruleA, ruleB, ruleC] = await Promise.all([
+    applyRuleA(agentsDetected),
+    applyRuleB(agentsDetected),
+    applyRuleC(agentsDetected),
+  ]);
 
   return {
     agentsDetected,
-    findings: ruleA.findings,
-    filesScanned: ruleA.filesScanned,
+    findings: [...ruleA.findings, ...ruleB.findings, ...ruleC.findings],
+    filesScanned: Math.max(
+      ruleA.filesScanned,
+      ruleB.filesScanned,
+      ruleC.filesScanned,
+    ),
     durationMs: Date.now() - startMs,
   };
 }
