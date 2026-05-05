@@ -99,7 +99,7 @@ export const strings: Record<Locale, Strings> = {
       'vibe-hardening / one-command security scanner for AI-generated code',
     classbar: {
       unit: '▲ VH-001 · FOR THE VIBE CODER ·',
-      rev: 'REV 0.3.0 · CHAN 25',
+      rev: 'REV 0.4.0 · CHAN 25',
       geo: 'LAT 25.03°N · LNG 121.56°E',
       date: '▲ 2026-04-20 ▲',
     },
@@ -147,7 +147,7 @@ export const strings: Record<Locale, Strings> = {
     },
     features: {
       label1: 'What it checks —',
-      label2: '74 rules across 4 languages (TS/JS, Python, Go, Rust).',
+      label2: '74 code rules + 65 agent skill rules. 4 languages, 10 agent platforms.',
       items: [
         {
           code: 'SEC-01',
@@ -163,6 +163,11 @@ export const strings: Record<Locale, Strings> = {
           code: 'KEY-03',
           title: 'Live secret verification',
           body: 'Finds candidate keys in your git history, probes their provider endpoints, and tells you which ones are still live. Not a grep — a phone call.',
+        },
+        {
+          code: 'AGT-04',
+          title: 'Agent skill scanner',
+          body: 'New in 0.4.0. Statically scans skill files for Cursor, Claude Code, OpenClaw, Hermes, Gemini CLI, Goose, and 4 other agent platforms. Catches hardcoded keys, prompt injection, dangerous shell, MCP misconfigs — before the agent loads them.',
         },
       ],
     },
@@ -237,7 +242,7 @@ export const strings: Record<Locale, Strings> = {
         'Optional — what do you want this scanner to catch? what AI tool burned you last? (we read every reply)',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.3.0',
+      brandCopy: '© 2026 · MIT · REV 0.4.0',
       colProductTitle: 'PRODUCT',
       colProductItems: ['CLI', 'GitHub Action', 'Score Badge'],
       colSourceTitle: 'SOURCE',
@@ -258,7 +263,7 @@ export const strings: Record<Locale, Strings> = {
     title: 'vibe-hardening｜AI 生成程式碼的一鍵資安掃描工具',
     classbar: {
       unit: '▲ VH-001 · 獻給 VIBE CODER ·',
-      rev: 'REV 0.3.0 · CHAN 25',
+      rev: 'REV 0.4.0 · CHAN 25',
       geo: 'LAT 25.03°N · LNG 121.56°E',
       date: '▲ 2026-04-20 ▲',
     },
@@ -306,7 +311,7 @@ export const strings: Record<Locale, Strings> = {
     },
     features: {
       label1: '我們檢查什麼 —',
-      label2: '4 種語言共 74 條規則（TS/JS、Python、Go、Rust）。',
+      label2: '74 條 code 規則 + 65 條 agent skill 規則。4 種語言、10 個 agent 平台。',
       items: [
         {
           code: 'SEC-01',
@@ -322,6 +327,11 @@ export const strings: Record<Locale, Strings> = {
           code: 'KEY-03',
           title: '密鑰即時驗證',
           body: '在 git 歷史裡找出候選密鑰，打去上游 provider 驗證，告訴你哪些還活著。不是 grep — 是一通電話。',
+        },
+        {
+          code: 'AGT-04',
+          title: 'Agent skill 掃描器',
+          body: '0.4.0 新增。靜態掃 Cursor、Claude Code、OpenClaw、Hermes、Gemini CLI、Goose 等 10 個 agent 平台的 skill 檔。抓硬編密鑰、prompt injection、危險 shell、MCP 設定異常—— 在 agent 載入之前。',
         },
       ],
     },
@@ -396,7 +406,7 @@ export const strings: Record<Locale, Strings> = {
         '想說什麼都可以（選填）—— 你希望這個工具能抓到什麼？哪個 AI 工具最近坑過你？我們會看每一封。',
     },
     footer: {
-      brandCopy: '© 2026 · MIT · REV 0.3.0',
+      brandCopy: '© 2026 · MIT · REV 0.4.0',
       colProductTitle: '產品',
       colProductItems: ['CLI', 'GitHub Action', '分數徽章'],
       colSourceTitle: '原始碼',

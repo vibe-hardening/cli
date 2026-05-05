@@ -218,6 +218,20 @@ npx vibe-hardening badge -o .github/vibe-hardening.svg
 
 main 分支 merge 后重跑一次保持最新。SVG 约 500 bytes，无 runtime，GitHub 直接原生渲染。
 
+## Agent Scan（0.4.0 新增）
+
+`vibe-hardening` 现在可以扫描**你电脑上的 AI agent skill 文件**——不仅仅是代码。Skill 是 markdown + scripts、被 agent 平台在运行时载入到 context、是新的攻击面：
+
+```bash
+npx vibe-hardening agent scan
+```
+
+自动检测 **Cursor / Claude Code / OpenClaw / Hermes / Gemini CLI / Goose / OpenCode / Codex / Trae / Factory** 的 skill 安装。
+
+**扫 65 条规则、5 个 pack：**A 硬编密钥（27 条 reuse + `.env`）、B prompt injection（11 条）、C 危险 shell（14 条）、D skill schema（5 条）、G MCP 配置（6 条）。
+
+**为什么现在做** —— agent platform 供应链攻击是必然会发生的。这是预警系统。
+
 ## 遥测（opt-in）
 
 vibe-hardening 在你机器上运行。代码、密钥、文件路径都不会离开你的笔记本。第一次交互式 scan 完成后，CLI 会问你**一次**要不要分享匿名统计，这样我们才能知道哪些规则需要加强：
@@ -262,10 +276,11 @@ platform  v0  (74% confidence)
 
 预览版 —— Phase 1 MVP 目标 **2026-05-13** 上 Product Hunt。
 
-当前覆盖（`v0.3.0`）：
+当前覆盖（`v0.4.0`）：
 - 支持语言：JavaScript / TypeScript / Python（Django、Flask、FastAPI）/ **Go** / **Rust**
 - 6 个引擎：RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM 幻觉
-- **74 条规则、342 个测试**、一般仓库 5 秒内扫描完毕
+- **74 条 code 规则 + 65 条 agent-scan 规则 + 406 个测试**、一般仓库 5 秒内扫描完毕
+- **Agent skill scanner**（0.4.0 新增）—— Cursor / Claude Code / OpenClaw / Hermes / Gemini CLI / Goose / OpenCode / Codex / Trae / Factory
 - **opt-in 匿名 telemetry**（默认关闭，环境变量可永久禁用）
 - 8 家 provider 实时密钥验证（OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion、Gemini）
 - 每个 LIVE KEY 旁边显示预估滥用成本（9 家 provider，含 Twilio）

@@ -6,6 +6,82 @@ keeps each entry tight enough to read in one breath.
 
 The PH launch is targeted for **2026-05-13 14:00 UTC**.
 
+## [0.4.0] — 2026-05-03
+
+### Added
+- **`vibe-hardening agent scan`** — new subcommand that statically
+  scans local AI agent skill files for security issues. Built **before**
+  the first skill compromise hits the news; supply-chain attacks on
+  agent platforms are inevitable, the only question is timing.
+- **Auto-detects 10 agent platforms** by filesystem stat: OpenClaw,
+  Hermes, Cursor, Claude Code, Gemini CLI, Goose, OpenCode, Codex,
+  Trae, Factory. Adding a new platform = one entry in the detector;
+  generic `~/.<agent>/skills/` pattern catches the long tail.
+- **5 rule packs / 65 detection rules**:
+  - **A — Hardcoded secrets** in SKILL.md / configs / `.env`. Reuses
+    v1's 27 SECRET_RULES verbatim, just retargets the path matrix.
+    Hermes specifically stores all secrets in `~/.hermes/.env` (not
+    config.yaml) — that file is now scanned.
+  - **B — Prompt injection patterns** (11 rules) in SKILL.md body
+    (HIGH) and frontmatter description (MEDIUM): "ignore previous
+    instructions", role overrides, ChatML control tokens, Llama
+    instruction tags, zero-width hidden characters.
+  - **C — Dangerous shell commands** (14 rules) in SKILL.md body and
+    `scripts/` files: `rm -rf /`, `curl | sh`, eval/exec on user
+    variables, persistence into `.bashrc` / `authorized_keys`, fork
+    bombs, base64-decode-and-pipe, etc.
+  - **D — Skill schema / body integrity** (5 active sub-rules):
+    missing `name`/`description` (LOW), `scripts/` exists but body
+    never references it (MEDIUM, hidden capability), sensitive path
+    + nearby network exfil verb (HIGH), 5+ env-var enumeration
+    pattern (MEDIUM, env-dump), folder name typosquatting a popular
+    skill (MEDIUM).
+  - **G — MCP server config issues** (6 rules): http:// (non-TLS),
+    localhost residue, secrets in `env` block, server name
+    typosquatting known servers (Levenshtein ≤ 2), > 20 servers
+    configured, `npx -y` of unverified packages.
+- **CLI flags**: `--target <agent>` (filter to one platform),
+  `--rule <ids>` and `--exclude <ids>` (segment-level matcher,
+  comma-separated), `--severity` / `--format` / `--output` / `--no-telemetry`.
+- **Telemetry** sends a separate `event_type: 'agent_scan'` event
+  with an `agents_detected` presence vector across known platforms.
+  Reuses the same opt-in config as v1; never re-prompts. Zero PII —
+  same regression-test guard as v1, plus explicit checks against
+  paths / agent contents / SKILL.md filenames reaching the wire.
+- **Brutalist text reporter** matches v1's `▲ VH-001` style. JSON
+  reporter for CI consumers.
+
+### Fixed
+- `vh-secret-db-url` was reporting on canonical placeholder
+  connection strings (`user:password`, `postgres:postgres`,
+  `root:root`) that appear in literally every Postgres tutorial /
+  docker-compose example. Self-test against `~/.claude/skills/`
+  caught 3 false positives this way; widened `DB_URL_PLACEHOLDERS`
+  to suppress all 8 common doc patterns. Anyone running
+  `postgres:postgres` in production has bigger problems than this
+  scanner missing it.
+- `vh agent scan --target <agent>` on a machine where that agent
+  isn't installed previously printed the generic "no agent platforms
+  detected" — misleading because OTHER agents may well be installed.
+  Now writes a yellow stderr note: `note: --target X not installed.
+  detected agents on this machine: Y, Z`. JSON output stays clean
+  (stderr is separate).
+- Reporter wording: dropped "agentskills.io platforms" labelling
+  (used in earlier dogfood prints) in favour of neutral "agent
+  platforms" — the standard's name is a technical reference for
+  internal docs, not a runtime user-facing brand.
+
+### Why now (and not at the 5/13 PH launch)
+
+Speed is the only moat in indie security tooling. The first
+OpenClaw / Hermes / Cursor skill compromise that hits HN front page
+will trigger Google searches for "agent skill scanner" — and the
+tool that's already shipped, ranked, and starred wins that traffic.
+This release plants the SEO and brand stake six months before that
+inevitable event. The 5/13 PH launch leans on the v1 code scanner
+story (74 rules, 4 languages); agent scan is the future-proof
+hedge that pays off on a different timeline.
+
 ## [0.3.0] — 2026-05-03
 
 ### Added

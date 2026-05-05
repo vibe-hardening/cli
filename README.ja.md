@@ -218,6 +218,20 @@ npx vibe-hardening badge -o .github/vibe-hardening.svg
 
 main ブランチマージ後に再生成して最新状態を保ちます。SVG は約 500 バイト、ランタイム不要、GitHub でネイティブ描画されます。
 
+## Agent Scan（0.4.0 新規）
+
+`vibe-hardening` は**ローカルの AI agent skill ファイル**もスキャンできるようになりました。Skill は markdown + scripts で、agent プラットフォームがランタイムで context にロードします — これは新しい攻撃面です：
+
+```bash
+npx vibe-hardening agent scan
+```
+
+**Cursor / Claude Code / OpenClaw / Hermes / Gemini CLI / Goose / OpenCode / Codex / Trae / Factory** の skill インストールを自動検出します。
+
+**65 ルール / 5 パック**：A ハードコード秘密（27 ルール再利用 + `.env`）、B プロンプトインジェクション（11）、C 危険シェル（14）、D skill スキーマ（5）、G MCP 設定（6）。
+
+**なぜ今か** —— agent プラットフォームへのサプライチェーン攻撃は不可避。これは早期警戒です。
+
 ## テレメトリ（opt-in）
 
 vibe-hardening はあなたのマシン上で動作します。コード、シークレット、ファイルパスはノートPCから出ません。最初の対話的スキャン後、CLI が**一度だけ**匿名統計の共有を尋ねます。これによりどのルールに改善が必要かを判断できます：
@@ -262,10 +276,11 @@ platform  v0  (74% confidence)
 
 プレビューリリース — Phase 1 MVPは **2026-05-13** にProduct Huntでのローンチを目標としています。
 
-現在のカバレッジ (`v0.3.0`):
+現在のカバレッジ (`v0.4.0`):
 - 対応言語: JavaScript / TypeScript / Python (Django、Flask、FastAPI) / **Go** / **Rust**
 - 6つのエンジン: RLS diff、JWT payload、auth AST、pattern regex、OSV.dev、LLM幻覚
-- **74のルール、342のテスト**、一般的なリポジトリを5秒以内にスキャン
+- **74 コードルール + 65 agent-scan ルール + 406 テスト**、一般的なリポジトリを5秒以内にスキャン
+- **Agent skill scanner**（0.4.0 新規）—— Cursor / Claude Code / OpenClaw / Hermes / Gemini CLI / Goose / OpenCode / Codex / Trae / Factory
 - **opt-in 匿名テレメトリ**（デフォルト無効、環境変数で永久無効化可能）
 - 8 プロバイダーのライブキー検証 (OpenAI、Anthropic、Stripe、GitHub PAT、Slack、SendGrid、Notion、Gemini)
 - LIVE KEY ごとに推定被害額を併記 (9 プロバイダー、Twilio 含む)

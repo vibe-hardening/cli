@@ -259,6 +259,43 @@ Then reference it in your top-level README:
 Run as a post-merge step on `main` to keep it current. The SVG is around
 500 bytes and has no runtime — renders natively on GitHub.
 
+## Agent Scan (new in 0.4.0)
+
+`vibe-hardening` now scans the **AI agent skill files** on your machine — not just code. Skills are markdown + scripts that agent platforms load into their context at runtime, and they're a new attack surface: hardcoded API keys in `SKILL.md`, prompt injection in the description, dangerous shell in `scripts/`, MCP server typosquats, and so on.
+
+```bash
+npx vibe-hardening agent scan
+```
+
+Auto-detects skill installs for **Cursor, Claude Code, OpenClaw, Hermes, Gemini CLI, Goose, OpenCode, Codex, Trae, Factory** (and any other tool following the `~/.<agent>/skills/` pattern).
+
+What it catches (65 rules across 5 packs):
+
+- **Hardcoded secrets** — reuses the same 27 secret-detection rules as `vh scan`, retargeted to skill files / configs / `.env`. Hermes specifically stores all secrets in `~/.hermes/.env`; that file is included.
+- **Prompt injection** — 11 patterns: "ignore previous instructions", role overrides, ChatML control tokens, Llama `[INST]` / `<<SYS>>` tags, zero-width hidden characters.
+- **Dangerous shell** — 14 patterns: `rm -rf /`, `curl | sh`, persistence into `.bashrc` / `authorized_keys`, fork bombs, etc.
+- **Skill schema** — missing required fields, `scripts/` directories not mentioned in the body (hidden capability), sensitive path + network exfil verb in same paragraph, env-dump patterns, skill folder names typosquatting popular skills.
+- **MCP server config** — `mcp.json` issues: non-TLS endpoints, localhost residue, secrets in `env` blocks, server-name typosquats, `npx -y` of unverified packages.
+
+```bash
+# scan all detected platforms (default)
+npx vibe-hardening agent scan
+
+# only one platform
+npx vibe-hardening agent scan --target cursor
+
+# only specific rule packs
+npx vibe-hardening agent scan --rule b,c
+
+# CI-friendly JSON
+npx vibe-hardening agent scan --format json -o agent-report.json
+
+# kill telemetry for one invocation
+npx vibe-hardening agent scan --no-telemetry
+```
+
+Built **before** the first skill compromise hits the news. Supply-chain attacks on agent platforms are inevitable; the only question is timing. This scanner is the early warning.
+
 ## Telemetry (opt-in)
 
 vibe-hardening runs on your machine. Your code, your secrets, your file paths — none of those leave your laptop. After the first interactive scan, the CLI asks **once** whether you want to share anonymous stats so we can tell which rules need work:
@@ -304,10 +341,11 @@ Supported: `v0` / `lovable` / `bolt` / `cursor` / `claude-code` / `replit-agent`
 
 Preview release — Phase 1 MVP targeting **2026-05-13** on Product Hunt.
 
-Current coverage (`v0.3.0`):
+Current coverage (`v0.4.0`):
 - Languages: JavaScript / TypeScript / Python / **Go** / **Rust**
 - 6 engines: RLS diff · JWT payload · auth AST · pattern-regex · OSV.dev · LLM hallucination
-- **74 rules · 342 tests** · scans typical repo in under 5 seconds
+- **74 code rules · 65 agent-scan rules · 406 tests** · scans typical repo in under 5 seconds
+- **Agent skill scanner** — covers Cursor / Claude Code / OpenClaw / Hermes / Gemini CLI / Goose / OpenCode / Codex / Trae / Factory
 - Live key verification for 9 providers (OpenAI / Anthropic / Stripe / GitHub PAT / Slack / SendGrid / Notion / Twilio / Gemini)
 - Estimated abuse-cost figure next to every LIVE KEY
 - Output: coloured console · JSON / Markdown / standalone HTML report
