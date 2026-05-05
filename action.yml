@@ -1,5 +1,5 @@
 name: 'vibe-hardening'
-description: 'Security scan for AI-generated code — 48 rules, 9 live key verifiers, MIT open source. Catches what gitleaks misses.'
+description: 'Security scan for AI-generated code — 74 code rules + 65 agent skill rules, 4 languages, 9 live key verifiers, MIT open source. Catches what gitleaks misses.'
 author: 'angletech2026'
 branding:
   icon: 'lock'
