@@ -60,7 +60,6 @@ export interface Strings {
     label2: string;
     items: { cmd: string; body: string }[];
   };
-  quotes: { q: string; a: string }[];
   pricing: {
     freeTag: string;
     freeTitle: string;
@@ -205,20 +204,6 @@ export const strings: Record<Locale, Strings> = {
         },
       ],
     },
-    quotes: [
-      {
-        q: '"Ran it on a client project after a Cursor session. Six criticals. Fixed before the demo call."',
-        a: 'indie dev, berlin',
-      },
-      {
-        q: '"The only scanner that understands NEXT_PUBLIC_* is a liability, not a feature."',
-        a: 'security eng, sf',
-      },
-      {
-        q: '"It flagged a hallucinated package my agent installed. I did not know that was a category."',
-        a: 'founder, taipei',
-      },
-    ],
     pricing: {
       freeTag: 'CLI · MIT',
       freeTitle: 'Free, forever.',
@@ -369,20 +354,6 @@ export const strings: Record<Locale, Strings> = {
         },
       ],
     },
-    quotes: [
-      {
-        q: '「在 Cursor 寫完客戶專案後跑了一次。六個 CRITICAL。demo 前全修完。」',
-        a: '獨立開發者，柏林',
-      },
-      {
-        q: '「唯一一套真的把 NEXT_PUBLIC_* 當成風險而不是功能的掃描器。」',
-        a: '資安工程師，舊金山',
-      },
-      {
-        q: '「它抓出 agent 幫我裝的幻覺套件。我以前不知道這種分類存在。」',
-        a: '創辦人，台北',
-      },
-    ],
     pricing: {
       freeTag: 'CLI · MIT',
       freeTitle: '永久免費。',

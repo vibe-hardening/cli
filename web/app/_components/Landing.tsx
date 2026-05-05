@@ -239,22 +239,6 @@ export function Landing({ locale }: { locale: Locale }) {
         </div>
       </section>
 
-      {/* QUOTES */}
-      <section className="border-b border-[color:var(--color-line)]">
-        <div className="wrap px-6 md:px-10 py-20 md:py-24 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
-          {t.quotes.map((q, i) => (
-            <div key={i}>
-              <p className="font-[family-name:var(--font-mono)] text-[14px] leading-[1.75] text-[color:var(--color-fg)] mb-3.5">
-                {q.q}
-              </p>
-              <div className="text-[11px] text-[color:var(--color-dim)] tracking-[0.12em]">
-                — {q.a}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* PRICING */}
       <section className="border-b border-[color:var(--color-line)]">
         <div className="wrap px-6 md:px-10 py-20 md:py-24 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
