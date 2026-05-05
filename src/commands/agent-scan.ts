@@ -90,8 +90,18 @@ export async function runAgentScanCommand(
       (a) => a.id === opts.target,
     );
     if (!targetAgent) {
-      // Target not detected — clear findings + agents so output is
-      // explicit "no findings". Keep duration/files for transparency.
+      // Target requested but not installed. Print a specific message
+      // (not the generic "no agents detected" which would imply NO
+      // agents are installed — possibly false; another agent could
+      // be present, just not the one we filtered to).
+      const detectedIds =
+        result.agentsDetected.map((a) => a.id).join(', ') || '(none)';
+      process.stderr.write(
+        pc.yellow(
+          `note: --target ${opts.target} not installed. ` +
+            `detected agents on this machine: ${detectedIds}\n`,
+        ),
+      );
       result.agentsDetected = [];
       result.findings = [];
     } else {

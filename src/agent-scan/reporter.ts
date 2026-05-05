@@ -47,14 +47,14 @@ export function renderAgentText(result: AgentScanResult): string {
     lines.push('');
     lines.push(
       `  ${pc.dim(
-        '[no agentskills.io-compatible installs detected — checked ~/.openclaw, ~/.hermes, ~/.cursor, ~/.claude, ~/.gemini, ~/.goose, ~/.opencode, ~/.codex, ~/.trae, ~/.factory]',
+        '[no agent platforms detected — checked ~/.openclaw, ~/.hermes, ~/.cursor, ~/.claude, ~/.gemini, ~/.goose, ~/.opencode, ~/.codex, ~/.trae, ~/.factory]',
       )}`,
     );
     lines.push('');
     return lines.join('\n');
   }
 
-  lines.push(`  ${pc.dim('detected agentskills.io platforms:')}`);
+  lines.push(`  ${pc.dim('detected agent platforms:')}`);
   for (const agent of result.agentsDetected) {
     lines.push(
       `    ${pc.green('✓')} ${agent.id.padEnd(15)} ${pc.dim(agent.rootPath)}`,
