@@ -74,6 +74,10 @@ export interface TelemetryConfig {
 }
 
 export interface TelemetryEvent {
+  /** Discriminator: 'scan' = code scan (v1), 'agent_scan' = agent skill
+   *  scan (D5+). Shared `anonymous_id` lets the backend correlate one
+   *  user's scan and agent_scan events without identifying them. */
+  event_type: 'scan' | 'agent_scan';
   anonymous_id: string;
   consent_version: number;
   vh_version: string;
@@ -88,6 +92,11 @@ export interface TelemetryEvent {
   rules_fired: Record<string, number>;
   os: string;
   node_version: string;
+  /** Set ONLY on `event_type === 'agent_scan'`. Per-agent boolean
+   *  presence map — tells us which agentskills.io-compatible
+   *  platforms this user has installed. Public platform IDs only,
+   *  no paths or contents. */
+  agents_detected?: Record<string, boolean>;
 }
 
 /**
@@ -305,6 +314,7 @@ export function buildEvent(opts: {
   }
 
   return {
+    event_type: 'scan',
     anonymous_id: opts.config.anonymousId,
     consent_version: opts.config.consentVersion,
     vh_version: opts.vhVersion,
@@ -316,6 +326,48 @@ export function buildEvent(opts: {
     rules_fired: rulesFired,
     os: process.platform,
     node_version: process.version,
+  };
+}
+
+/**
+ * Agent-scan variant of `buildEvent`. Same anonymous_id, same
+ * privacy guarantees, but adds `agents_detected` and uses
+ * `event_type: 'agent_scan'` so the backend can route separately.
+ *
+ * Fields that don't apply to agent scans (score / grade / platform
+ * fingerprint) are zeroed/empty rather than omitted, so the backend
+ * has a single uniform schema and doesn't need conditional access.
+ */
+export function buildAgentScanEvent(opts: {
+  config: TelemetryConfig;
+  vhVersion: string;
+  agentsDetected: string[];
+  /** Public platform IDs this CLI knows how to probe. We emit `false`
+   *  for the ones that weren't found so the backend has a stable
+   *  presence vector and can compute install-rate over time. */
+  knownAgentIds: readonly string[];
+  rulesFired: Record<string, number>;
+  filesScanned: number;
+  durationMs: number;
+}): TelemetryEvent {
+  const presence: Record<string, boolean> = {};
+  for (const id of opts.knownAgentIds) {
+    presence[id] = opts.agentsDetected.includes(id);
+  }
+  return {
+    event_type: 'agent_scan',
+    anonymous_id: opts.config.anonymousId,
+    consent_version: opts.config.consentVersion,
+    vh_version: opts.vhVersion,
+    platform_fingerprint: '', // not meaningful for agent scan
+    files_scanned: opts.filesScanned,
+    duration_ms: opts.durationMs,
+    score: 0,
+    grade: '',
+    rules_fired: opts.rulesFired,
+    os: process.platform,
+    node_version: process.version,
+    agents_detected: presence,
   };
 }
 

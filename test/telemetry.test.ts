@@ -323,6 +323,7 @@ describe('buildEvent — schema + PII guard', () => {
         'anonymous_id',
         'consent_version',
         'duration_ms',
+        'event_type',
         'files_scanned',
         'grade',
         'node_version',
@@ -333,6 +334,15 @@ describe('buildEvent — schema + PII guard', () => {
         'vh_version',
       ].sort(),
     );
+  });
+
+  it('event_type is "scan" for code-scan events (added in D5)', () => {
+    const event = buildEvent({
+      config: SAMPLE_CONFIG,
+      report: SAMPLE_REPORT,
+      vhVersion: '0.2.1',
+    });
+    expect(event.event_type).toBe('scan');
   });
 });
 

@@ -214,6 +214,24 @@ export function buildProgram(): Command {
       'minimum severity: high | medium | low | info',
       'low',
     )
+    .option(
+      '--target <agent>',
+      'restrict scan to one platform: openclaw | hermes | cursor | claude-code | gemini-cli | goose | opencode | codex | trae | factory | all',
+      'all',
+    )
+    .option(
+      '--rule <ids>',
+      'only run rule IDs matching this comma-separated list (case-insensitive prefix match: `--rule A,B` keeps rule A + B findings)',
+    )
+    .option(
+      '--exclude <ids>',
+      'skip rule IDs matching this comma-separated list',
+    )
+    .option(
+      '--no-telemetry',
+      'do not fire telemetry for this invocation, even if previously opted in',
+      false,
+    )
     .action(
       async (
         cwd: string,
@@ -221,6 +239,10 @@ export function buildProgram(): Command {
           format: string;
           output?: string;
           severity: string;
+          target?: string;
+          rule?: string;
+          exclude?: string;
+          telemetry: boolean;
         },
       ) => {
         const code = await runAgentScanCommand({
@@ -228,6 +250,11 @@ export function buildProgram(): Command {
           format: cmdOpts.format as 'console' | 'json',
           output: cmdOpts.output,
           severity: cmdOpts.severity as AgentSeverity,
+          target: cmdOpts.target,
+          rule: cmdOpts.rule,
+          exclude: cmdOpts.exclude,
+          // commander exposes --no-telemetry as telemetry:false
+          noTelemetry: cmdOpts.telemetry === false,
           version,
         });
         process.exit(code);
