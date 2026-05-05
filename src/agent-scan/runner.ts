@@ -2,6 +2,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { existsSync, statSync } from 'node:fs';
 import type { AgentDetected, AgentId, AgentScanResult } from './types.js';
+import { applyRuleA } from './rules/a-secrets.js';
 
 /**
  * Known-platform shortlist. Each entry is one filesystem check. Most
@@ -110,14 +111,17 @@ export interface RunAgentScanOptions {
 }
 
 /**
- * D1 scaffold. Wires detection + reporter + telemetry plumbing
- * together but does not yet run rules — `findings` is empty.
+ * Orchestrator: detect agents, apply rule packs, aggregate findings.
  *
- * D2 (rule A, secrets) onward will:
- *   1. Walk skillsPath / configPath / envPath for each detected agent
- *   2. Parse SKILL.md (frontmatter + body), JSON, YAML, .env
- *   3. Apply rule modules (a-secrets / b-injection / c-shell / d-schema / g-mcp)
- *   4. Aggregate findings into the result
+ * Active rule packs:
+ *   - A (secrets) — D2, reuses v1 SECRET_RULES across SKILL.md /
+ *     configs / .env / OpenClaw comms
+ *
+ * Pending (D3+):
+ *   - B (prompt injection patterns)
+ *   - C (dangerous shell)
+ *   - D (skill schema + body checks)
+ *   - G (MCP server config)
  */
 export async function runAgentScan(
   opts: RunAgentScanOptions,
@@ -125,13 +129,21 @@ export async function runAgentScan(
   const startMs = Date.now();
   const agentsDetected = detectAgents(opts.home);
 
-  // Rules ship D2 onward. Empty for D1 scaffold — but the result
-  // shape, exit codes, telemetry, and reporter all work end-to-end
-  // already so we have a runnable smoke test today.
+  if (agentsDetected.length === 0) {
+    return {
+      agentsDetected,
+      findings: [],
+      filesScanned: 0,
+      durationMs: Date.now() - startMs,
+    };
+  }
+
+  const ruleA = await applyRuleA(agentsDetected);
+
   return {
     agentsDetected,
-    findings: [],
-    filesScanned: 0,
+    findings: ruleA.findings,
+    filesScanned: ruleA.filesScanned,
     durationMs: Date.now() - startMs,
   };
 }
