@@ -7,6 +7,8 @@ import pc from 'picocolors';
 import { runScanCommand } from './commands/scan.js';
 import { runExplainCommand } from './commands/explain.js';
 import { runConfigCommand } from './commands/config.js';
+import { runAgentScanCommand } from './commands/agent-scan.js';
+import type { AgentSeverity } from './agent-scan/types.js';
 import type { Severity } from './core/types.js';
 import { walk } from './core/walker.js';
 import { runScan } from './core/scan.js';
@@ -59,6 +61,7 @@ export function buildProgram(): Command {
         `  ${pc.dim('$')} npx vibe-hardening scan --format markdown -o report.md`,
         `  ${pc.dim('$')} npx vibe-hardening explain vh-secret-openai`,
         `  ${pc.dim('$')} npx vibe-hardening badge -o badge.svg`,
+        `  ${pc.dim('$')} npx vibe-hardening agent scan`,
         `  ${pc.dim('$')} npx vibe-hardening config set telemetry off`,
         '',
         `${pc.dim('Docs:')}  ${pc.cyan('https://github.com/vibe-hardening/cli')}`,
@@ -187,6 +190,49 @@ export function buildProgram(): Command {
       // mid-cleanup triggers a libuv assertion on Windows.
       process.exitCode = code;
     });
+
+  // `agent` parent command groups the agent-skill scanning surface.
+  // Today only `agent scan` exists — future post-launch additions
+  // (e.g. `agent diff`, `agent explain`) attach here so `vh agent --help`
+  // is the canonical discovery point.
+  const agentCmd = program
+    .command('agent')
+    .description(
+      'Scan agentskills.io-compatible installs (OpenClaw, Hermes, Cursor, Claude Code, Gemini CLI, Goose, OpenCode, Codex, Trae, Factory, ...) for security issues in skills, configs, and MCP setups.',
+    );
+
+  agentCmd
+    .command('scan')
+    .description(
+      'Statically scan local agent skill files (~/.openclaw, ~/.hermes, ~/.claude, ~/.cursor, etc.) for hardcoded secrets, prompt injection, dangerous shell, schema issues, and MCP misconfigurations. No network, no execution.',
+    )
+    .argument('[cwd]', 'cwd to also scan for project-level skills', '.')
+    .option('-f, --format <format>', 'output format: console | json', 'console')
+    .option('-o, --output <file>', 'write output to file instead of stdout')
+    .option(
+      '-s, --severity <level>',
+      'minimum severity: high | medium | low | info',
+      'low',
+    )
+    .action(
+      async (
+        cwd: string,
+        cmdOpts: {
+          format: string;
+          output?: string;
+          severity: string;
+        },
+      ) => {
+        const code = await runAgentScanCommand({
+          cwd: resolve(cwd),
+          format: cmdOpts.format as 'console' | 'json',
+          output: cmdOpts.output,
+          severity: cmdOpts.severity as AgentSeverity,
+          version,
+        });
+        process.exit(code);
+      },
+    );
 
   // `config` is a tiny subcommand group — only telemetry is configurable
   // today. Everything else stays as flags so configuration drift between

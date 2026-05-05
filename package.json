@@ -73,14 +73,14 @@
     "commander": "^12.1.0",
     "fast-glob": "^3.3.3",
     "picocolors": "^1.1.1",
-    "ts-morph": "^24.0.0"
+    "ts-morph": "^24.0.0",
+    "yaml": "^2.6.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8",
-    "yaml": "^2.6.1",
     "zod": "^3.24.1"
   }
 }
