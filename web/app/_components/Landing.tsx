@@ -239,10 +239,10 @@ export function Landing({ locale }: { locale: Locale }) {
         </div>
       </section>
 
-      {/* PRICING */}
+      {/* PRICING — single Free card, centered */}
       <section className="border-b border-[color:var(--color-line)]">
-        <div className="wrap px-6 md:px-10 py-20 md:py-24 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-          <div className="border border-[color:var(--color-line)] p-8">
+        <div className="wrap px-6 md:px-10 py-20 md:py-24">
+          <div className="border border-[color:var(--color-line)] p-8 max-w-[640px] mx-auto">
             <div className="text-[11px] text-[color:var(--color-dim)] tracking-[0.14em] mb-3">
               {t.pricing.freeTag}
             </div>
@@ -255,23 +255,6 @@ export function Landing({ locale }: { locale: Locale }) {
             <code className="inline-block bg-[#141414] border border-[color:var(--color-line)] px-4 py-3 text-[13px] text-[color:var(--color-fg)] font-[family-name:var(--font-mono)]">
               npx vibe-hardening scan
             </code>
-          </div>
-          <div className="border border-[color:var(--color-fg)] p-8">
-            <div className="text-[11px] text-[color:var(--color-red)] tracking-[0.14em] mb-3">
-              {t.pricing.proTag}
-            </div>
-            <h3 className="text-[2rem] normal-case mb-2.5">
-              {t.pricing.proTitle}
-            </h3>
-            <p className="text-[13px] text-[color:var(--color-fg-soft)] leading-[1.7] mb-6 tracking-normal">
-              {t.pricing.proBody}
-            </p>
-            <a
-              href="#waitlist"
-              className="vh-btn vh-btn-primary tracking-[0.06em]"
-            >
-              {t.pricing.proCta}
-            </a>
           </div>
         </div>
       </section>

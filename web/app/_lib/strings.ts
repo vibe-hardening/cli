@@ -64,10 +64,6 @@ export interface Strings {
     freeTag: string;
     freeTitle: string;
     freeBody: string;
-    proTag: string;
-    proTitle: string;
-    proBody: string;
-    proCta: string;
   };
   waitlist: {
     title1: string;
@@ -209,11 +205,6 @@ export const strings: Record<Locale, Strings> = {
       freeTitle: 'Free, forever.',
       freeBody:
         'Scan any repo. Unlimited runs. Your code stays on your machine — only opt-in anonymous stats (rule-IDs that fired, never paths or content).',
-      proTag: 'PRO · TEAM SAAS',
-      proTitle: 'Per-commit, per-deploy.',
-      proBody:
-        'Dashboard, GitHub checks, Slack alerts on new criticals, scheduled rescans. $29 / project / mo.',
-      proCta: 'Join waitlist →',
     },
     waitlist: {
       title1: 'SHIP',
@@ -360,11 +351,6 @@ export const strings: Record<Locale, Strings> = {
       freeTitle: '永久免費。',
       freeBody:
         '任何 repo 都可掃、不限次數，程式碼絕不離開你的機器；只有 opt-in 匿名統計（哪些規則觸發、絕不送路徑或內容）。',
-      proTag: 'PRO · 團隊版',
-      proTitle: '每次 commit，每次 deploy。',
-      proBody:
-        '儀表板、GitHub checks、Slack 新增 CRIT 通知、排程重掃。$29 / 專案 / 月。',
-      proCta: '加入候補 →',
     },
     waitlist: {
       title1: 'SHIP',
