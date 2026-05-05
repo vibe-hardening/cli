@@ -17,6 +17,22 @@ const DB_URL_PLACEHOLDERS = [
   '<your',
   'your_',
   'xxxxxxxx',
+  // Common documentation / Docker Compose defaults. These are
+  // structurally connection strings but never actual secrets — they
+  // appear in tutorial docs, sample compose files, and skill markdown
+  // explaining what a DATABASE_URL looks like. Empirically (dogfood
+  // 5/3) matching these caused 100% false positives on a real
+  // ~/.claude/skills/ corpus; adding them eliminates the FP without
+  // weakening detection of real keys (anyone using `postgres:postgres`
+  // in production has bigger problems than this scanner).
+  'user:password',
+  'postgres:postgres',
+  'root:root',
+  'admin:admin',
+  'username:password',
+  'user:pass',
+  'postgres:password',
+  'mysql:mysql',
 ];
 
 export const SECRET_RULES: SecretRule[] = [
