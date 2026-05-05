@@ -43,7 +43,7 @@ const serif = EB_Garamond({
 // keep the social preview tight and benefit-driven.
 const OG_TITLE = 'vibe-hardening — security scanner for AI-generated code';
 const OG_DESCRIPTION =
-  'Vibe coded. Vibe hardened. One npx command, 51 rules, 9 live secret verifiers. Built for output from Cursor, Lovable, Bolt, v0, Claude Code. MIT.';
+  'Vibe coded. Vibe hardened. 74 code rules + 65 agent skill rules. Scans output from Cursor, Lovable, Bolt, v0, Claude Code, OpenClaw, Hermes. One npx command. MIT.';
 
 export const metadata: Metadata = {
   title: 'vibe-hardening / one-command security scanner for AI-generated code',
