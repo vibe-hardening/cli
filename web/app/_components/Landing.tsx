@@ -252,7 +252,7 @@ export function Landing({ locale }: { locale: Locale }) {
             <p className="text-[13px] text-[color:var(--color-fg-soft)] leading-[1.7] mb-6 tracking-normal">
               {t.pricing.freeBody}
             </p>
-            <code className="inline-block bg-[#141414] border border-[color:var(--color-line)] px-4 py-3 text-[13px]">
+            <code className="inline-block bg-[#141414] border border-[color:var(--color-line)] px-4 py-3 text-[13px] text-[color:var(--color-fg)] font-[family-name:var(--font-mono)]">
               npx vibe-hardening scan
             </code>
           </div>

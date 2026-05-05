@@ -120,18 +120,18 @@ export const strings: Record<Locale, Strings> = {
       footnote: 'APPROVED FOR CIVILIAN USE · NOT RATED FOR PRODUCTION',
     },
     hud: {
-      last24h: 'LAST 24H',
-      newCrit: '● 41 NEW CRIT',
-      newHigh: '● 128 NEW HIGH',
-      fixed: '● 214 FIXED',
-      kRepos: 'REPOS SCANNED',
-      vRepos: '14,822',
-      kKeys: 'KEYS LIVE',
-      vKeys: '1,214',
-      kScan: 'MEDIAN SCAN',
-      vScan: '4.8s',
-      kFail: 'FAIL RATE',
-      vFail: '64%',
+      last24h: 'OPS DATA',
+      newCrit: '● 74 CODE RULES',
+      newHigh: '● 65 AGENT RULES',
+      fixed: '● 9 LIVE VERIFIERS',
+      kRepos: 'LANGUAGES',
+      vRepos: '4',
+      kKeys: 'AGENT PLATFORMS',
+      vKeys: '10',
+      kScan: 'TYPICAL SCAN',
+      vScan: '<5s',
+      kFail: 'LLM TOKEN COST',
+      vFail: '$0',
       fingerprintTitle: 'FINGERPRINT SUPPORT',
     },
     terminal: {
@@ -176,7 +176,7 @@ export const strings: Record<Locale, Strings> = {
       items: [
         {
           cmd: 'vibe-hardening scan',
-          body: 'Main command. Scores your repo 0–100 with A–F grade. 51 rules covering hardcoded keys, SQL injection, missing auth on routes, CORS, Supabase RLS, eval(req.body), localStorage tokens, weak bcrypt rounds, and packages LLMs hallucinate.',
+          body: 'Main command. Scores your repo 0–100 with A–F grade. 74 rules covering hardcoded keys, SQL injection, missing auth on routes, CORS, Supabase RLS, eval(req.body), localStorage tokens, weak bcrypt rounds, and packages LLMs hallucinate.',
         },
         {
           cmd: 'scan --changed-only [ref]',
@@ -196,7 +196,7 @@ export const strings: Record<Locale, Strings> = {
         },
         {
           cmd: 'vh explain <rule-id>',
-          body: 'Detailed docs for any rule: severity, what it detects, why it matters, how to fix. Covers all 49 rule IDs. Docs in your terminal — no browser needed.',
+          body: 'Detailed docs for any rule: severity, what it detects, why it matters, how to fix. Covers every shipped rule ID. Docs in your terminal — no browser needed.',
         },
         {
           cmd: 'vh badge',
@@ -270,18 +270,18 @@ export const strings: Record<Locale, Strings> = {
       footnote: '可供一般民用 · 不建議用於正式環境',
     },
     hud: {
-      last24h: '過去 24H',
-      newCrit: '● 41 新增 CRIT',
-      newHigh: '● 128 新增 HIGH',
-      fixed: '● 214 已修復',
-      kRepos: '掃描數',
-      vRepos: '14,822',
-      kKeys: '活躍密鑰',
-      vKeys: '1,214',
-      kScan: '中位耗時',
-      vScan: '4.8s',
-      kFail: '不及格率',
-      vFail: '64%',
+      last24h: '產品規格',
+      newCrit: '● 74 條 CODE 規則',
+      newHigh: '● 65 條 AGENT 規則',
+      fixed: '● 9 家即時驗證',
+      kRepos: '支援語言',
+      vRepos: '4',
+      kKeys: 'Agent 平台',
+      vKeys: '10',
+      kScan: '一般 repo 掃描時間',
+      vScan: '<5 秒',
+      kFail: 'LLM token 費用',
+      vFail: '$0',
       fingerprintTitle: '支援的平台指紋',
     },
     terminal: {
@@ -326,7 +326,7 @@ export const strings: Record<Locale, Strings> = {
       items: [
         {
           cmd: 'vibe-hardening scan',
-          body: '主指令。掃完給 0–100 分配 A–F 等級。51 條規則涵蓋硬寫的金鑰、SQL injection、缺驗證的路由、CORS、Supabase RLS、eval(req.body)、localStorage 存 token、bcrypt 弱 rounds、被 LLM 幻想出來的 npm 套件。',
+          body: '主指令。掃完給 0–100 分配 A–F 等級。74 條規則涵蓋硬寫的金鑰、SQL injection、缺驗證的路由、CORS、Supabase RLS、eval(req.body)、localStorage 存 token、bcrypt 弱 rounds、被 LLM 幻想出來的 npm 套件。',
         },
         {
           cmd: 'scan --changed-only [ref]',
@@ -346,7 +346,7 @@ export const strings: Record<Locale, Strings> = {
         },
         {
           cmd: 'vh explain <rule-id>',
-          body: '每條規則的詳細說明：嚴重度、抓什麼、為什麼重要、怎麼修。49 條全覆蓋。把文件塞回 terminal，不用開瀏覽器。',
+          body: '每條規則的詳細說明：嚴重度、抓什麼、為什麼重要、怎麼修。每條 ship 出去的 rule 都涵蓋。把文件塞回 terminal，不用開瀏覽器。',
         },
         {
           cmd: 'vh badge',
