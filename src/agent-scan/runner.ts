@@ -5,6 +5,8 @@ import type { AgentDetected, AgentId, AgentScanResult } from './types.js';
 import { applyRuleA } from './rules/a-secrets.js';
 import { applyRuleB } from './rules/b-prompt-injection.js';
 import { applyRuleC } from './rules/c-shell.js';
+import { applyRuleD } from './rules/d-schema.js';
+import { applyRuleG } from './rules/g-mcp.js';
 
 /**
  * Known-platform shortlist. Each entry is one filesystem check. Most
@@ -115,20 +117,17 @@ export interface RunAgentScanOptions {
 /**
  * Orchestrator: detect agents, apply rule packs, aggregate findings.
  *
- * Active rule packs:
- *   - A (secrets) — reuses v1 SECRET_RULES across SKILL.md / configs /
- *     .env / OpenClaw comms
- *   - B (prompt injection) — scans SKILL.md body + description
- *   - C (dangerous shell) — scans SKILL.md body + scripts/
+ * Active rule packs (v1 launch):
+ *   - A (secrets)         — v1 SECRET_RULES across SKILL.md / configs / .env
+ *   - B (prompt injection) — SKILL.md body + description
+ *   - C (dangerous shell)  — SKILL.md body + scripts/
+ *   - D (skill schema)     — D01 missing fields, D03 hidden scripts/,
+ *                            D05 sensitive path + exfil, D06 env-dump,
+ *                            D07 typosquat skill name
+ *   - G (MCP config)       — G01-G06 mcp.json hygiene
  *
- * Pending (D4):
- *   - D (skill schema + body checks)
- *   - G (MCP server config)
- *
- * `filesScanned` is the union count across rule packs — when the same
- * file is read by multiple packs (e.g. SKILL.md by A/B/C), each pack
- * adds it to its own counter. To avoid inflated numbers we max-over
- * rather than sum: scanning N skill files reports N, not 3N.
+ * `filesScanned` is the max across packs — multiple packs reading the
+ * same SKILL.md should count once, not N times.
  */
 export async function runAgentScan(
   opts: RunAgentScanOptions,
@@ -136,32 +135,41 @@ export async function runAgentScan(
   const startMs = Date.now();
   const agentsDetected = detectAgents(opts.home);
 
-  if (agentsDetected.length === 0) {
-    return {
-      agentsDetected,
-      findings: [],
-      filesScanned: 0,
-      durationMs: Date.now() - startMs,
-    };
-  }
+  // We DON'T early-return on agentsDetected.length === 0:
+  // rule G also scans `<cwd>/.cursor/mcp.json` (project-level config)
+  // which can exist independently of any home-level install — a repo
+  // might check in `.cursor/mcp.json` for collaborators even on a
+  // machine without Cursor itself installed.
+  //
+  // The other rule packs (A/B/C/D) self-skip when an agent has no
+  // skillsPath, so empty input is cheap.
 
   // Run rule packs in parallel — they don't share state and each
-  // does its own filesystem walk. Two file reads per SKILL.md
-  // (one by A, one by B+C combined) is acceptable; OS page cache
-  // makes the second read free.
-  const [ruleA, ruleB, ruleC] = await Promise.all([
+  // does its own filesystem walk. Multiple file reads per SKILL.md
+  // is acceptable; OS page cache makes them effectively free.
+  const [ruleA, ruleB, ruleC, ruleD, ruleG] = await Promise.all([
     applyRuleA(agentsDetected),
     applyRuleB(agentsDetected),
     applyRuleC(agentsDetected),
+    applyRuleD(agentsDetected),
+    applyRuleG(agentsDetected, opts.cwd),
   ]);
 
   return {
     agentsDetected,
-    findings: [...ruleA.findings, ...ruleB.findings, ...ruleC.findings],
+    findings: [
+      ...ruleA.findings,
+      ...ruleB.findings,
+      ...ruleC.findings,
+      ...ruleD.findings,
+      ...ruleG.findings,
+    ],
     filesScanned: Math.max(
       ruleA.filesScanned,
       ruleB.filesScanned,
       ruleC.filesScanned,
+      ruleD.filesScanned,
+      ruleG.filesScanned,
     ),
     durationMs: Date.now() - startMs,
   };
