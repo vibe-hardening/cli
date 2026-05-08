@@ -55,20 +55,16 @@ export const metadata: Metadata = {
     url: 'https://vibe-hardening.io',
     siteName: 'vibe-hardening',
     type: 'website',
-    images: [
-      {
-        url: '/og.png',
-        width: 1200,
-        height: 630,
-        alt: 'vibe-hardening — one-command security scanner for AI-generated code',
-      },
-    ],
+    // Image is auto-attached by `app/opengraph-image.tsx` (Next.js
+    // convention) — generates dynamically so social-share unfurls
+    // always show current rule counts / version / platform list.
   },
   twitter: {
     card: 'summary_large_image',
     title: OG_TITLE,
     description: OG_DESCRIPTION,
-    images: ['/og.png'],
+    // Twitter falls back to og:image when twitter:image isn't set,
+    // so the dynamic opengraph-image is reused here too.
   },
   robots: { index: true, follow: true },
 };
